@@ -8,21 +8,18 @@
 
 class seedSelection {
   public:
-    void init(std::vector<Vector3D> points, std::map<Vector3D, Vector3D> normals, float radius);
-    std::vector<Vector3D> find_seed_triangle();
+    void init(std::vector<Point> points, float radius);
+    std::vector<Point> find_seed_triangle();
 
   private:
     // std::vector of used points
-    std::vector<Vector3D> used;
+    std::vector<Point> used;
 
     // std::vector of unused points
-    std::vector<Vector3D> unused;
-
-    // map of vertex normals
-    std::map<Vector3D, Vector3D> normals;
+    std::vector<Point> unused;
 
     // spatial map
-    unordered_map<float, vector<Vector3D *> *> map;
+    unordered_map<float, vector<Point *> *> map;
 
     // float radius
     float radius;
@@ -30,13 +27,12 @@ class seedSelection {
     double width;
     double height;
 
-    Vector3D point*;
+    Point *point;
 
     void create_spatial_grid ();
     float hash_position(Vector3D pos);
     bool equal_positions(Vector3D pos1, Vector3D pos2);
     float distance(Vector3D a, Vector3D b);
-
 };
 
 
