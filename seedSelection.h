@@ -30,6 +30,8 @@ class seedSelection {
     double width;
     double height;
 
+    Vector3D point*;
+
     void create_spatial_grid ();
     float hash_position(Vector3D pos);
     bool equal_positions(Vector3D pos1, Vector3D pos2);

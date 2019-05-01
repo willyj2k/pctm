@@ -40,23 +40,23 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
   while (!found_valid_triangle) {
-    Vector3D
-    p * = &unused[index];
+    point = &unused[index];
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    float h = hash_position(*p);
+    float h = hash_position(*point);
     if (map.find(h) != map.end()) {
       vector < Vector3D * > *lst = map.at(h);
       // now we have a list of Vector3D that are in the same hashed 3D box
       // build potential seed triangles
 
-      // organize lst in order of distance from p
+      // organize lst in order of distance from point
       // use helper function
-
+      std::sort (lst.begin()+4, lst.end(), compare);
 
       // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
       // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
+
 
 
       // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
@@ -92,9 +92,11 @@ bool seedSelection::equal_positions(Vector3D pos1, Vector3D pos2) {
 
 float seedSelection::distance(Vector3D a, Vector3D b) {
   Vector3D ab = a - b;
-  return sqrt(pow(ab[0], 2) + pow(ab[1], 2) + pow(ab[2], 2));
+  return ab.norm();
 }
 
-bool seedSelection::compare(Vector3D a, Vector3D b) {
-  
+bool seedSelection::compare(Vector3D a*, Vector3D b*) {
+  float dista = distance(*a, *point);
+  float distb = distance(*b, *point);
+  return dista < distb;
 }
