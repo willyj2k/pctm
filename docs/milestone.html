@@ -43,9 +43,13 @@
         So far, we have written code to parse the input .ply files and to perform the preliminary steps of the
         ball-pivoting algorithm. Specifically, of the four major operations (spatial hashing, seed selection,
         ball-pivoting and join/glue) outlined in the reference paper, we have made progress toward completing the first
-        two. Our first task was to create a spatial grid of the vertices that were parsed from the .ply files. For seed
-        selection, we have also figured out a way to find the center of a ball that touches all 3 vertices of a
-        potential seed triangle.
+        two.
+    </p>
+    <p>
+        Our first task was to create a spatial grid of the vertices that were parsed from the .ply files. This was
+        done through the same way we did in project 4. We created a map that maps a hashcode position to a list of
+        points. This gave us quicker access to neighboring points. For seed selection, we have also figured out a way to
+        find the center of a ball that touches all 3 vertices of a potential seed triangle.
     </p>
     <p>
         We are currently working on a method for estimating vertex normals, which we realized are required by the
@@ -61,8 +65,11 @@
     <h2 align="left">Reflection of Progress</h2>
     <p>
         After having the .ply files converted and almost being done with find seed triangle, we just need to continue to
-        follow the pseudocode from the research paper on the ball-pivoting algorithm and do testing.
-        We believe that we are on track to figure out the ball-pivoting algorithm to create a mesh from a point cloud.
+        follow the pseudocode from the research paper on the ball-pivoting algorithm and do testing. The code that we
+        need to work on after finding the seed triangle is figuring out the glue and join helper functions that go with
+        the ball-pivoting algorithm. With those three ball-pivoting helper functions created, hopefully we can easily
+        implement the ball-pivoting algorithm and test our code. We believe that we are on track to figure out the
+        ball-pivoting algorithm by the time the final deliverables are due.
     </p>
 
 </div>
