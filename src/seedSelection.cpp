@@ -19,7 +19,7 @@ void seedSelection::create_spatial_grid() {
 
   for (int i = 0; i < unused.size(); i++) {
     Point *p = &unused[i];
-    float h = hash_position(p->pos);
+    float h = hash_position(*p);
     if (map.find(h) == map.end()) {
       // does not exist already
       vector<Point *> *lst = new vector<Point *>();
@@ -43,7 +43,7 @@ std::vector<Point> seedSelection::find_seed_triangle() {
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    float h = hash_position(point->pos);
+    float h = hash_position(*point);
     if (map.find(h) != map.end()) {
       vector<Point *> *lst = map.at(h);
       // now we have a list of Vector3D that are in the same hashed 3D box
@@ -107,14 +107,14 @@ Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, c
   return proj_center + plane_dist * plane_normal;
 }
 
-float seedSelection::hash_position(Vector3D pos) {
+float seedSelection::hash_position(const Point &p) {
   double w = 3 * width / (2 * radius);
   double h = 3 * height / (2 * radius);
   double t = max(w, h);
   // truncate the position to a specific 3D box
-  double xpos = floor(pos[0] / w);
-  double ypos = floor(pos[1] / h);
-  double zpos = floor(pos[2] / t);
+  double xpos = floor(p.pos.x / w);
+  double ypos = floor(p.pos.y / h);
+  double zpos = floor(p.pos.z / t);
 
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
