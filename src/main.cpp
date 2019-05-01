@@ -18,6 +18,41 @@ using namespace CGL;
 
 vector<Vector3D> vertices;
 Vector3D vertex;
+unordered_map<float, vector<Vector3D *> *> spatial_map;
+
+float hash_position(Vector3D pos, float radius) {
+    double w = (2 * radius);
+    double h = (2 * radius);
+    double t = (2 * radius);
+    // truncate the position to a specific 3D box
+    double xpos = floor(pos[0] / w);
+    double ypos = floor(pos[1] / h);
+    double zpos = floor(pos[2] / t);
+    return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
+}
+
+void create_spatial_grid() {
+  for (const auto &entry : spatial_map) {
+    delete (entry.second);
+  }
+  spatial_map.clear();
+
+  for (int i = 0; i < vertices.size(); i++) {
+    Vector3D *p = &vertices[i];
+    float h = hash_position(*p, 0.01);
+    if (spatial_map.find(h) == spatial_map.end()) {
+      // does not exist already
+      vector < Vector3D * > *lst = new vector<Vector3D *>();
+      lst->push_back(p);
+      spatial_map[h] = lst;
+    } else {
+      // exists
+      vector < Vector3D * > *lst = spatial_map.at(h);
+      lst->push_back(p);
+      spatial_map[h] = lst;
+    }
+  }
+}
 
 static int vertex_cb(p_ply_argument argument) {
     long eol;
@@ -49,6 +84,10 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       ply_set_read_cb(ply, "vertex", "z", vertex_cb, NULL, 2);
       if (!ply_read(ply)) return 1;
       ply_close(ply);
+
+      create_spatial_grid();
+
+      std::cout << (*spatial_map[hash_position(vertices[0], 0.01)]).size();
 
       Camera* cam = new Camera();
       cam->type = CAMERA;

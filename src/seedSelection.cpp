@@ -12,29 +12,6 @@ void seedSelection::init(std::vector <Vector3D> points, std::map <Vector3D, Vect
   seedSelection::create_spatial_grid();
 }
 
-void seedSelection::create_spatial_grid() {
-  for (const auto &entry : map) {
-    delete (entry.second);
-  }
-  map.clear();
-
-  for (int i = 0; i < unused.size(); i++) {
-    Vector3D *p = &unused[i];
-    float h = hash_position(p);
-    if (map.find(h) == map.end()) {
-      // does not exist already
-      vector < Vector3D * > *lst = new vector<Vector3D *>();
-      lst->emplace_back(p);
-      map.insert({h, lst});
-    } else {
-      // exists
-      vector < Vector3D * > *lst = map.at(h);
-      lst->emplace_back(p);
-      map.insert({h, lst});
-    }
-  }
-}
-
 std::vector <Vector3D> seedSelection::find_seed_triangle() {
   bool found_valid_triangle = false;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
@@ -97,7 +74,7 @@ Vector3D seedSelection::circumcenter(const Vector3D &a, const Vector3D &b, const
 }
 
 Vector3D seedSelection::rho_center(double rho, const Vector3D &a, const Vector3D &b, const Vector3D &c) {
-  /* Returns the Cartesian coordinates of the center of a sphere with radius 
+  /* Returns the Cartesian coordinates of the center of a sphere with radius
    * rho that intersects the points a, b, c
    */
 
