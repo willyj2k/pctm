@@ -38,7 +38,6 @@
 
 <div class="padded">
     <h2 align="left">Summary of Accomplishments</h2>
-    <!--interpreted .ply files to get all the points and render it-->
     <p>
         So far, we have written code to parse the input .ply files and to perform the preliminary steps of the
         ball-pivoting algorithm. Specifically, of the four major operations (spatial hashing, seed selection,
@@ -58,48 +57,57 @@
     </p>
 
     <h2 align="left">Preliminary Results</h2>
-    <!--add pictures of evan's bunny renderings-->
     <p>
-        To parse .ply code, our team used the Rply library to easily go through the .ply file line by line and parse through
-        different sections of the input file. To do this, I used a helper function to parse through each vertex line and stored
-        the position information in a global list of vertices. Following the schematics of CS184 project 2's code, I then added
-        the list of vertices to a node as a polymesh and pushed the node to the back of nodes to render at the end of the main function.
-        To render each point, I changed some code in meshEdit to render points rather than render meshes. Below are some snippets of
-        code used to parse and render ply files, as well as some rendered images of a scanned bunny model from various input angles.
+        To parse .ply code, our team used the Rply library to easily go through the .ply file line by line and parse
+        through
+        different sections of the input file. To do this, I used a helper function to parse through each vertex line and
+        stored
+        the position information in a global list of vertices. Following the schematics of CS184 project 2's code, I
+        then added
+        the list of vertices to a node as a polymesh and pushed the node to the back of nodes to render at the end of
+        the main function.
+        To render each point, I changed some code in meshEdit to render points rather than render meshes. Below are some
+        snippets of
+        code used to parse and render ply files, as well as some rendered images of a scanned bunny model from various
+        input angles.
     </p>
     <table style="width=100%">
-      <tr>
-        <td>
-          <img src="images/parse_ply_code.png" align="middle" width="400px"/>
-          <figcaption align="middle">code used to parse a ply file</figcaption>
-        </td>
-        <td>
-          <img src="images/parse_vertex_code.png" align="middle" width="400px"/>
-          <figcaption align="middle">code used to parse each vertex line</figcaption>
-        </td>
-        <td>
-          <img src="images/render_ply_code.png" align="middle" width="400px"/>
-          <figcaption align="middle">code used to render each point</figcaption>
-        </td>
-      </tr>
-      <br>
+        <tr>
+            <td>
+                <img src="images/parse_ply_code.png" align="middle" width="400px"/>
+                <figcaption align="middle">code used to parse a ply file</figcaption>
+            </td>
+            <td>
+                <img src="images/parse_vertex_code.png" align="middle" width="400px"/>
+                <figcaption align="middle">code used to parse each vertex line</figcaption>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="images/render_ply_code.png" align="middle" width="400px"/>
+                <figcaption align="middle">code used to render each point</figcaption>
+            </td>
+        </tr>
+        <br>
     </table>
     <table style="width=100%">
-      <tr>
-        <td>
-          <img src="images/bun000_ply.png" align="middle" width="400px"/>
-          <figcaption align="middle">bun000.ply</figcaption>
-        </td>
-        <td>
-          <img src="images/bun180_ply.png" align="middle" width="400px"/>
-          <figcaption align="middle">bun180.ply</figcaption>
-        </td>
-        <td>
-          <img src="images/bun270_ply.png" align="middle" width="400px"/>
-          <figcaption align="middle">bun270.ply</figcaption>
-        </td>
-      </tr>
-      <br>
+        <tr>
+            <td>
+                <img src="images/bun000_ply.png" align="middle" width="400px"/>
+                <figcaption align="middle">bun000.ply</figcaption>
+            </td>
+            <td>
+                <img src="images/bun180_ply.png" align="middle" width="400px"/>
+                <figcaption align="middle">bun180.ply</figcaption>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="images/bun270_ply.png" align="middle" width="400px"/>
+                <figcaption align="middle">bun270.ply</figcaption>
+            </td>
+        </tr>
+        <br>
     </table>
 
     <h2 align="left">Reflection of Progress</h2>
