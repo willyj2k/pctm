@@ -101,8 +101,8 @@ Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, c
    */
 
   Vector3D proj_center = circumcenter(a, b, c);
+  double perp_dist = sqrt(pow(rho, 2) - (proj_center - c.pos).norm2());
   Vector3D plane_normal = cross((a.pos - c.pos), (b.pos - c.pos)).normalize();
-  double plane_dist = sqrt(pow(rho, 2) - (proj_center - c.pos).norm2());
 
   // Ensure that the plane normal is pointing in the same direction as the
   // triangle normal (such that th calculated center of the sphere will be
@@ -113,7 +113,7 @@ Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, c
     plane_normal *= -1;
   }
 
-  return proj_center + plane_dist * plane_normal;
+  return proj_center + perp_dist * plane_normal;
 }
 
 float seedSelection::hash_position(const Point &p) {
