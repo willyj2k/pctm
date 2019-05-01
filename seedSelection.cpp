@@ -84,18 +84,12 @@ float seedSelection::hash_position(Vector3D pos) {
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
 
-
-// This helper function is used to help make sure we aren't using the same point for a triangle
-bool seedSelection::equal_positions(Vector3D pos1, Vector3D pos2) {
-  return pos1[0] == pos2[0] && pos1[1] == pos2[1] && pos1[2] == pos2[2];
-}
-
-float seedSelection::distance(Vector3D a, Vector3D b) {
+float seedSelection::distance(const Vector3D &a, const Vector3D &b) {
   Vector3D ab = a - b;
   return ab.norm();
 }
 
-bool seedSelection::compare(Vector3D a*, Vector3D b*) {
+bool seedSelection::compare(Vector3D *a, Vector3D *b) {
   float dista = distance(*a, *point);
   float distb = distance(*b, *point);
   return dista < distb;
