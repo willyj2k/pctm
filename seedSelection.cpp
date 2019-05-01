@@ -18,7 +18,6 @@ void seedSelection::create_spatial_grid() {
   }
   map.clear();
 
-  // TODO (Part 4): Build a spatial map out of all of the point masses.
   for (int i = 0; i < unused.size(); i++) {
     Vector3D *p = &unused[i];
     float h = hash_position(p);
@@ -57,7 +56,7 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
 
 
       // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
-      // TODO: I don't know what this means??
+      // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
 
 
       // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
@@ -73,9 +72,7 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
   }
 }
 
-// TODO: potential problem with the spatial hashing: if we are starting from a point on the edge of the box, what if it can potentially be a seed triangle, but we aren't checking the point in its neighboring box?
 float seedSelection::hash_position(Vector3D pos) {
-  // TODO (Part 4): Hash a 3D position into a unique float identifier that represents membership in some 3D box volume.
   double w = 3 * width / (2 * radius);
   double h = 3 * height / (2 * radius);
   double t = max(w, h);
