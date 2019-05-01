@@ -10,6 +10,12 @@ class Point {
 public:
   Vector3D position;
   Vector3D normal;
+
+  /**
+   * Constructor.
+   */
+  Point(Vector3D p, Vector3D n) : position( p ), normal( n ) { }
+
 };
 
 
