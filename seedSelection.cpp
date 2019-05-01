@@ -92,7 +92,7 @@ bool seedSelection::equal_positions(Vector3D pos1, Vector3D pos2) {
 
 float seedSelection::distance(Vector3D a, Vector3D b) {
   Vector3D ab = a - b;
-  return sqrt(pow(ab[0], 2) + pow(ab[1], 2) + pow(ab[2], 2));
+  return ab.norm();
 }
 
 bool seedSelection::compare(Vector3D a, Vector3D b) {
