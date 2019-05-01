@@ -4,10 +4,9 @@
 
 #include "seedSelection.h"
 
-void seedSelection::init(std::vector <Vector3D> points, std::map <Vector3D, Vector3D> normals, float radius) {
+void seedSelection::init(std::vector <Point> points, float radius) {
   this.used;
   this.unused = points;
-  this.normals = normals;
   this.radius = radius;
   seedSelection::create_spatial_grid();
 }
@@ -19,23 +18,23 @@ void seedSelection::create_spatial_grid() {
   map.clear();
 
   for (int i = 0; i < unused.size(); i++) {
-    Vector3D *p = &unused[i];
-    float h = hash_position(p);
+    Point *p = &unused[i];
+    float h = hash_position(p->pos);
     if (map.find(h) == map.end()) {
       // does not exist already
-      vector < Vector3D * > *lst = new vector<Vector3D *>();
+      vector<Point *> *lst = new vector<Point *>();
       lst->emplace_back(p);
       map.insert({h, lst});
     } else {
       // exists
-      vector < Vector3D * > *lst = map.at(h);
+      vector<Point *> *lst = map.at(h);
       lst->emplace_back(p);
       map.insert({h, lst});
     }
   }
 }
 
-std::vector <Vector3D> seedSelection::find_seed_triangle() {
+std::vector<Point> seedSelection::find_seed_triangle() {
   bool found_valid_triangle = false;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
@@ -44,9 +43,9 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    float h = hash_position(*point);
+    float h = hash_position(point->pos);
     if (map.find(h) != map.end()) {
-      vector < Vector3D * > *lst = map.at(h);
+      vector<Point *> *lst = map.at(h);
       // now we have a list of Vector3D that are in the same hashed 3D box
       // build potential seed triangles
 
@@ -72,16 +71,16 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
   }
 }
 
-Vector3D seedSelection::circumcenter(const Vector3D &a, const Vector3D &b, const Vector3D &c) {
+Vector3D seedSelection::circumcenter(const Point &a, const Point &b, const Point &c) {
   /* Returns the Cartesian coordinates of the circumcenter of the triangle
    * with vertices a, b, c
    */
 
   // obtain the barycentric coordinates of the circumcenter; formula from
   // https://en.wikipedia.org/wiki/Circumscribed_circle#Barycentric_coordinates
-  double a2 = (c - b).norm2();
-  double b2 = (c - a).norm2();
-  double c2 = (b - a).norm2();
+  double a2 = (c.pos - b.pos).norm2();
+  double b2 = (c.pos - a.pos).norm2();
+  double c2 = (b.pos - a.pos).norm2();
   double bary_a = a2 * (b2 + c2 - a2);
   double bary_b = b2 * (c2 + a2 - b2);
   double bary_c = c2 * (a2 + b2 - c2);
@@ -93,17 +92,17 @@ Vector3D seedSelection::circumcenter(const Vector3D &a, const Vector3D &b, const
   bary_c /= bary_sum;
 
   // return Cartesian coordinates
-  return bary_a * a + bary_b * b + bary_c * c;
+  return bary_a * a.pos + bary_b * b.pos + bary_c * c.pos;
 }
 
-Vector3D seedSelection::rho_center(double rho, const Vector3D &a, const Vector3D &b, const Vector3D &c) {
+Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, const Point &c) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius 
    * rho that intersects the points a, b, c
    */
 
   Vector3D proj_center = circumcenter(a, b, c);
-  Vector3D plane_normal = cross((a - c), (b - c)).normalize();
-  double plane_dist = sqrt(pow(rho, 2) - (proj_center - c).norm2());
+  Vector3D plane_normal = cross((a.pos - c.pos), (b.pos - c.pos)).normalize();
+  double plane_dist = sqrt(pow(rho, 2) - (proj_center - c.pos).norm2());
   // TODO ensure that plane normal points in the correct direction
   return proj_center + plane_dist * plane_normal;
 }
@@ -120,12 +119,12 @@ float seedSelection::hash_position(Vector3D pos) {
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
 
-float seedSelection::distance(const Vector3D &a, const Vector3D &b) {
-  Vector3D ab = a - b;
+float seedSelection::distance(const Point &a, const Point &b) {
+  Vector3D ab = a.pos - b.pos;
   return ab.norm();
 }
 
-bool seedSelection::compare(Vector3D *a, Vector3D *b) {
+bool seedSelection::compare(Point *a, Point *b) {
   float dista = distance(*a, *point);
   float distb = distance(*b, *point);
   return dista < distb;
