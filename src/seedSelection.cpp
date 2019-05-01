@@ -101,10 +101,11 @@ Vector3D seedSelection::rho_center(double rho, const Vector3D &a, const Vector3D
    * rho that intersects the points a, b, c
    */
 
-  Vector3D c = circumcenter(a, b, c);
-  vector3D plane_normal = cross((a - c), (b - c)).normalize();
+  Vector3D proj_center = circumcenter(a, b, c);
+  Vector3D plane_normal = cross((a - c), (b - c)).normalize();
+  double plane_dist = sqrt(pow(rho, 2) - (proj_center - c).norm2());
   // TODO ensure that plane normal points in the correct direction
-  return c + rho * plane_normal;
+  return proj_center + plane_dist * plane_normal;
 }
 
 float seedSelection::hash_position(Vector3D pos) {
