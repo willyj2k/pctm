@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/pkmnfreak/pctm/src/rply.c
+stdio.h
+-
+ctype.h
+-
+assert.h
+-
+string.h
+-
+limits.h
+-
+float.h
+-
+stdarg.h
+-
+stdlib.h
+-
+stddef.h
+-
+rply.h
+/Users/pkmnfreak/pctm/src/rply.h
+rplyfile.h
+/Users/pkmnfreak/pctm/src/rplyfile.h
+stdint.h
+-
+
+/Users/pkmnfreak/pctm/src/rply.h
+
+/Users/pkmnfreak/pctm/src/rplyfile.h
+
