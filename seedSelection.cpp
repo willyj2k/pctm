@@ -72,6 +72,41 @@ std::vector <Vector3D> seedSelection::find_seed_triangle() {
   }
 }
 
+Vector3D seedSelection::circumcenter(const Vector3D &a, const Vector3D &b, const Vector3D &c) {
+  /* Returns the Cartesian coordinates of the circumcenter of the triangle
+   * with vertices a, b, c
+   */
+
+  // obtain the barycentric coordinates of the circumcenter; formula from
+  // https://en.wikipedia.org/wiki/Circumscribed_circle#Barycentric_coordinates
+  double a2 = (c - b).norm2();
+  double b2 = (c - a).norm2();
+  double c2 = (b - a).norm2();
+  double bary_a = a2 * (b2 + c2 - a2);
+  double bary_b = b2 * (c2 + a2 - b2);
+  double bary_c = c2 * (a2 + b2 - c2);
+
+  // normalize barycentric coordinates so that they sum to 1
+  double bary_sum = bary_a + bary_b + bary_c;
+  bary_a /= bary_sum;
+  bary_b /= bary_sum;
+  bary_c /= bary_sum;
+
+  // return Cartesian coordinates
+  return bary_a * a + bary_b * b + bary_c * c;
+}
+
+Vector3D seedSelection::rho_center(double rho, const Vector3D &a, const Vector3D &b, const Vector3D &c) {
+  /* Returns the Cartesian coordinates of the center of a sphere with radius 
+   * rho that intersects the points a, b, c
+   */
+
+  Vector3D c = circumcenter(a, b, c);
+  vector3D plane_normal = cross((a - c), (b - c)).normalize();
+  // TODO ensure that plane normal points in the correct direction
+  return c + rho * plane_normal;
+}
+
 float seedSelection::hash_position(Vector3D pos) {
   double w = 3 * width / (2 * radius);
   double h = 3 * height / (2 * radius);
