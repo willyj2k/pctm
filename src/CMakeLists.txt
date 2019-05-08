@@ -18,7 +18,7 @@ set(COLLADA_VIEWER_SOURCE
     png.cpp
     rply.c
     seedSelection.cpp
-    Point.cpp
+    point.cpp
 )
 
 # Collada viewer header
@@ -40,7 +40,7 @@ set(COLLADA_VIEWER_HEADER
     png.h
     rply.h
     seedSelection.h
-    Point.h
+    point.h
 )
 
 
