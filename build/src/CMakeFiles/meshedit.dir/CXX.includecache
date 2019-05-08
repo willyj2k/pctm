@@ -216,6 +216,14 @@ GL/gl.h
 GL/glu.h
 -
 
+/Users/pkmnfreak/pctm/src/Point.cpp
+Point.h
+/Users/pkmnfreak/pctm/src/Point.h
+
+/Users/pkmnfreak/pctm/src/Point.h
+CGL/CGL.h
+/Users/pkmnfreak/pctm/src/CGL/CGL.h
+
 /Users/pkmnfreak/pctm/src/bezierCurve.cpp
 bezierCurve.h
 /Users/pkmnfreak/pctm/src/bezierCurve.h
@@ -345,6 +353,8 @@ rply.h
 /Users/pkmnfreak/pctm/src/rply.h
 rplyfile.h
 /Users/pkmnfreak/pctm/src/rplyfile.h
+seedSelection.h
+/Users/pkmnfreak/pctm/src/seedSelection.h
 iostream
 -
 
@@ -451,6 +461,20 @@ iostream
 -
 CGL/CGL.h
 /Users/pkmnfreak/pctm/src/CGL/CGL.h
+
+/Users/pkmnfreak/pctm/src/seedSelection.cpp
+CGL/CGL.h
+/Users/pkmnfreak/pctm/src/CGL/CGL.h
+seedSelection.h
+/Users/pkmnfreak/pctm/src/seedSelection.h
+Point.h
+/Users/pkmnfreak/pctm/src/Point.h
+
+/Users/pkmnfreak/pctm/src/seedSelection.h
+CGL/CGL.h
+/Users/pkmnfreak/pctm/src/CGL/CGL.h
+Point.h
+/Users/pkmnfreak/pctm/src/Point.h
 
 /Users/pkmnfreak/pctm/src/shaderUtils.h
 GL/glew.h

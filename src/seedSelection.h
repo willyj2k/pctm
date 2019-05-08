@@ -5,6 +5,11 @@
 #ifndef COLLADAVIEWER_SEEDSELECTION_H
 #define COLLADAVIEWER_SEEDSELECTION_H
 
+#include "CGL/CGL.h"
+#include "Point.h"
+
+using namespace std;
+using namespace CGL;
 
 class seedSelection {
   public:

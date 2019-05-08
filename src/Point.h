@@ -5,6 +5,10 @@
 #ifndef PCTM_POINT_H
 #define PCTM_POINT_H
 
+#include "CGL/CGL.h"
+
+using namespace std;
+using namespace CGL;
 
 class Point {
 public:

@@ -171,6 +171,33 @@ meshedit/fast:
 	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/build
 .PHONY : meshedit/fast
 
+Point.o: Point.cpp.o
+
+.PHONY : Point.o
+
+# target to build an object file
+Point.cpp.o:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/Point.cpp.o
+.PHONY : Point.cpp.o
+
+Point.i: Point.cpp.i
+
+.PHONY : Point.i
+
+# target to preprocess a source file
+Point.cpp.i:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/Point.cpp.i
+.PHONY : Point.cpp.i
+
+Point.s: Point.cpp.s
+
+.PHONY : Point.s
+
+# target to generate assembly for a file
+Point.cpp.s:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/Point.cpp.s
+.PHONY : Point.cpp.s
+
 bezierCurve.o: bezierCurve.cpp.o
 
 .PHONY : bezierCurve.o
@@ -522,6 +549,33 @@ scene.cpp.s:
 	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/scene.cpp.s
 .PHONY : scene.cpp.s
 
+seedSelection.o: seedSelection.cpp.o
+
+.PHONY : seedSelection.o
+
+# target to build an object file
+seedSelection.cpp.o:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/seedSelection.cpp.o
+.PHONY : seedSelection.cpp.o
+
+seedSelection.i: seedSelection.cpp.i
+
+.PHONY : seedSelection.i
+
+# target to preprocess a source file
+seedSelection.cpp.i:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/seedSelection.cpp.i
+.PHONY : seedSelection.cpp.i
+
+seedSelection.s: seedSelection.cpp.s
+
+.PHONY : seedSelection.s
+
+# target to generate assembly for a file
+seedSelection.cpp.s:
+	cd /Users/pkmnfreak/pctm/build && $(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/seedSelection.cpp.s
+.PHONY : seedSelection.cpp.s
+
 student_code.o: student_code.cpp.o
 
 .PHONY : student_code.o
@@ -589,6 +643,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... meshedit"
+	@echo "... Point.o"
+	@echo "... Point.i"
+	@echo "... Point.s"
 	@echo "... bezierCurve.o"
 	@echo "... bezierCurve.i"
 	@echo "... bezierCurve.s"
@@ -628,6 +685,9 @@ help:
 	@echo "... scene.o"
 	@echo "... scene.i"
 	@echo "... scene.s"
+	@echo "... seedSelection.o"
+	@echo "... seedSelection.i"
+	@echo "... seedSelection.s"
 	@echo "... student_code.o"
 	@echo "... student_code.i"
 	@echo "... student_code.s"

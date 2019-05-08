@@ -2,7 +2,12 @@
 // Created by Rene Lee on 2019-04-23.
 //
 
+#include "CGL/CGL.h"
 #include "seedSelection.h"
+#include "Point.h"
+
+using namespace std;
+using namespace CGL;
 
 void seedSelection::init(std::vector <Point> points, float radius) {
   this.used;
@@ -11,9 +16,6 @@ void seedSelection::init(std::vector <Point> points, float radius) {
   seedSelection::create_spatial_grid();
 }
 
-<<<<<<< HEAD
-std::vector <Vector3D> seedSelection::find_seed_triangle() {
-=======
 void seedSelection::create_spatial_grid() {
   for (const auto &entry : map) {
     delete (entry.second);
@@ -38,7 +40,6 @@ void seedSelection::create_spatial_grid() {
 }
 
 std::vector<Point> seedSelection::find_seed_triangle() {
->>>>>>> 4637752911f47efdb9ff8eea10f3e7728300fa73
   bool found_valid_triangle = false;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;

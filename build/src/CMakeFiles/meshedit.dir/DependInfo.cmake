@@ -15,6 +15,7 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "/usr/local/include/freetype2"
   )
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/Users/pkmnfreak/pctm/src/Point.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/Point.cpp.o"
   "/Users/pkmnfreak/pctm/src/bezierCurve.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/bezierCurve.cpp.o"
   "/Users/pkmnfreak/pctm/src/bezierPatch.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/bezierPatch.cpp.o"
   "/Users/pkmnfreak/pctm/src/camera.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/camera.cpp.o"
@@ -27,6 +28,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/pkmnfreak/pctm/src/meshEdit.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/meshEdit.cpp.o"
   "/Users/pkmnfreak/pctm/src/png.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/png.cpp.o"
   "/Users/pkmnfreak/pctm/src/scene.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/scene.cpp.o"
+  "/Users/pkmnfreak/pctm/src/seedSelection.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/seedSelection.cpp.o"
   "/Users/pkmnfreak/pctm/src/student_code.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/student_code.cpp.o"
   "/Users/pkmnfreak/pctm/src/texture.cpp" "/Users/pkmnfreak/pctm/build/src/CMakeFiles/meshedit.dir/texture.cpp.o"
   )
