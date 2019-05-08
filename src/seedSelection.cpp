@@ -9,11 +9,11 @@
 using namespace std;
 using namespace CGL;
 
-void BallPivot::init(std::vector <Point> points, float radius) {
+void seedSelection::init(std::vector <Point> points, float radius) {
   this.used;
   this.unused = points;
   this.radius = radius;
-  BallPivot::create_spatial_grid();
+  seedSelection::create_spatial_grid();
 }
 
 void seedSelection::create_spatial_grid() {
@@ -41,7 +41,6 @@ void seedSelection::create_spatial_grid() {
 
 std::vector<Point> seedSelection::find_seed_triangle() {
   bool found_valid_triangle = false;
-  bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
   while (!found_valid_triangle) {
@@ -51,37 +50,25 @@ std::vector<Point> seedSelection::find_seed_triangle() {
     // first get the neighborhood, aka use spatial map
     float h = hash_position(*point);
     if (map.find(h) != map.end()) {
-      // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
-      // or on the boundary of said neighborhood
-      // (currently this just gets points in the same spatial partition)
       vector<Point *> *lst = map.at(h);
+      // now we have a list of Vector3D that are in the same hashed 3D box
+      // build potential seed triangles
 
-      // now, build potential seed triangles
       // organize lst in order of distance from point
-      // such that closer points are at the back
-      // TODO ask Rene about the lst->begin()+4
-      // Rene: lst->begin()+4 was from an example I saw online
-      std::sort(lst->begin(), lst->end(), compare);
+      // use helper function
+      std::sort (lst.begin()+4, lst.end(), compare);
+
+      // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
+      // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
 
 
-      // TODO: what happened to the hashmap of normals per vertex?
-      Vector3D curr_normal = point->normal;
+
+      // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
+
       // Stop when a valid seed triangle is found
-      int i = 0;
-      while (!found_valid_triangle && lst->size() >= 2) {
-
-        // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
-        // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
-        Point *pointa = &lst[i];
-        Point *pointb = &lst[i + 1];
-        consistent_normals = dot();
-
-        // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
-      }
-
     }
 
-    index += 1;
+    index++;
     if (index >= unused.size() && !found_valid_triangle) {
       // No seed triangle was found!!
       return nullptr;
@@ -89,7 +76,7 @@ std::vector<Point> seedSelection::find_seed_triangle() {
   }
 }
 
-Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c) {
+Vector3D seedSelection::circumcenter(const Point &a, const Point &b, const Point &c) {
   /* Returns the Cartesian coordinates of the circumcenter of the triangle
    * with vertices a, b, c
    */
@@ -113,7 +100,7 @@ Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c)
   return bary_a * a.pos + bary_b * b.pos + bary_c * c.pos;
 }
 
-Vector3D BallPivot::rho_center(double rho, const Point &a, const Point &b, const Point &c) {
+Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, const Point &c) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius
    * rho that intersects the points a, b, c
    */
@@ -134,7 +121,7 @@ Vector3D BallPivot::rho_center(double rho, const Point &a, const Point &b, const
   return proj_center + perp_dist * plane_normal;
 }
 
-float BallPivot::hash_position(const Point &p) {
+float seedSelection::hash_position(const Point &p) {
   double w = 3 * width / (2 * radius);
   double h = 3 * height / (2 * radius);
   double t = max(w, h);
@@ -146,16 +133,13 @@ float BallPivot::hash_position(const Point &p) {
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
 
-float BallPivot::distance(const Point &a, const Point &b) {
+float seedSelection::distance(const Point &a, const Point &b) {
   Vector3D ab = a.pos - b.pos;
   return ab.norm();
 }
 
-bool BallPivot::compare(Point *a, Point *b) {
-  /* Sort in order of descending distance from *point
-   * so that we can modify the list by popping from the back
-   */
+bool seedSelection::compare(Point *a, Point *b) {
   float dista = distance(*a, *point);
   float distb = distance(*b, *point);
-  return dista > distb;
+  return dista < distb;
 }

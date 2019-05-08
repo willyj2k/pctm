@@ -417,6 +417,54 @@ src/CMakeFiles/meshedit.dir/rply.c.o.provides: src/CMakeFiles/meshedit.dir/rply.
 src/CMakeFiles/meshedit.dir/rply.c.o.provides.build: src/CMakeFiles/meshedit.dir/rply.c.o
 
 
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: src/CMakeFiles/meshedit.dir/flags.make
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../src/seedSelection.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/pkmnfreak/pctm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object src/CMakeFiles/meshedit.dir/seedSelection.cpp.o"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/meshedit.dir/seedSelection.cpp.o -c /Users/pkmnfreak/pctm/src/seedSelection.cpp
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/meshedit.dir/seedSelection.cpp.i"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/pkmnfreak/pctm/src/seedSelection.cpp > CMakeFiles/meshedit.dir/seedSelection.cpp.i
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/meshedit.dir/seedSelection.cpp.s"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/pkmnfreak/pctm/src/seedSelection.cpp -o CMakeFiles/meshedit.dir/seedSelection.cpp.s
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.requires:
+
+.PHONY : src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.requires
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.provides: src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.provides.build
+.PHONY : src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.provides
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.provides.build: src/CMakeFiles/meshedit.dir/seedSelection.cpp.o
+
+
+src/CMakeFiles/meshedit.dir/Point.cpp.o: src/CMakeFiles/meshedit.dir/flags.make
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../src/Point.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/pkmnfreak/pctm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object src/CMakeFiles/meshedit.dir/Point.cpp.o"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/meshedit.dir/Point.cpp.o -c /Users/pkmnfreak/pctm/src/Point.cpp
+
+src/CMakeFiles/meshedit.dir/Point.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/meshedit.dir/Point.cpp.i"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/pkmnfreak/pctm/src/Point.cpp > CMakeFiles/meshedit.dir/Point.cpp.i
+
+src/CMakeFiles/meshedit.dir/Point.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/meshedit.dir/Point.cpp.s"
+	cd /Users/pkmnfreak/pctm/build/src && /Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/pkmnfreak/pctm/src/Point.cpp -o CMakeFiles/meshedit.dir/Point.cpp.s
+
+src/CMakeFiles/meshedit.dir/Point.cpp.o.requires:
+
+.PHONY : src/CMakeFiles/meshedit.dir/Point.cpp.o.requires
+
+src/CMakeFiles/meshedit.dir/Point.cpp.o.provides: src/CMakeFiles/meshedit.dir/Point.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/meshedit.dir/build.make src/CMakeFiles/meshedit.dir/Point.cpp.o.provides.build
+.PHONY : src/CMakeFiles/meshedit.dir/Point.cpp.o.provides
+
+src/CMakeFiles/meshedit.dir/Point.cpp.o.provides.build: src/CMakeFiles/meshedit.dir/Point.cpp.o
+
+
 # Object files for target meshedit
 meshedit_OBJECTS = \
 "CMakeFiles/meshedit.dir/bezierPatch.cpp.o" \
@@ -433,7 +481,9 @@ meshedit_OBJECTS = \
 "CMakeFiles/meshedit.dir/meshEdit.cpp.o" \
 "CMakeFiles/meshedit.dir/main.cpp.o" \
 "CMakeFiles/meshedit.dir/png.cpp.o" \
-"CMakeFiles/meshedit.dir/rply.c.o"
+"CMakeFiles/meshedit.dir/rply.c.o" \
+"CMakeFiles/meshedit.dir/seedSelection.cpp.o" \
+"CMakeFiles/meshedit.dir/Point.cpp.o"
 
 # External object files for target meshedit
 meshedit_EXTERNAL_OBJECTS =
@@ -453,6 +503,8 @@ meshedit: src/CMakeFiles/meshedit.dir/meshEdit.cpp.o
 meshedit: src/CMakeFiles/meshedit.dir/main.cpp.o
 meshedit: src/CMakeFiles/meshedit.dir/png.cpp.o
 meshedit: src/CMakeFiles/meshedit.dir/rply.c.o
+meshedit: src/CMakeFiles/meshedit.dir/seedSelection.cpp.o
+meshedit: src/CMakeFiles/meshedit.dir/Point.cpp.o
 meshedit: src/CMakeFiles/meshedit.dir/build.make
 meshedit: CGL/src/libCGL.a
 meshedit: CGL/deps/glew/libglew.a
@@ -461,7 +513,7 @@ meshedit: /usr/local/lib/libfreetype.dylib
 meshedit: ../src/dirent/glut32.lib
 meshedit: /usr/local/lib/libfreetype.dylib
 meshedit: src/CMakeFiles/meshedit.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/pkmnfreak/pctm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable ../meshedit"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/pkmnfreak/pctm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable ../meshedit"
 	cd /Users/pkmnfreak/pctm/build/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/meshedit.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -484,6 +536,8 @@ src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/meshEdit.cpp.o
 src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/main.cpp.o.requires
 src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/png.cpp.o.requires
 src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/rply.c.o.requires
+src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/seedSelection.cpp.o.requires
+src/CMakeFiles/meshedit.dir/requires: src/CMakeFiles/meshedit.dir/Point.cpp.o.requires
 
 .PHONY : src/CMakeFiles/meshedit.dir/requires
 

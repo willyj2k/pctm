@@ -14,6 +14,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/meshedit.dir/main.cpp.o"
   "CMakeFiles/meshedit.dir/png.cpp.o"
   "CMakeFiles/meshedit.dir/rply.c.o"
+  "CMakeFiles/meshedit.dir/seedSelection.cpp.o"
+  "CMakeFiles/meshedit.dir/Point.cpp.o"
   "../meshedit.pdb"
   "../meshedit"
 )

@@ -5,6 +5,25 @@ src/CMakeFiles/meshedit.dir/rply.c.o: ../src/rply.c
 src/CMakeFiles/meshedit.dir/rply.c.o: ../src/rply.h
 src/CMakeFiles/meshedit.dir/rply.c.o: ../src/rplyfile.h
 
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/CGL.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/base64.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/color.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/complex.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/matrix3x3.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/matrix4x4.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/osdtext.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/quaternion.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/renderer.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/tinyxml2.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/vector2D.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/vector3D.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/vector4D.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/CGL/viewer.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/GL/glew.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../CGL/include/GLFW/glfw3.h
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../src/Point.cpp
+src/CMakeFiles/meshedit.dir/Point.cpp.o: ../src/Point.h
+
 src/CMakeFiles/meshedit.dir/bezierCurve.cpp.o: ../CGL/include/CGL/CGL.h
 src/CMakeFiles/meshedit.dir/bezierCurve.cpp.o: ../CGL/include/CGL/base64.h
 src/CMakeFiles/meshedit.dir/bezierCurve.cpp.o: ../CGL/include/CGL/color.h
@@ -153,6 +172,7 @@ src/CMakeFiles/meshedit.dir/main.cpp.o: ../CGL/include/CGL/viewer.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../CGL/include/GL/glew.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../CGL/include/GLFW/glfw3.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/GL/glut.h
+src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/Point.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/bezierCurve.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/bezierPatch.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/camera.h
@@ -168,6 +188,7 @@ src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/png.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/rply.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/rplyfile.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/scene.h
+src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/seedSelection.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/shaderUtils.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/student_code.h
 src/CMakeFiles/meshedit.dir/main.cpp.o: ../src/texture.h
@@ -268,6 +289,26 @@ src/CMakeFiles/meshedit.dir/scene.cpp.o: ../CGL/include/GL/glew.h
 src/CMakeFiles/meshedit.dir/scene.cpp.o: ../CGL/include/GLFW/glfw3.h
 src/CMakeFiles/meshedit.dir/scene.cpp.o: ../src/scene.cpp
 src/CMakeFiles/meshedit.dir/scene.cpp.o: ../src/scene.h
+
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/CGL.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/base64.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/color.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/complex.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/matrix3x3.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/matrix4x4.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/osdtext.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/quaternion.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/renderer.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/tinyxml2.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/vector2D.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/vector3D.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/vector4D.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/CGL/viewer.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/GL/glew.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../CGL/include/GLFW/glfw3.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../src/Point.h
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../src/seedSelection.cpp
+src/CMakeFiles/meshedit.dir/seedSelection.cpp.o: ../src/seedSelection.h
 
 src/CMakeFiles/meshedit.dir/student_code.cpp.o: ../CGL/include/CGL/CGL.h
 src/CMakeFiles/meshedit.dir/student_code.cpp.o: ../CGL/include/CGL/base64.h

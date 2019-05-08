@@ -2,8 +2,8 @@
 // Created by Rene Lee on 2019-04-23.
 //
 
-#ifndef BALLPIVOT_H
-#define BALLPIVOT_H
+#ifndef COLLADAVIEWER_SEEDSELECTION_H
+#define COLLADAVIEWER_SEEDSELECTION_H
 
 #include "CGL/CGL.h"
 #include "Point.h"
@@ -11,7 +11,7 @@
 using namespace std;
 using namespace CGL;
 
-class BallPivot {
+class seedSelection {
   public:
     void init(std::vector<Point> points, float radius);
     std::vector<Point> find_seed_triangle();
@@ -35,13 +35,10 @@ class BallPivot {
     Point *point;
 
     void create_spatial_grid ();
-    std::vector<Point *> find_seed_triangle();
-    Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
-    Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
     float hash_position(Vector3D pos);
+    bool equal_positions(Vector3D pos1, Vector3D pos2);
     float distance(Vector3D a, Vector3D b);
-    bool compare(Point *a, Point *b);
 };
 
 
-#endif //BALLPIVOT_H
+#endif //COLLADAVIEWER_SEEDSELECTION_H

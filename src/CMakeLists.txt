@@ -17,6 +17,8 @@ set(COLLADA_VIEWER_SOURCE
     main.cpp
     png.cpp
     rply.c
+    seedSelection.cpp
+    Point.cpp
 )
 
 # Collada viewer header
@@ -37,6 +39,8 @@ set(COLLADA_VIEWER_HEADER
     mergeVertices.h
     png.h
     rply.h
+    seedSelection.h
+    Point.h
 )
 
 
