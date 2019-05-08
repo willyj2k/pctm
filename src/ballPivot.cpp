@@ -62,13 +62,14 @@ std::vector<Point *> BallPivot::find_seed_triangle() {
       // TODO: what happened to the hashmap of normals per vertex?
       Vector3D curr_normal = point->normal;
       // Stop when a valid seed triangle is found
+      int i = 0;
       while (!found_valid_triangle && lst->size() >= 2) {
 
         // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
         // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
-        Point *pointa = &lst[index + 1];
-        Point *pointb = &lst[index + 2];
-        consistent_normals = dot()
+        Point *pointa = &lst[i];
+        Point *pointb = &lst[i + 1];
+        consistent_normals = dot();
 
         // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
       }
