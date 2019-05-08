@@ -55,13 +55,19 @@ std::vector<Point *> BallPivot::find_seed_triangle() {
       // organize lst in order of distance from point
       // such that closer points are at the back
       // TODO ask Rene about the lst->begin()+4
+      // Rene: lst->begin()+4 was from an example I saw online
       std::sort(lst->begin(), lst->end(), compare);
 
+
+      // TODO: what happened to the hashmap of normals per vertex?
+      Vector3D curr_normal = point->normal;
       // Stop when a valid seed triangle is found
       while (!found_valid_triangle && lst->size() >= 2) {
 
         // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
         // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
+        Point *pointa = &lst[index + 1];
+        Point *pointb = &lst[index + 2];
         consistent_normals = dot()
 
         // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
