@@ -60,7 +60,7 @@ std::vector<Point> seedSelection::find_seed_triangle() {
       // organize lst in order of distance from point
       // use helper function
 
-      std::sort (lst->begin()+4, lst->end(), (point));
+//      std::sort (lst->begin()+4, lst->end(), (point));
 
 
       // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward

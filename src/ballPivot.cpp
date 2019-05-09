@@ -78,6 +78,8 @@ std::vector<Point> BallPivot::find_seed_triangle() {
         Point *pointa = lst->at(i);
         Point *pointb = lst->at(i + 1);
 
+
+        bool consistent = false;
         // 1. get the plane equation of the 3 points
         // 2. get the normal of the plane
         // 3. check that all 3 points are on the same side of the plane
@@ -92,8 +94,13 @@ std::vector<Point> BallPivot::find_seed_triangle() {
         Vector3D B = pointb->pos + pointb->normal;
         Vector3D C = point->pos + point->normal;
 
+        float sideA = dot(plane_normal, A) + k;
+        float sideB = dot(plane_normal, B) + k;
+        float sideC = dot(plane_normal, C) + k;
 
-//        consistent_normals = cross();
+        if ((sideA > 0 && sideB > 0 && sideC > 0) || (sideA < 0 && sideB < 0 && sideC < 0)) {
+          consistent = true;
+        }
 
         // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
       }
