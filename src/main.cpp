@@ -51,7 +51,14 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       if (!ply_read(ply)) return 1;
       ply_close(ply);
 
+      vector<Point> points;
+      for (int i = 0; i < vertices.size(); i++) {
+          Point p = Point(vertices[i], Vector3D());
+          points.push_back(p);
+      }
+
       seedSelection seed = seedSelection();
+      seed.init(points, 0.001);
 
       Camera* cam = new Camera();
       cam->type = CAMERA;
