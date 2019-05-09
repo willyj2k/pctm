@@ -10,7 +10,7 @@ using namespace std;
 using namespace CGL;
 
 void BallPivot::init(std::vector <Point> points, float radius) {
-//  this->used;
+  //this->used;
   this->unused = points;
   this->radius = radius;
   BallPivot::create_spatial_grid();
@@ -29,13 +29,13 @@ void BallPivot::create_spatial_grid() {
       // does not exist already
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
-//      map.insert({h, lst});
+      //map.insert({h, lst});
       map.insert(std::make_pair(h, lst));
     } else {
       // exists
       vector<Point *> *lst = map.at(h);
       lst->push_back(p);
-//      map.insert({h, lst});
+      //map.insert({h, lst});
       map.insert(std::make_pair(h, lst));
     }
   }
@@ -104,9 +104,7 @@ std::vector<Point> BallPivot::find_seed_triangle() {
 
         // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
       }
-
     }
-
 
     index++;
     if (index >= unused.size() && !found_valid_triangle) {
