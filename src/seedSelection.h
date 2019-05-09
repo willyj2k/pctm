@@ -6,7 +6,9 @@
 #define COLLADAVIEWER_SEEDSELECTION_H
 
 #include "CGL/CGL.h"
-#include "Point.h"
+#include "point.h"
+#include <initializer_list>
+#include <unordered_map>
 
 using namespace std;
 using namespace CGL;
@@ -24,7 +26,7 @@ class seedSelection {
     std::vector<Point> unused;
 
     // spatial map
-    unordered_map<float, vector<Point *> *> map;
+    std::unordered_map<float, vector<Point *> *> map;
 
     // float radius
     float radius;
@@ -35,9 +37,11 @@ class seedSelection {
     Point *point;
 
     void create_spatial_grid ();
-    float hash_position(Vector3D pos);
-    bool equal_positions(Vector3D pos1, Vector3D pos2);
-    float distance(Vector3D a, Vector3D b);
+    float hash_position(const Point &p);
+    float distance(const Point &a, const Point &b);
+    bool compare(Point *a, Point *b);
+    Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
+    Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
 };
 
 

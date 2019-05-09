@@ -6,7 +6,7 @@
 #define BALLPIVOT_H
 
 #include "CGL/CGL.h"
-#include "Point.h"
+#include "point.h"
 
 using namespace std;
 using namespace CGL;

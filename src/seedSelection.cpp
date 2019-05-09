@@ -4,15 +4,15 @@
 
 #include "CGL/CGL.h"
 #include "seedSelection.h"
-#include "Point.h"
+#include "point.h"
 
 using namespace std;
 using namespace CGL;
 
 void seedSelection::init(std::vector <Point> points, float radius) {
-  this.used;
-  this.unused = points;
-  this.radius = radius;
+//  this->used;
+  this->unused = points;
+  this->radius = radius;
   seedSelection::create_spatial_grid();
 }
 
@@ -27,14 +27,16 @@ void seedSelection::create_spatial_grid() {
     float h = hash_position(*p);
     if (map.find(h) == map.end()) {
       // does not exist already
-      vector<Point *> *lst = new vector<Point *>();
-      lst->emplace_back(p);
-      map.insert({h, lst});
+      std::vector<Point *> *lst = new vector<Point *>();
+      lst->push_back(p);
+//      map.insert({h, lst});
+      map.insert(std::make_pair(h, lst));
     } else {
       // exists
-      vector<Point *> *lst = map.at(h);
-      lst->emplace_back(p);
-      map.insert({h, lst});
+      std::vector<Point *> *lst = map.at(h);
+      lst->push_back(p);
+//      map.insert({h, lst});
+      map.insert(std::make_pair(h, lst));
     }
   }
 }
@@ -43,6 +45,7 @@ std::vector<Point> seedSelection::find_seed_triangle() {
   bool found_valid_triangle = false;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
+  std::vector<Point> triangle;
   while (!found_valid_triangle) {
     point = &unused[index];
 
@@ -56,7 +59,7 @@ std::vector<Point> seedSelection::find_seed_triangle() {
 
       // organize lst in order of distance from point
       // use helper function
-      std::sort (lst.begin()+4, lst.end(), compare);
+      std::sort (lst->begin()+4, lst->end(), seedSelection::compare);
 
       // check that the triangle normal is consistent with the vertex normals, i.e. pointing outward
       // basically we need to check that all three vertices are pointing to the same side of the plane that the triangle creates
@@ -66,14 +69,21 @@ std::vector<Point> seedSelection::find_seed_triangle() {
       // test that the p-ball with center in the outward half space touches all three vertices and contains no other data point
 
       // Stop when a valid seed triangle is found
+      if (true) {
+        found_valid_triangle = true;
+      }
     }
 
     index++;
     if (index >= unused.size() && !found_valid_triangle) {
       // No seed triangle was found!!
-      return nullptr;
+      std::vector<Point> empty;
+      return empty;
+    } else if (found_valid_triangle) {
+      return triangle;
     }
   }
+  return triangle;
 }
 
 Vector3D seedSelection::circumcenter(const Point &a, const Point &b, const Point &c) {
@@ -107,7 +117,9 @@ Vector3D seedSelection::rho_center(double rho, const Point &a, const Point &b, c
 
   Vector3D proj_center = circumcenter(a, b, c);
   double perp_dist = sqrt(pow(rho, 2) - (proj_center - c.pos).norm2());
-  Vector3D plane_normal = cross((a.pos - c.pos), (b.pos - c.pos)).normalize();
+  Vector3D plane = cross((a.pos - c.pos), (b.pos - c.pos));
+  plane.normalize();
+  Vector3D plane_normal = plane;
 
   // Ensure that the plane normal is pointing in the same direction as the
   // triangle normal (such that th calculated center of the sphere will be

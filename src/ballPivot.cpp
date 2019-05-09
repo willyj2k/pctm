@@ -4,7 +4,7 @@
 
 #include "CGL/CGL.h"
 #include "seedSelection.h"
-#include "Point.h"
+#include "point.h"
 
 using namespace std;
 using namespace CGL;
