@@ -40,6 +40,7 @@ class seedSelection {
     float hash_position(const Point &p);
     float distance(const Point &a, const Point &b);
     bool compare(Point *a, Point *b);
+    void calculate_normals();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
 };
