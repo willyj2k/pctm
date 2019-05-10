@@ -7,6 +7,7 @@
 
 #include "CGL/CGL.h"
 #include "point.h"
+#include <unordered_map>
 
 using namespace std;
 using namespace CGL;
@@ -24,7 +25,7 @@ class BallPivot {
     std::vector<Point> unused;
 
     // spatial map
-    unordered_map<float, vector<Point *> *> map;
+    std::unordered_map<float, vector<Point *> *> map;
 
     // float radius
     float radius;
@@ -35,11 +36,12 @@ class BallPivot {
     Point *point;
 
     void create_spatial_grid ();
-    std::vector<Point *> find_seed_triangle();
+//    std::vector<Point *> find_seed_triangle();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
-    float hash_position(Vector3D pos);
-    float distance(Vector3D a, Vector3D b);
+    float hash_position(const Point &p);
+    void calculate_normals();
+    float distance(const Point &a, const Point &b);
     bool compare(Point *a, Point *b);
 };
 

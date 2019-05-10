@@ -18,6 +18,7 @@ set(COLLADA_VIEWER_SOURCE
     png.cpp
     rply.c
     seedSelection.cpp
+    ballPivot.cpp
     point.cpp
 )
 
@@ -40,6 +41,7 @@ set(COLLADA_VIEWER_HEADER
     png.h
     rply.h
     seedSelection.h
+    ballPivot.h
     point.h
 )
 
