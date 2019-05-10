@@ -11,9 +11,17 @@
 
 using namespace CGL;
 
+class PivotEdge {
+    public:
+      Point a;
+      Point b;
+      PivotEdge(Point a, Point b) : a( a ), b( b ) { }
+      bool isBoundary = false;
+};
+
 class BallPivot {
   public:
-    void init(std::vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max);
+    void init(std::vector<Point*> points, double radius, Vector3D bound_min, Vector3D bound_max);
     std::vector<Point *> find_seed_triangle();
     std::vector<Point*> all_points;
     static double dist(const Point &p);
@@ -24,6 +32,8 @@ class BallPivot {
 
     // std::vector of unused points
     std::vector<Point*> unused;
+
+    std::vector<vector<PivotEdge> > front;
 
     // spatial map
     std::unordered_map<int, std::vector<Point *> *> spatial_map;
@@ -72,7 +82,11 @@ class BallPivot {
     int hash_cell(const CellIndex &c);
     CellIndex get_cell(const Point &p);
     void calculate_normals();
+    void join(PivotEdge e, Point sigma, int index);
+    void glue(PivotEdge ik);
+    bool on_front(Point k);
+    bool not_used(Point k);
+    bool contains_edge(vector<PivotEdge> vec, PivotEdge e);
 };
-
 
 #endif //BALLPIVOT_H

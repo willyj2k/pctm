@@ -52,7 +52,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     if (!ply_read(ply)) return 1;
     ply_close(ply);
 
-    vector<Point> points;
+    vector<Point*> points;
 
     // track bounding box for spatial hashing
     double min_x = INF_D;
@@ -81,7 +81,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
         max_z = v.z;
       }
 
-      Point p = Point(v, Vector3D(0, 0, 0));
+      Point* p = new Point(v, Vector3D(0, 0, 0));
       points.push_back(p);
     }
     cout << " Done\n";
@@ -103,7 +103,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     Polymesh* mesh = new Polymesh();
     mesh->type = POLYMESH;
     ply_node.instance = mesh;
-    scene->points = vertices;
+    scene->points = pivot.all_points;
     scene->nodes.push_back(ply_node);
   }
   else if (path_str.substr(path_str.length()-4, 4) == ".dae")

@@ -26,7 +26,7 @@ bool compare(Point *a, Point *b) {
   return dista < distb;
 }
 
-void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max) {
+void BallPivot::init(vector<Point*> points, double radius, Vector3D bound_min, Vector3D bound_max) {
   cout << "Initializing Ball Pivot member variables..." << flush;
   //this->used;
   this->unused = points;
@@ -53,7 +53,7 @@ void BallPivot::create_spatial_grid() {
   spatial_map.clear();
 
   for (int i = 0; i < unused.size(); i++) {
-    Point *p = &unused[i];
+    Point *p = unused[i];
     int h = hash_position(*p);
     if (spatial_map.find(h) == spatial_map.end()) {
       // does not already exist
@@ -78,7 +78,7 @@ vector<Point *> BallPivot::find_seed_triangle() {
   vector<Point *> triangle;
   while (!found_valid_triangle && unused_index < unused.size()) {
     // update
-    sigma = &unused[unused_index];
+    sigma = unused[unused_index];
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
@@ -297,26 +297,163 @@ void BallPivot::calculate_normals() {
     // }
   // TODO verify that this rewrite works
   for (auto& pair : spatial_map) {
-    vector<Point *> *points = pair.second;
-    // first calculate the centroid of the cell (cube)
-    // by taking the average of the position vectors
-    Vector3D centroid = Vector3D(0, 0, 0);
-    for (auto const &point : *points) {
-      centroid += point->pos;
-    }
+        vector<Point *> *points = pair.second;
+        // first calculate the centroid of the cell (cube)
+        // by taking the average of the position vectors
+        Vector3D centroid = Vector3D(0, 0, 0);
+        for (auto const &point : *points) {
+          centroid += point->pos;
+        }
 
-    // now assign the normals of each point to be the difference
-    // between the point's position and the average position of
-    // the rest of the points in the cell
-    Vector3D avg_other_pos;
-    double num_other = (points->size() > 1) ? points->size() - 1 : 1;
-    for (auto &point : *points) {
-      avg_other_pos = (centroid - point->pos) / num_other;
-      point->normal = (point->pos - avg_other_pos).unit();
+        // now assign the normals of each point to be the difference
+        // between the point's position and the average position of
+        // the rest of the points in the cell
+        Vector3D avg_other_pos;
+        double num_other = (points->size() > 1) ? points->size() - 1 : 1;
+        for (auto &point : *points) {
+          avg_other_pos = (centroid - point->pos) / num_other;
+          point->normal = (point->pos - avg_other_pos);
+          this->unused.push_back(point);
+        }
     }
 }
 
 double BallPivot::dist(const Point &p) {
   Vector3D diff = p.pos - sigma->pos;
   return diff.norm();
+}
+
+bool compare_3D(Vector3D a, Vector3D b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+void BallPivot::join(PivotEdge e, Point k, int index) {
+    this->front[index].pop_back();
+    PivotEdge ik = PivotEdge(e.a, k);
+    PivotEdge kj = PivotEdge(k, e.b);
+    this->front[index].push_back(ik);
+    this->front[index].push_back(kj);
+}
+
+bool compare_edge(PivotEdge e1, PivotEdge e2) {
+    return compare_3D(e1.a.pos, e2.a.pos) && compare_3D(e1.b.pos, e2.b.pos);
+}
+
+bool BallPivot::contains_edge(vector<PivotEdge> vec, PivotEdge e) {
+    for (int i = 0; i < vec.size(); i++) {
+        if (compare_edge(e, vec[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void BallPivot::glue(PivotEdge ik) {
+    PivotEdge ki = PivotEdge(ik.b, ik.a);
+    int loop_index1 = 0;
+    int loop_index2 = 0;
+    int index1 = 0;
+    int index2 = 0;
+
+    for (int i = 0; i < front.size(); i++) {
+        if (contains_edge(front[i], ik)) {
+            loop_index1 = i;
+            for (int j = 0; j < front[i].size(); j++) {
+                if (compare_edge(front[i][j], ik)) {
+                    index1 = j;
+                }
+            }
+        }
+        if (contains_edge(front[i], ki)) {
+            loop_index2 = i;
+            for (int j = 0; j < front[i].size(); j++) {
+                if (compare_edge(front[i][j], ki)) {
+                    index2 = j;
+                }
+            }
+        }
+    }
+
+    //no duplicate edges contained- no need for gluing
+    if (!(contains_edge(front[loop_index1], ik) && contains_edge(front[loop_index2], ki))) {
+        return;
+    }
+
+    //edges belong to the same loop
+    if (loop_index1 == loop_index2) {
+        //edges form entirety of loop (Scenario a)
+        if (front[loop_index1].size() == 2) {
+            front.erase(front.begin() + (loop_index1 - 1));
+        } else {
+            //edges form a loop and are adjacent
+            if (std::abs(index1 - index2) == 1) {
+                front[loop_index1].erase(front[loop_index1].begin() + (index1 - 1));
+                if (index1 < index2) {
+                    front[loop_index1].erase(front[loop_index1].begin() + (index2 - 2));
+                } else {
+                    front[loop_index1].erase(front[loop_index1].begin() + (index2 - 1));
+                }
+            } else {
+            //edges form a loop and are not adjacent
+                vector<PivotEdge> loop1;
+                vector<PivotEdge> loop2;
+                if (index1 < index2) {
+                    for (int i = index1 + 1; i < index2; i++) {
+                        loop1.push_back(front[loop_index1][i]);
+                    }
+                    for (int i = index2 + 1; i < front[loop_index1].size() - (index2 - index1); i++) {
+                        loop2.push_back(front[loop_index1][i % front[loop_index1].size()]);
+                    }
+                } else {
+                    for (int i = index2 + 1; i < index1; i++) {
+                        loop1.push_back(front[loop_index1][i]);
+                    }
+                    for (int i = index1 + 1; i < front[loop_index1].size() - (index1 - index2); i++) {
+                        loop2.push_back(front[loop_index1][i % front[loop_index1].size()]);
+                    }
+                }
+                front.erase(front.begin() + (loop_index1 - 1));
+                front.push_back(loop1);
+                front.push_back(loop2);
+            }
+        }
+    } else {
+        //edges are in different loops
+        vector<PivotEdge> loop1;
+        for (int i = 0; i < index1; i++) {
+            loop1.push_back(front[loop_index1][i]);
+        }
+        for (int i = index2 + 1; i < front[loop_index2].size(); i++) {
+            loop1.push_back(front[loop_index2][i]);
+        }
+        for (int i = 0; i < front[loop_index2].size() - index2; i++) {
+            loop1.push_back(front[loop_index2][i]);
+        }
+        for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+            loop1.push_back(front[loop_index1][i]);
+        }
+        front.erase(front.begin() + (loop_index1 - 1));
+        front.erase(front.begin() + (loop_index2 - 1));
+        front.push_back(loop1);
+    }
+}
+
+bool BallPivot::on_front(Point k) {
+    bool internal_mesh_vertex = false;
+    for (int i = 0; i < front.size(); i++) {
+        for (int j = 0; j < front.size(); j++) {
+            if (compare_3D(front[i][j].a.pos, k.pos) || compare_3D(front[i][j].b.pos, k.pos)) {
+                internal_mesh_vertex = true;
+            }
+        }
+    }
+    return internal_mesh_vertex;
+}
+
+bool BallPivot::not_used(Point k) {
+    return std::find(unused.begin(), unused.end(), &k) != unused.end();
+}
+
+void mark_as_boundary(PivotEdge e) {
+    e.isBoundary = true;
 }

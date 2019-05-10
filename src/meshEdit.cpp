@@ -1276,8 +1276,6 @@ namespace CGL {
       DrawStyle *style = &defaultStyle;
       setColor(style->vertexColor);
       glPointSize(style->vertexRadius);
-      Color red = Color(1.0, 0.0, 0.0);
-      Color green = Color(0.0, 1.0, 0.0);
       for (Point* p : points) {
           glBegin(GL_POINTS);
           glVertex3d(p->pos.x, p->pos.y, p->pos.z);
