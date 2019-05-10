@@ -13,6 +13,9 @@ bool compare(Point *a, Point *b) {
   /* Sort in order of descending distance from *point
    * so that we can modify the list by popping from the back
    */
+  // TODO: we can get rid of "BallPivot B;" if we make the "dist" function static
+  // TODO: this means "point" has to be static too
+  // TODO: this might mess with our use of "point" elsewhere!
   BallPivot B;
   float dista = B.dist(*a);
   float distb = B.dist(*b);
