@@ -9,7 +9,7 @@
 
 // quaternions seem pretty cool.
 #include "quaternion.h"
-
+#include "misc.h"
 
 #include "color.h"
 #include "renderer.h"
