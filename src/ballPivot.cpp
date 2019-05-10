@@ -146,6 +146,26 @@ float BallPivot::hash_position(const Point &p) {
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
 
+void BallPivot::calculate_normals() {
+    for (auto pair : map) {
+        vector<Point *> points = *pair.second;
+        Vector3D centroid;
+        for (int curr = 0; curr < points.size(); curr++) {
+            centroid = Vector3D();
+            for (int i = 0; i < points.size(); i++) {
+                if (i == curr) {
+                    continue;
+                }
+                centroid += (*points[i]).pos;
+            }
+            centroid = centroid / (points.size() - 1);
+            Vector3D mag = (*points[curr]).pos - centroid;
+            Vector3D dir = mag.unit();
+            (*points[curr]).normal = dir;
+        }
+    }
+}
+
 float BallPivot::distance(const Point &a, const Point &b) {
   Vector3D ab = a.pos - b.pos;
   return ab.norm();
