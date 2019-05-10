@@ -61,12 +61,6 @@ class BallPivot {
       }
     };
 
-    struct hash<CellIndex> {
-      std::size_t operator()(const CellIndex &c) const {
-        return hash_cell(c);
-      }
-    };
-
     void create_spatial_grid();
     vector<Point *> neighborhood(double r, const Point &p);
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
