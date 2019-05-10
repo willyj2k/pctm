@@ -17,14 +17,13 @@ using std::flush;
 static Point *sigma;
 
 bool compare(Point *a, Point *b) {
-  /* Sort in order of descending distance from *sigma
-   * so that we can modify the list by popping from the back
+  /* Sort in order of ascending distance from *sigma
    */
   // TODO: this means "sigma" has to be static too
   // TODO: this might mess with our use of "sigma" elsewhere!
   double dista = BallPivot::dist(*a);
   double distb = BallPivot::dist(*b);
-  return dista > distb;
+  return dista < distb;
 }
 
 void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max) {
@@ -73,11 +72,12 @@ vector<Point *> BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  int index = 0;
+  int unused_index = 0;
   vector<Point *> triangle;
-  while (!found_valid_triangle && index < unused.size()) {
+  while (!found_valid_triangle && unused_index < unused.size()) {
+    cout << "Searching for seed from index " << unused_index << " out of " << unused.size() << "\n" << flush;
     // update 
-    sigma = &unused[index];
+    sigma = &unused[unused_index];
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
@@ -95,11 +95,10 @@ vector<Point *> BallPivot::find_seed_triangle() {
       sort(lst.begin(), lst.end(), compare);
 
       // Stop when a valid seed triangle is found
-      int i = 0;
-      while (!found_valid_triangle && lst.size() >= 2) {
+      for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
         // check that the triangle normal is consistent with the vertex normals
-        Point *sigma_a = lst.at(i);
-        Point *sigma_b = lst.at(i + 1);
+        Point *sigma_a = lst.at(i - 1);
+        Point *sigma_b = lst.at(i);
 
         // triangle_normal will be the zero vector if the points don't form a
         // valid triangle
@@ -124,7 +123,7 @@ vector<Point *> BallPivot::find_seed_triangle() {
         }
       }
     }
-    ++index;
+    ++unused_index;
   }
   if (found_valid_triangle) {
     return triangle;
@@ -141,6 +140,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   int reach = ceil(r / cell_width);
   cell_index c = get_cell(p);
   cell_index cur_cell;
+  int cur_hash;
   vector<Point *> *cur_points;
 
   // literally check all the cells that are possibly within reach...
@@ -148,13 +148,16 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
     for (int y = (c.y_ind - reach); y <= (c.y_ind + reach); ++y) {
       for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
         cur_cell = cell_index(x, y, z);
-        cur_points = map.at(hash_cell(cur_cell));
-        for (auto const &q : *cur_points) {
-          // we actually include the boundary of the neighborhood because
-          // we're interested in consider spheres that could intersect
-          // such points
-          if ((q->pos - p.pos).norm() <= r) {
-            r_neighborhood.push_back(q);
+        cur_hash = hash_cell(cur_cell);
+        if (map.find(cur_hash) != map.end()) {
+          cur_points = map.at(cur_hash);
+          for (auto const &q : *cur_points) {
+            // we actually include the boundary of the neighborhood because
+            // we're interested in consider spheres that could intersect
+            // such points
+            if ((q->pos - p.pos).norm() <= r) {
+              r_neighborhood.push_back(q);
+            }
           }
         }
       }
