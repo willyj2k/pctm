@@ -27,12 +27,13 @@ bool compare(Point *a, Point *b) {
   return dista > distb;
 }
 
-void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min) {
+void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max) {
   cout << "Initializing Ball Pivot member variables..." << flush;
   //this->used;
   this->unused = points;
   this->radius = radius;
   this->bound_min = bound_min;
+  this->bound_max = bound_max;
   cout << " Done\n";
   
   cout << "Creating Spatial Grid..." << flush;
@@ -126,6 +127,7 @@ vector<Point> BallPivot::find_seed_triangle() {
 vector<Point *> neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   // TODO
+  int reach = ceil(r / cell_width);
   return vector<Point *>();
 }
 
@@ -219,22 +221,24 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
 int BallPivot::hash_position(const Point &p) {
   // divide the bounding box in to cubic cells with side length 2 * radius
   // truncate the position of p to a specific 3D box
+  cell_index cell = get_cell(p); 
+  return (cell.x_ind + small_prime * (cell.y_ind + small_prime * cell.z_ind)) % large_prime;
+}
+
+cell_index BallPivot::get_cell(const Point &p) {
   int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
   int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
   int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
-
-  return (x_ind + small_prime * (y_ind + small_prime * z_ind)) % large_prime;
+  return cell_index(x_ind, y_ind, z_ind);
 }
 
 void BallPivot::calculate_normals() {
   // TODO verify that this rewrite works
   for (auto& pair : map) {
     vector<Point *> *points = pair.second;
-    Vector3D centroid = Vector3D(0, 0, 0);
-    Vector3D avg_other_pos;
-    double num_other = (points->size() > 1) ? points->size() - 1 : 1;
     // first calculate the centroid of the cell (cube)
     // by taking the average of the position vectors
+    Vector3D centroid = Vector3D(0, 0, 0);
     for (auto const &point : *points) {
       centroid += point->pos;
     }
@@ -242,6 +246,8 @@ void BallPivot::calculate_normals() {
     // now assign the normals of each point to be the difference
     // between the point's position and the average position of
     // the rest of the points in the cell
+    Vector3D avg_other_pos;
+    double num_other = (points->size() > 1) ? points->size() - 1 : 1;
     for (auto &point : *points) {
       avg_other_pos = (centroid - point->pos) / num_other;
       point->normal = (point->pos - avg_other_pos).unit();
