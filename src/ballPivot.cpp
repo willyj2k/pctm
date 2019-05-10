@@ -55,7 +55,7 @@ void BallPivot::create_spatial_grid() {
   for (int i = 0; i < unused.size(); i++) {
     Point *p = &unused[i];
     int h = hash_position(*p);
-    if (map.find(h) == spatial_map.end()) {
+    if (spatial_map.find(h) == spatial_map.end()) {
       // does not already exist
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
@@ -74,6 +74,7 @@ vector<Point *> BallPivot::find_seed_triangle() {
   bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   CellIndex search_cell = CellIndex(0, 0, 0);
+  int unused_index = 0;
   vector<Point *> triangle;
   while (!found_valid_triangle && unused_index < unused.size()) {
     // update
@@ -83,7 +84,7 @@ vector<Point *> BallPivot::find_seed_triangle() {
     // first get the neighborhood, aka use spatial map
     int h = hash_position(*sigma);
 
-    if (map.find(h) != spatial_map.end()) {
+    if (spatial_map.find(h) != spatial_map.end()) {
       // obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
       // (currently this just gets points in the same spatial partition)
@@ -149,7 +150,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
       for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
-        if (map.find(cur_hash) != spatial_map.end()) {
+        if (spatial_map.find(cur_hash) != spatial_map.end()) {
           cur_points = spatial_map.at(cur_hash);
           for (auto const &q : *cur_points) {
             // we actually include the boundary of the neighborhood because
