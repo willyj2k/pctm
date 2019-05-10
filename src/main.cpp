@@ -40,7 +40,8 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   Scene* scene = new Scene();
 
   std::string path_str = path;
-  if (path_str.substr(path_str.length()-4, 4) == ".ply") {
+  if (path_str.substr(path_str.length()-4, 4) == ".ply")
+  {
     cout << "Parsing ply file for points..." << flush;
     p_ply ply = ply_open(path, NULL, 0, NULL);
     p_ply_element element = NULL;
@@ -110,6 +111,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   {
     return -1;
   }
+
   collada_viewer->load( scene );
 
   GLuint tex = makeTex("envmap/envmap.png");

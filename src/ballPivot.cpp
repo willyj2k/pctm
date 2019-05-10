@@ -224,23 +224,24 @@ double BallPivot::hash_position(const Point &p) {
 }
 
 void BallPivot::calculate_normals() {
-  for (auto pair : map) {
-    vector<Point *>* points = pair.second;
-    Vector3D centroid;
-    for (int curr = 0; curr < points->size(); curr++) {
-      centroid = Vector3D();
-      for (int i = 0; i < points->size(); i++) {
-        if (i == curr) {
-          continue;
-        }
-        centroid += ((*points)[i])->pos;
-      }
-      if (points->size() > 1) {
-        centroid = centroid / (points->size() - 1);
-      }
-      Vector3D mag = ((*points)[curr])->pos - centroid;
-      Vector3D dir = mag.unit();
-      ((*points)[curr])->normal = dir;
+  // TODO verify that this rewrite works
+  for (auto& pair : map) {
+    vector<Point *> *points = pair.second;
+    Vector3D centroid = Vector3D(0, 0, 0);
+    Vector3D avg_other_pos;
+    double num_other = (points->size() > 1) ? points->size() - 1 : 1;
+    // first calculate the centroid of the cell (cube)
+    // by taking the average of the position vectors
+    for (auto const &point : *points) {
+      centroid += point->pos;
+    }
+
+    // now assign the normals of each point to be the difference
+    // between the point's position and the average position of
+    // the rest of the points in the cell
+    for (auto &point : *points) {
+      avg_other_pos = (centroid - point->pos) / num_other;
+      point->normal = (point->pos - avg_other_pos).unit();
     }
   }
 }
@@ -249,5 +250,4 @@ double BallPivot::dist(const Point &p) {
   Vector3D diff = p.pos - sigma->pos;
   return diff.norm();
 }
-
 
