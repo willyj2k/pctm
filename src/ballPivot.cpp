@@ -9,6 +9,16 @@
 using namespace std;
 using namespace CGL;
 
+bool compare(Point *a, Point *b) {
+  /* Sort in order of descending distance from *point
+   * so that we can modify the list by popping from the back
+   */
+  BallPivot B;
+  float dista = B.dist(*a);
+  float distb = B.dist(*b);
+  return dista > distb;
+}
+
 void BallPivot::init(std::vector <Point> points, float radius) {
   //this->used;
   this->unused = points;
@@ -64,7 +74,12 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       // such that closer points are at the back
       // TODO ask Rene about the lst->begin()+4
       // Rene: lst->begin()+4 was from an example I saw online
-//      std::sort(lst->begin(), lst->end(), &compare);
+      std::sort(lst->begin(), lst->end(), compare);
+//      std::sort(lst->begin()+4, lst->end(),
+//              [x] (const Point& lhs, const Point& rhs) {
+//                  return distance(x, lhs) < distance(x, rhs);
+//              }
+//              );
 
 
       // TODO: what happened to the hashmap of normals per vertex?
@@ -182,11 +197,9 @@ float BallPivot::distance(const Point &a, const Point &b) {
   return ab.norm();
 }
 
-bool BallPivot::compare(Point *a, Point *b) {
-  /* Sort in order of descending distance from *point
-   * so that we can modify the list by popping from the back
-   */
-  float dista = distance(*a, *point);
-  float distb = distance(*b, *point);
-  return dista > distb;
+float BallPivot::dist(const Point &a) {
+  Vector3D ab = a.pos - point->pos;
+  return ab.norm();
 }
+
+
