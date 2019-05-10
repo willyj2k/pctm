@@ -8,6 +8,7 @@
 #include "CGL/CGL.h"
 #include "point.h"
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace CGL;
 
@@ -21,35 +22,15 @@ class PivotEdge {
 
 class BallPivot {
   public:
-    void init(std::vector<Point*> points, double radius, Vector3D bound_min, Vector3D bound_max);
+    void init(const std::vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max);
     std::vector<Point *> find_seed_triangle();
     std::vector<Point*> all_points;
+    std::vector<Point*> unused;
+    std::vector<Point*> used;
+
     static double dist(const Point &p);
 
   private:
-    // std::vector of used points
-    std::vector<Point*> used;
-
-    // std::vector of unused points
-    std::vector<Point*> unused;
-
-    std::vector<vector<PivotEdge> > front;
-
-    // spatial map
-    std::unordered_map<int, std::vector<Point *> *> spatial_map;
-
-    // radius of the ball to be pivoted
-    double radius;
-
-    // vectors to define the bounding box of the point cloud for hashing
-    // TODO not sure if we really need bound_max for now
-    Vector3D bound_min;
-    Vector3D bound_max;
-
-    // primes for hashing
-    int large_prime = 2038074743;
-    int small_prime = 113;
-
     // cell info for hashing
     double cell_width;
 
@@ -70,9 +51,41 @@ class BallPivot {
                 && y_ind == other.y_ind
                 && z_ind == other.z_ind);
       }
+
+      bool operator!=(const CellIndex &other) const {
+        return (x_ind != other.x_ind
+                || y_ind == other.y_ind
+                || z_ind == other.z_ind);
+      }
     };
 
-    void create_spatial_grid();
+    std::vector<vector<PivotEdge> > front;
+
+    // spatial map of points in the cloud
+    //
+    // use this as the master data structure for storing points;
+    // we don't want to use pointers to Points here anymore and
+    // instead want to just store them here raw
+    std::unordered_map<int, std::vector<Point> *> spatial_map;
+
+    // radius of the ball to be pivoted
+    double radius;
+
+    // vectors to define the bounding box of the point cloud for hashing
+    // TODO not sure if we really need bound_max for now
+    Vector3D bound_min;
+    Vector3D bound_max;
+
+    // set to track cells that have already been seeded and pivoted
+    std::unordered_set<int> processed_cells;
+    CellIndex seed_cell;
+    CellIndex max_cell;
+
+    // primes for hashing
+    int large_prime = 2038074743;
+    int small_prime = 113;
+
+    void create_spatial_grid(const vector<Point> &points);
     vector<Point *> neighborhood(double r, const Point &p);
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
@@ -81,6 +94,8 @@ class BallPivot {
     int hash_position(const Point &p);
     int hash_cell(const CellIndex &c);
     CellIndex get_cell(const Point &p);
+    Point* get_seed_candidate(const CellIndex &c);
+    void increment_seed_cell();
     void calculate_normals();
     void join(PivotEdge e, Point sigma, int index);
     void glue(PivotEdge ik);

@@ -52,7 +52,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     if (!ply_read(ply)) return 1;
     ply_close(ply);
 
-    vector<Point*> points;
+    vector<Point> points;
 
     // track bounding box for spatial hashing
     double min_x = INF_D;
@@ -81,7 +81,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
         max_z = v.z;
       }
 
-      Point* p = new Point(v, Vector3D(0, 0, 0));
+      Point p = Point(v);
       points.push_back(p);
     }
     cout << " Done\n";
@@ -92,7 +92,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     BallPivot pivot = BallPivot();
     pivot.init(points, 0.001, bound_min, bound_max);
     vector<Point *> seed_triangle = pivot.find_seed_triangle();
-    cout << "Found seed triangle!" << flush;
+    cout << "\nFound seed triangle!\n" << flush;
 
     Camera* cam = new Camera();
     cam->type = CAMERA;
