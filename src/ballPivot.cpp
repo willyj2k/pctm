@@ -54,7 +54,7 @@ void BallPivot::create_spatial_grid() {
 
   for (int i = 0; i < unused.size(); i++) {
     Point *p = &unused[i];
-    double h = hash_position(*p);
+    int h = hash_position(*p);
     if (map.find(h) == map.end()) {
       // does not already exist
       vector<Point *> *lst = new vector<Point *>();
@@ -81,7 +81,7 @@ vector<Point> BallPivot::find_seed_triangle() {
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    double h = hash_position(*sigma);
+    int h = hash_position(*sigma);
 
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
@@ -127,9 +127,30 @@ vector<Point> BallPivot::find_seed_triangle() {
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
-  // TODO
+  vector<Point *> r_neighborhood = vector<Point *>();
   int reach = ceil(r / cell_width);
-  return vector<Point *>();
+  cell_index c = get_cell(p);
+  cell_index cur_cell;
+  vector<Point *> *cur_points;
+
+  // literally check all the cells that are possibly within reach...
+  for (int x = (c.x_ind - reach); x <= (c.x_ind + reach); ++x) {
+    for (int y = (c.y_ind - reach); y <= (c.y_ind + reach); ++y) {
+      for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
+        cur_cell = cell_index(x, y, z);
+        cur_points = map.at(hash_cell(cur_cell));
+        for (auto const &q : *cur_points) {
+          // we actually include the boundary of the neighborhood because
+          // we're interested in consider spheres that could intersect
+          // such points
+          if ((q->pos - p.pos).norm() <= r) {
+            r_neighborhood.push_back(q);
+          }
+        }
+      }
+    }
+  }
+  return r_neighborhood;
 }
 
 Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c) {
@@ -223,7 +244,11 @@ int BallPivot::hash_position(const Point &p) {
   // divide the bounding box in to cubic cells with side length 2 * radius
   // truncate the position of p to a specific 3D box
   cell_index cell = get_cell(p); 
-  return (cell.x_ind + small_prime * (cell.y_ind + small_prime * cell.z_ind)) % large_prime;
+  return hash_cell(cell);
+}
+
+int BallPivot::hash_cell(const BallPivot::cell_index &c) {
+  return (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
 }
 
 BallPivot::cell_index BallPivot::get_cell(const Point &p) {

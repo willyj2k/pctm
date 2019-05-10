@@ -25,7 +25,7 @@ class BallPivot {
     std::vector<Point> unused;
 
     // spatial map
-    std::unordered_map<double, std::vector<Point *> *> map;
+    std::unordered_map<int, std::vector<Point *> *> map;
 
     // radius of the ball to be pivoted
     double radius;
@@ -46,8 +46,11 @@ class BallPivot {
       int y_ind;
       int z_ind;
 
-      // constructor
+      // constructors
       cell_index(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
+
+      // default constructor; be careful with this
+      cell_index() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
     };
 
     void create_spatial_grid();
@@ -57,6 +60,7 @@ class BallPivot {
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     int hash_position(const Point &p);
+    int hash_cell(const cell_index &c);
     cell_index get_cell(const Point &p);
     void calculate_normals();
 };
