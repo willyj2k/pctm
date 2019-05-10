@@ -27,11 +27,12 @@ bool compare(Point *a, Point *b) {
   return dista > distb;
 }
 
-void BallPivot::init(vector<Point> points, double radius) {
+void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min) {
   cout << "Initializing Ball Pivot member variables..." << flush;
   //this->used;
   this->unused = points;
   this->radius = radius;
+  this->bound_min = bound_min;
   cout << " Done\n";
   
   cout << "Creating Spatial Grid..." << flush;
@@ -53,16 +54,14 @@ void BallPivot::create_spatial_grid() {
     Point *p = &unused[i];
     double h = hash_position(*p);
     if (map.find(h) == map.end()) {
-      // does not exist already
+      // does not already exist
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
-      //map.insert({h, lst});
       map.insert(make_pair(h, lst));
     } else {
-      // exists
+      // already exists
       vector<Point *> *lst = map.at(h);
       lst->push_back(p);
-      //map.insert({h, lst});
       map.insert(make_pair(h, lst));
     }
   }
@@ -122,6 +121,12 @@ vector<Point> BallPivot::find_seed_triangle() {
     vector<Point> empty;
     return empty;
   }
+}
+
+vector<Point *> neighborhood(double r, const Point &p) {
+  /* Return a vector of pointers to points within an r-neighborhood of p */
+  // TODO
+  return vector<Point *>();
 }
 
 Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c) {
@@ -211,16 +216,14 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
   }
 }
 
-double BallPivot::hash_position(const Point &p) {
-  double w = 3 * width / (2 * radius);
-  double h = 3 * height / (2 * radius);
-  double t = max(w, h);
-  // truncate the position to a specific 3D box
-  double xpos = floor(p.pos.x / w);
-  double ypos = floor(p.pos.y / h);
-  double zpos = floor(p.pos.z / t);
+int BallPivot::hash_position(const Point &p) {
+  // divide the bounding box in to cubic cells with side length 2 * radius
+  // truncate the position of p to a specific 3D box
+  int x_ind = floor((p.pos.x - bound_min.x) / (2 * radius));
+  int y_ind = floor((p.pos.y - bound_min.y) / (2 * radius));
+  int z_ind = floor((p.pos.z - bound_min.z) / (2 * radius));
 
-  return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
+  return (x_ind + small_prime * (y_ind + small_prime * z_ind)) % large_prime;
 }
 
 void BallPivot::calculate_normals() {

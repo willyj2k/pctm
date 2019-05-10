@@ -13,7 +13,7 @@ using namespace CGL;
 
 class BallPivot {
   public:
-    void init(std::vector<Point> points, double radius);
+    void init(std::vector<Point> points, double radius, Vector3D bound_min);
     std::vector<Point> find_seed_triangle();
     static double dist(const Point &p);
 
@@ -27,16 +27,23 @@ class BallPivot {
     // spatial map
     std::unordered_map<double, std::vector<Point *> *> map;
 
+    // radius of the ball to be pivoted
     double radius;
-    double width;
-    double height;
 
-    void create_spatial_grid ();
+    // vector to define the minimum corner of the
+    // bounding box of the point cloud for hashing
+    Vector3D bound_min;
+  
+    // primes for hashing
+    int large_prime = 29996224275833;
+    int small_prime = 113;
+
+    void create_spatial_grid();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    double hash_position(const Point &p);
+    int hash_position(const Point &p);
     void calculate_normals();
 };
 

@@ -53,14 +53,32 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     ply_close(ply);
 
     vector<Point> points;
-    for (int i = 0; i < vertices.size(); ++i) {
-      Point p = Point(vertices[i], Vector3D(0, 0, 0));
+
+    // track minimum corner of bounding box for spatial hashing
+    double min_x = INF_D;
+    double min_y = INF_D;
+    double min_z = INF_D;
+
+    for (auto const &v : vertices) {
+      if (v.x < min_x) {
+        min_x = v.x;
+      }
+      if (v.y < min_y) {
+        min_y = v.y;
+      }
+      if (v.z < min_z) {
+        min_z = v.z;
+      }
+
+      Point p = Point(v, Vector3D(0, 0, 0));
       points.push_back(p);
     }
     cout << " Done\n";
 
+    Vector3D bound_min = Vector3D(min_x, min_y, min_z);
+
     BallPivot pivot = BallPivot();
-    pivot.init(points, 0.001);
+    pivot.init(points, 0.001, bound_min);
     pivot.find_seed_triangle();
 
     Camera* cam = new Camera();
