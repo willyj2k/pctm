@@ -53,8 +53,8 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     ply_close(ply);
 
     vector<Point> points;
-    for (int i = 0; i < vertices.size(); i++) {
-      Point p = Point(vertices[i], Vector3D());
+    for (int i = 0; i < vertices.size(); ++i) {
+      Point p = Point(vertices[i], Vector3D(0, 0, 0));
       points.push_back(p);
     }
     cout << " Done\n";

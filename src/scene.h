@@ -57,7 +57,7 @@ namespace CGL {
   struct Scene {
 
     std::vector<Node> nodes;
-    std::vector<Vector3D> points; ///for rendering vertices
+    std::vector<Vector3D> points; //for rendering vertices
 
   }; // struct Scene
 
