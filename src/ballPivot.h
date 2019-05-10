@@ -13,17 +13,17 @@ using namespace CGL;
 
 class BallPivot {
   public:
-    void init(std::vector<Point> points, double radius);
+    void init(std::vector<Point*> points, double radius);
     std::vector<Point> find_seed_triangle();
-    std::vector<Point> all_points;
+    std::vector<Point*> all_points;
     static double dist(const Point &p);
 
   private:
     // std::vector of used points
-    std::vector<Point> used;
+    std::vector<Point*> used;
 
     // std::vector of unused points
-    std::vector<Point> unused;
+    std::vector<Point*> unused;
 
     // spatial map
     std::unordered_map<double, std::vector<Point *> *> map;
@@ -37,7 +37,7 @@ class BallPivot {
     Vector3D ball_center(const Point &a, const Point &b, const Point &c);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    double hash_position(const Point &p);
+    double hash_position(const Point p);
     void calculate_normals();
 };
 

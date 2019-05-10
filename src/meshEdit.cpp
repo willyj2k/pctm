@@ -1,6 +1,7 @@
 #include "meshEdit.h"
 #include "shaderUtils.h"
 #include "GL/glew.h"
+#include "point.h"
 
 #define PI 3.14159265
 
@@ -95,7 +96,7 @@ namespace CGL {
     hoverStyle.edgeColor = Color( 0.9, 0.0, 0.75 );
     selectStyle.edgeColor = Color( 1.0, 1.0, 1.00 );
 
-    defaultStyle.vertexColor = Color( 0, 0, 0 );
+    defaultStyle.vertexColor = Color( 1, 0, 0 );
     hoverStyle.vertexColor = Color( 0.8, 0.0, 0.75 );
     selectStyle.vertexColor = Color( 1.0, 1.0, 1.00 );
 
@@ -112,7 +113,7 @@ namespace CGL {
   void MeshEdit::render()
   {
     update_camera();
-    draw_points();
+    draw_normals();
 
     // // Draw the helpful picking messages.
     if (showHUD)
@@ -203,6 +204,12 @@ namespace CGL {
     renderPoints(points);
     // Execute all of the OpenGL commands.
     glFlush();
+  }
+
+  void MeshEdit::draw_normals() {
+      renderNormals(points);
+
+      glFlush();
   }
 
   // Guranteed to be called at the start.
@@ -1253,16 +1260,30 @@ namespace CGL {
     }
   }
 
-  void MeshEdit::renderPoints(vector<Vector3D> vertices)
+  void MeshEdit::renderPoints(vector<Point*> points)
   {
     DrawStyle *style = &defaultStyle;
-    setColor(style->vertexColor);
+    Color red = Color(1.0, 0.0, 0.0);
     glPointSize(style->vertexRadius);
-    for (Vector3D v : vertices) {
+    for (Point* p : points) {
         glBegin(GL_POINTS);
-        glVertex3d(v.x, v.y, v.z);
+        glVertex3d(p->pos.x, p->pos.y, p->pos.z);
         glEnd();
     }
+  }
+
+  void MeshEdit::renderNormals(vector<Point*> points) {
+      DrawStyle *style = &defaultStyle;
+      setColor(style->vertexColor);
+      glPointSize(style->vertexRadius);
+      Color red = Color(1.0, 0.0, 0.0);
+      Color green = Color(0.0, 1.0, 0.0);
+      for (Point* p : points) {
+          glBegin(GL_POINTS);
+          glVertex3d(p->pos.x, p->pos.y, p->pos.z);
+          glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
+          glEnd();
+      }
   }
 
   // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.

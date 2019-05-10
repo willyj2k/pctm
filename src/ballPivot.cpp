@@ -27,7 +27,7 @@ bool compare(Point *a, Point *b) {
   return dista > distb;
 }
 
-void BallPivot::init(vector<Point> points, double radius) {
+void BallPivot::init(vector<Point*> points, double radius) {
   cout << "Initializing Ball Pivot member variables..." << flush;
   //this->used;
   this->unused = points;
@@ -37,8 +37,11 @@ void BallPivot::init(vector<Point> points, double radius) {
   cout << "Creating Spatial Grid..." << flush;
   BallPivot::create_spatial_grid();
   this->unused.clear();
+  cout << " Done\n";
+  cout << "Calculating normals..." << flush;
   BallPivot::calculate_normals();
   this->all_points = this->unused;
+  cout << " Done\n";
 }
 
 void BallPivot::create_spatial_grid() {
@@ -48,7 +51,7 @@ void BallPivot::create_spatial_grid() {
   map.clear();
 
   for (int i = 0; i < unused.size(); i++) {
-    Point *p = &unused[i];
+    Point *p = unused[i];
     double h = hash_position(*p);
     if (map.find(h) == map.end()) {
       // does not exist already
@@ -74,7 +77,7 @@ vector<Point> BallPivot::find_seed_triangle() {
   vector<Point> triangle;
   while (!found_valid_triangle && index < unused.size()) {
     // update
-    sigma = &unused[index];
+    sigma = unused[index];
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
@@ -206,9 +209,9 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
   }
 }
 
-double BallPivot::hash_position(const Point &p) {
-  double w = 3 * width / (2 * radius);
-  double h = 3 * height / (2 * radius);
+double BallPivot::hash_position(const Point p) {
+  double w = 2 * radius;
+  double h = 2 * radius;
   double t = max(w, h);
   // truncate the position to a specific 3D box
   double xpos = floor(p.pos.x / w);
@@ -223,6 +226,7 @@ void BallPivot::calculate_normals() {
         vector<Point *>* points = pair.second;
         Vector3D centroid;
         for (int curr = 0; curr < points->size(); curr++) {
+            Vector3D pos = ((*points)[curr])->pos;
             centroid = Vector3D();
             for (int i = 0; i < points->size(); i++) {
                 if (i == curr) {
@@ -233,21 +237,12 @@ void BallPivot::calculate_normals() {
             if (points->size() > 1) {
                 centroid = centroid / (points->size() - 1);
             }
-            Vector3D mag = ((*points)[curr])->pos - centroid;
+            Vector3D mag = pos - centroid;
             Vector3D dir = mag.unit();
-            ((*points)[curr])->normal = dir;
-            this->unused.push_back(*(*points)[curr]);
+            ((*points)[curr])->normal = mag;
+            this->unused.push_back(((*points)[curr]));
         }
-        centroid += ((*points)[i])->pos;
-      }
-      if (points->size() > 1) {
-        centroid = centroid / (points->size() - 1);
-      }
-      Vector3D mag = ((*points)[curr])->pos - centroid;
-      Vector3D dir = mag.unit();
-      ((*points)[curr])->normal = dir;
     }
-  }
 }
 
 double BallPivot::dist(const Point &p) {

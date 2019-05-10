@@ -51,9 +51,9 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       if (!ply_read(ply)) return 1;
       ply_close(ply);
 
-      vector<Point> points;
+      vector<Point*> points;
       for (int i = 0; i < vertices.size(); i++) {
-          Point p = Point(vertices[i], Vector3D());
+          Point* p = new Point(vertices[i], Vector3D());
           points.push_back(p);
       }
 
@@ -69,8 +69,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       Polymesh* mesh = new Polymesh();
       mesh->type = POLYMESH;
       ply_node.instance = mesh;
-      scene->points = vertices;
-      scene->full_points = pivot.all_points;
+      scene->points = pivot.all_points;
 
       scene->nodes.push_back(ply_node);
   }

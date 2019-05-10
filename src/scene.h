@@ -58,8 +58,7 @@ namespace CGL {
   struct Scene {
 
     std::vector<Node> nodes;
-    std::vector<Vector3D> points; ///for rendering vertices
-    std::vector<Point> full_points; /// for rendering normals
+    std::vector<Point*> points; /// for rendering normals
   }; // struct Scene
 
 } // namespace CGL
