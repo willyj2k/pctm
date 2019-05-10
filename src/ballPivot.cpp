@@ -5,6 +5,7 @@
 #include "CGL/CGL.h"
 #include "ballPivot.h"
 #include "point.h"
+#include <iostream>
 
 using namespace std;
 using namespace CGL;
@@ -180,20 +181,22 @@ float BallPivot::hash_position(const Point &p) {
 
 void BallPivot::calculate_normals() {
     for (auto pair : map) {
-        vector<Point *> points = *pair.second;
+        vector<Point *>* points = pair.second;
         Vector3D centroid;
-        for (int curr = 0; curr < points.size(); curr++) {
+        for (int curr = 0; curr < points->size(); curr++) {
             centroid = Vector3D();
-            for (int i = 0; i < points.size(); i++) {
+            for (int i = 0; i < points->size(); i++) {
                 if (i == curr) {
                     continue;
                 }
-                centroid += (*points[i]).pos;
+                centroid += ((*points)[i])->pos;
             }
-            centroid = centroid / (points.size() - 1);
-            Vector3D mag = (*points[curr]).pos - centroid;
+            if (points->size() > 1) {
+                centroid = centroid / (points->size() - 1);
+            }
+            Vector3D mag = ((*points)[curr])->pos - centroid;
             Vector3D dir = mag.unit();
-            (*points[curr]).normal = dir;
+            ((*points)[curr])->normal = dir;
         }
     }
 }
