@@ -62,12 +62,13 @@ std::vector<Point> BallPivot::find_seed_triangle() {
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
   std::vector<Point> triangle;
+
   while (!found_valid_triangle) {
     point = &unused[index];
-
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
     float h = hash_position(*point);
+
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
