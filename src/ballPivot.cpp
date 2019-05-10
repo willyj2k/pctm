@@ -34,6 +34,7 @@ void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Ve
   this->radius = radius;
   this->bound_min = bound_min;
   this->bound_max = bound_max;
+  this->cell_width = 2 * radius;
   cout << " Done\n";
   
   cout << "Creating Spatial Grid..." << flush;
@@ -124,7 +125,7 @@ vector<Point> BallPivot::find_seed_triangle() {
   }
 }
 
-vector<Point *> neighborhood(double r, const Point &p) {
+vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   // TODO
   int reach = ceil(r / cell_width);
@@ -225,7 +226,7 @@ int BallPivot::hash_position(const Point &p) {
   return (cell.x_ind + small_prime * (cell.y_ind + small_prime * cell.z_ind)) % large_prime;
 }
 
-cell_index BallPivot::get_cell(const Point &p) {
+BallPivot::cell_index BallPivot::get_cell(const Point &p) {
   int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
   int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
   int z_ind = floor((p.pos.z - bound_min.z) / cell_width);

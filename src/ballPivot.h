@@ -36,11 +36,11 @@ class BallPivot {
     Vector3D bound_max;
   
     // primes for hashing
-    int large_prime = 29996224275833;
+    int large_prime = 2038074743;
     int small_prime = 113;
 
     // cell info for hashing
-    double cell_width = 2 * radius;
+    double cell_width;
     struct cell_index {
       int x_ind;
       int y_ind;
@@ -48,14 +48,16 @@ class BallPivot {
 
       // constructor
       cell_index(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
-    }
+    };
 
     void create_spatial_grid();
+    vector<Point *> neighborhood(double r, const Point &p);
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     int hash_position(const Point &p);
+    cell_index get_cell(const Point &p);
     void calculate_normals();
 };
 
