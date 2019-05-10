@@ -93,13 +93,6 @@ vector<Point> BallPivot::find_seed_triangle() {
       // such that closer points are at the back
       sort(lst->begin(), lst->end(), compare);
 
-      // TODO remove; just for testing
-      cout << "YAY";
-      for (Point *p : *lst) {
-        cout << dist(*p);
-      }
-      cout << "DONE";
-
       // Stop when a valid seed triangle is found
       int i = 0;
       while (!found_valid_triangle && lst->size() >= 2) {
