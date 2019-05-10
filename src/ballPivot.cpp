@@ -46,24 +46,24 @@ void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Ve
 }
 
 void BallPivot::create_spatial_grid() {
-  for (const auto &entry : map) {
+  for (const auto &entry : spatial_map) {
     delete (entry.second);
   }
-  map.clear();
+  spatial_map.clear();
 
   for (int i = 0; i < unused.size(); i++) {
     Point *p = &unused[i];
     int h = hash_position(*p);
-    if (map.find(h) == map.end()) {
+    if (map.find(h) == spatial_map.end()) {
       // does not already exist
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
-      map.insert(make_pair(h, lst));
+      spatial_map.insert(make_pair(h, lst));
     } else {
       // already exists
-      vector<Point *> *lst = map.at(h);
+      vector<Point *> *lst = spatial_map.at(h);
       lst->push_back(p);
-      map.insert(make_pair(h, lst));
+      spatial_map.insert(make_pair(h, lst));
     }
   }
 }
@@ -72,10 +72,9 @@ vector<Point *> BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  int unused_index = 0;
+  CellIndex search_cell = CellIndex(0, 0, 0);
   vector<Point *> triangle;
   while (!found_valid_triangle && unused_index < unused.size()) {
-    cout << "Searching for seed from index " << unused_index << " out of " << unused.size() << "\n" << flush;
     // update 
     sigma = &unused[unused_index];
 
@@ -83,7 +82,7 @@ vector<Point *> BallPivot::find_seed_triangle() {
     // first get the neighborhood, aka use spatial map
     int h = hash_position(*sigma);
 
-    if (map.find(h) != map.end()) {
+    if (map.find(h) != spatial_map.end()) {
       // obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
       // (currently this just gets points in the same spatial partition)
@@ -138,8 +137,8 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   vector<Point *> r_neighborhood = vector<Point *>();
   int reach = ceil(r / cell_width);
-  cell_index c = get_cell(p);
-  cell_index cur_cell;
+  CellIndex c = get_cell(p);
+  CellIndex cur_cell;
   int cur_hash;
   vector<Point *> *cur_points;
 
@@ -147,10 +146,10 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   for (int x = (c.x_ind - reach); x <= (c.x_ind + reach); ++x) {
     for (int y = (c.y_ind - reach); y <= (c.y_ind + reach); ++y) {
       for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
-        cur_cell = cell_index(x, y, z);
+        cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
-        if (map.find(cur_hash) != map.end()) {
-          cur_points = map.at(cur_hash);
+        if (map.find(cur_hash) != spatial_map.end()) {
+          cur_points = spatial_map.at(cur_hash);
           for (auto const &q : *cur_points) {
             // we actually include the boundary of the neighborhood because
             // we're interested in consider spheres that could intersect
@@ -256,24 +255,24 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
 int BallPivot::hash_position(const Point &p) {
   // divide the bounding box in to cubic cells with side length 2 * radius
   // truncate the position of p to a specific 3D box
-  cell_index cell = get_cell(p); 
+  CellIndex cell = get_cell(p); 
   return hash_cell(cell);
 }
 
-int BallPivot::hash_cell(const BallPivot::cell_index &c) {
+int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
   return (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
 }
 
-BallPivot::cell_index BallPivot::get_cell(const Point &p) {
+BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
   int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
   int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
   int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
-  return cell_index(x_ind, y_ind, z_ind);
+  return CellIndex(x_ind, y_ind, z_ind);
 }
 
 void BallPivot::calculate_normals() {
   // TODO verify that this rewrite works
-  for (auto& pair : map) {
+  for (auto& pair : spatial_map) {
     vector<Point *> *points = pair.second;
     // first calculate the centroid of the cell (cube)
     // by taking the average of the position vectors

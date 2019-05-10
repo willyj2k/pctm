@@ -25,7 +25,7 @@ class BallPivot {
     std::vector<Point> unused;
 
     // spatial map
-    std::unordered_map<int, std::vector<Point *> *> map;
+    std::unordered_map<int, std::vector<Point *> *> spatial_map;
 
     // radius of the ball to be pivoted
     double radius;
@@ -41,16 +41,30 @@ class BallPivot {
 
     // cell info for hashing
     double cell_width;
-    struct cell_index {
+
+    struct CellIndex {
       int x_ind;
       int y_ind;
       int z_ind;
 
       // constructors
-      cell_index(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
+      CellIndex(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
 
       // default constructor; be careful with this
-      cell_index() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
+      CellIndex() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
+
+      // equality override
+      bool operator==(const CellIndex &other) const {
+        return (x_ind == other.x_ind
+                && y_ind == other.y_ind
+                && z_ind == other.z_ind);
+      }
+    };
+
+    struct hash<CellIndex> {
+      std::size_t operator()(const CellIndex &c) const {
+        return hash_cell(c);
+      }
     };
 
     void create_spatial_grid();
@@ -60,8 +74,8 @@ class BallPivot {
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     int hash_position(const Point &p);
-    int hash_cell(const cell_index &c);
-    cell_index get_cell(const Point &p);
+    int hash_cell(const CellIndex &c);
+    CellIndex get_cell(const Point &p);
     void calculate_normals();
 };
 
