@@ -16,7 +16,7 @@ class BallPivot {
   public:
     void init(std::vector<Point> points, float radius);
     std::vector<Point> find_seed_triangle();
-    float dist(const Point &a);
+    static float dist(const Point &a);
 
   private:
     // std::vector of used points
@@ -34,7 +34,7 @@ class BallPivot {
     double width;
     double height;
 
-    Point *point;
+//    static Point *point;
 
     void create_spatial_grid ();
 //    std::vector<Point *> find_seed_triangle();

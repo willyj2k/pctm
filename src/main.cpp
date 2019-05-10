@@ -59,7 +59,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
 
       BallPivot pivot = BallPivot();
       pivot.init(points, 0.001);
-//      pivot.find_seed_triangle();
+      pivot.find_seed_triangle();
 
       Camera* cam = new Camera();
       cam->type = CAMERA;

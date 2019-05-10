@@ -10,6 +10,8 @@
 using namespace std;
 using namespace CGL;
 
+Point *point;
+
 bool compare(Point *a, Point *b) {
   /* Sort in order of descending distance from *point
    * so that we can modify the list by popping from the back
@@ -17,10 +19,9 @@ bool compare(Point *a, Point *b) {
   // TODO: we can get rid of "BallPivot B;" if we make the "dist" function static
   // TODO: this means "point" has to be static too
   // TODO: this might mess with our use of "point" elsewhere!
-  BallPivot B;
-  float dista = B.dist(*a);
-  float distb = B.dist(*b);
-  return dista > distb;
+  float dista = BallPivot::dist(*a);
+  float distb = BallPivot::dist(*b);
+  return dista < distb;
 }
 
 void BallPivot::init(std::vector <Point> points, float radius) {
@@ -69,6 +70,7 @@ std::vector<Point> BallPivot::find_seed_triangle() {
     // first get the neighborhood, aka use spatial map
     float h = hash_position(*point);
 
+
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
@@ -81,7 +83,11 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       // TODO ask Rene about the lst->begin()+4
       // Rene: lst->begin()+4 was from an example I saw online
       std::sort(lst->begin(), lst->end(), compare);
-
+//      cout << "YAY";
+//      for (Point *p : *lst) {
+//        cout << dist(*p);
+//      }
+//      cout << "DONE";
 
       // TODO: what happened to the hashmap of normals per vertex?
       Vector3D curr_normal = point->normal;
@@ -122,13 +128,15 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       }
     }
 
+
     index++;
-    if (index >= unused.size() && !found_valid_triangle) {
+    if (index == 100) {
+      found_valid_triangle = true;
+    }
+    if (index >= unused.size() || (index >= unused.size() && !found_valid_triangle)) {
       // No seed triangle was found!!
       std::vector<Point> empty;
       return empty;
-    } else if (found_valid_triangle) {
-      return triangle;
     }
   }
   return triangle;
