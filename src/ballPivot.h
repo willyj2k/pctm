@@ -38,6 +38,9 @@ class BallPivot {
     int large_prime = 29996224275833;
     int small_prime = 113;
 
+    // cell width for hashing
+    double cell_width = 2 * radius;
+
     void create_spatial_grid();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);

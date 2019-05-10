@@ -219,9 +219,9 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
 int BallPivot::hash_position(const Point &p) {
   // divide the bounding box in to cubic cells with side length 2 * radius
   // truncate the position of p to a specific 3D box
-  int x_ind = floor((p.pos.x - bound_min.x) / (2 * radius));
-  int y_ind = floor((p.pos.y - bound_min.y) / (2 * radius));
-  int z_ind = floor((p.pos.z - bound_min.z) / (2 * radius));
+  int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
+  int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
+  int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
 
   return (x_ind + small_prime * (y_ind + small_prime * z_ind)) % large_prime;
 }
