@@ -16,6 +16,7 @@ class BallPivot {
   public:
     void init(std::vector<Point> points, float radius);
     std::vector<Point> find_seed_triangle();
+    std::vector<Point> all_points;
 
   private:
     // std::vector of used points

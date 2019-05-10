@@ -15,7 +15,9 @@ void BallPivot::init(std::vector <Point> points, float radius) {
   this->unused = points;
   this->radius = radius;
   BallPivot::create_spatial_grid();
+  this->unused.clear();
   BallPivot::calculate_normals();
+  this->all_points = this->unused;
 }
 
 void BallPivot::create_spatial_grid() {
@@ -197,6 +199,7 @@ void BallPivot::calculate_normals() {
             Vector3D mag = ((*points)[curr])->pos - centroid;
             Vector3D dir = mag.unit();
             ((*points)[curr])->normal = dir;
+            this->unused.push_back(*(*points)[curr]);
         }
     }
 }

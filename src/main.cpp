@@ -70,6 +70,8 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       mesh->type = POLYMESH;
       ply_node.instance = mesh;
       scene->points = vertices;
+      scene->full_points = pivot.all_points;
+
       scene->nodes.push_back(ply_node);
   }
   else if (path_str.substr(path_str.length()-4, 4) == ".dae")
