@@ -26,18 +26,21 @@ bool compare(Point *a, Point *b) {
   return dista < distb;
 }
 
-void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max) {
+void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
   cout << "Initializing Ball Pivot member variables..." << flush;
-  //this->used;
-  this->unused = points;
   this->radius = radius;
   this->bound_min = bound_min;
   this->bound_max = bound_max;
+  this->seed_cell = CellIndex(0, 0, 0);
+  this->max_cell = get_cell(Point(bound_max));
+  // add 1 to max_cell_z because we'll traverse the cells such that z values
+  // or contiguous
+  this->max_cell.z_ind += 1;
   this->cell_width = 2 * radius;
   cout << " Done\n";
   
   cout << "Creating Spatial Grid..." << flush;
-  BallPivot::create_spatial_grid();
+  BallPivot::create_spatial_grid(points);
   cout << " Done\n";
 
   cout << "Calculating vertex normals..." << flush;
@@ -45,23 +48,22 @@ void BallPivot::init(vector<Point> points, double radius, Vector3D bound_min, Ve
   cout << " Done\n";
 }
 
-void BallPivot::create_spatial_grid() {
+void BallPivot::create_spatial_grid(const vector<Point> &points) {
   for (const auto &entry : spatial_map) {
     delete (entry.second);
   }
   spatial_map.clear();
 
-  for (int i = 0; i < unused.size(); i++) {
-    Point *p = &unused[i];
-    int h = hash_position(*p);
+  for (Point p : points) {
+    int h = hash_position(p);
     if (spatial_map.find(h) == spatial_map.end()) {
       // does not already exist
-      vector<Point *> *lst = new vector<Point *>();
+      vector<Point> *lst = new vector<Point>();
       lst->push_back(p);
       spatial_map.insert(make_pair(h, lst));
     } else {
       // already exists
-      vector<Point *> *lst = spatial_map.at(h);
+      vector<Point> *lst = spatial_map.at(h);
       lst->push_back(p);
       spatial_map.insert(make_pair(h, lst));
     }
@@ -70,61 +72,61 @@ void BallPivot::create_spatial_grid() {
 
 vector<Point *> BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
-  bool consistent_normals;
-  // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  CellIndex search_cell = CellIndex(0, 0, 0);
-  int unused_index = 0;
   vector<Point *> triangle;
-  while (!found_valid_triangle && unused_index < unused.size()) {
-    // update 
-    sigma = &unused[unused_index];
+  // pick a point SIGMA that has not been used by the reconstructed triangulation;
+  while (!found_valid_triangle && seed_cell != max_cell) {
+    int h = hash_cell(seed_cell);
 
-    // consider all pairs of points in its neighborhood
-    // first get the neighborhood, aka use spatial map
-    int h = hash_position(*sigma);
+    if (processed_cells.find(h) == processed_cells.end()) {
+      sigma = get_seed_candidate(seed_cell);
 
-    if (spatial_map.find(h) != spatial_map.end()) {
-      // obtain a list of points in a (2 * rho)-neighborhood of *point,
-      // or on the boundary of said neighborhood
-      // (currently this just gets points in the same spatial partition)
-      vector<Point *> lst = neighborhood(2 * radius, *sigma);
+      // consider all pairs of points in its neighborhood
+      // first get the neighborhood, aka use spatial map
+      if (spatial_map.find(h) != spatial_map.end()) {
+        // obtain a list of points in a (2 * rho)-neighborhood of *point,
+        // or on the boundary of said neighborhood
+        // (currently this just gets points in the same spatial partition)
+        vector<Point *> lst = neighborhood(2 * radius, *sigma);
 
-      // now, build potential seed triangles
-      // organize lst in order of distance from point
-      // such that closer points are at the back
-      sort(lst.begin(), lst.end(), compare);
+        // now, build potential seed triangles
+        // organize lst in order of distance from point
+        // such that closer points are at the back
+        sort(lst.begin(), lst.end(), compare);
 
-      // Stop when a valid seed triangle is found
-      for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
-        // check that the triangle normal is consistent with the vertex normals
-        Point *sigma_a = lst.at(i - 1);
-        Point *sigma_b = lst.at(i);
+        // Stop when a valid seed triangle is found
+        for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
+          // check that the triangle normal is consistent with the vertex normals
+          Point *sigma_a = lst.at(i - 1);
+          Point *sigma_b = lst.at(i);
 
-        // triangle_normal will be the zero vector if the points don't form a
-        // valid triangle
-        Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
+          // triangle_normal will be the zero vector if the points don't form a
+          // valid triangle
+          Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
 
-        // test that there exists a p-ball with center in the outward half
-        // space that touches all three vertices and contains no other data
-        // point
-        if (triangle_normal.norm2() > 0) {
-          Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
-          vector<Point *> r_neighborhood = neighborhood(radius, center);
-          if (r_neighborhood.size() == 3) {
-            // we don't neet to check membership in r_neighborhood because
-            // sigma, sigma_a and sigma_b are already guaranteed to be distance
-            // (radius) away from the center of the ball (assuming everything
-            // is working correctly...)
-            found_valid_triangle = true;
-            triangle.push_back(sigma);
-            triangle.push_back(sigma_a);
-            triangle.push_back(sigma_b);
+          // test that there exists a p-ball with center in the outward half
+          // space that touches all three vertices and contains no other data
+          // point
+          if (triangle_normal.norm2() > 0) {
+            Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
+            vector<Point *> r_neighborhood = neighborhood(radius, center);
+            if (r_neighborhood.size() == 3) {
+              // we don't neet to check membership in r_neighborhood because
+              // sigma, sigma_a and sigma_b are already guaranteed to be distance
+              // (radius) away from the center of the ball (assuming everything
+              // is working correctly...)
+              found_valid_triangle = true;
+              triangle.push_back(sigma);
+              triangle.push_back(sigma_a);
+              triangle.push_back(sigma_b);
+            }
           }
         }
       }
+      processed_cells.insert(h);
     }
-    ++unused_index;
+    increment_seed_cell();
   }
+
   if (found_valid_triangle) {
     return triangle;
   } else {
@@ -141,7 +143,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   CellIndex c = get_cell(p);
   CellIndex cur_cell;
   int cur_hash;
-  vector<Point *> *cur_points;
+  vector<Point> *cur_points;
 
   // literally check all the cells that are possibly within reach...
   for (int x = (c.x_ind - reach); x <= (c.x_ind + reach); ++x) {
@@ -151,12 +153,12 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
         cur_hash = hash_cell(cur_cell);
         if (spatial_map.find(cur_hash) != spatial_map.end()) {
           cur_points = spatial_map.at(cur_hash);
-          for (auto const &q : *cur_points) {
+          for (auto &q : *cur_points) {
             // we actually include the boundary of the neighborhood because
             // we're interested in consider spheres that could intersect
             // such points
-            if ((q->pos - p.pos).norm() <= r) {
-              r_neighborhood.push_back(q);
+            if ((q.pos - p.pos).norm() <= r) {
+              r_neighborhood.push_back(&q);
             }
           }
         }
@@ -271,15 +273,63 @@ BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
   return CellIndex(x_ind, y_ind, z_ind);
 }
 
+Point* BallPivot::get_seed_candidate(const CellIndex &c) {
+  /* Return the point in the cell aligned most strongly
+   * with the average normal
+   */
+  int c_hash = hash_cell(c);
+  if (spatial_map.find(c_hash) != spatial_map.end()) {
+    // find average normal
+    vector<Point> *points = spatial_map.at(c_hash);
+    Vector3D avg_normal = Vector3D(0, 0, 0);
+    for (const auto &p : *points) {
+      avg_normal += p.normal;
+    }
+    avg_normal /= points->size();
+
+    double max_dot = -INF_D;
+    Point *best_candidate;
+    for (Point &p : *points) {
+      double cur_dot = dot(p.normal, avg_normal);
+      if (cur_dot > max_dot) {
+        max_dot = cur_dot;
+        best_candidate = &p;
+      }
+    }
+    return best_candidate;
+  } else {
+    return NULL;
+  }
+}
+
+void BallPivot::increment_seed_cell() {
+  if (seed_cell.z_ind >= max_cell.z_ind) {
+    seed_cell.z_ind = 0;
+    seed_cell.y_ind += 1;
+    if (seed_cell.y_ind >= max_cell.y_ind) {
+      seed_cell.y_ind = 0;
+      seed_cell.x_ind += 1;
+      if (seed_cell.x_ind >= max_cell.x_ind) {
+        // at this point all cells should
+        // have been traversed
+      }
+    } else {
+      seed_cell.y_ind += 1;
+    }
+  } else {
+    seed_cell.z_ind += 1;
+  }
+}
+
 void BallPivot::calculate_normals() {
   // TODO verify that this rewrite works
-  for (auto& pair : spatial_map) {
-    vector<Point *> *points = pair.second;
+  for (const auto &pair : spatial_map) {
+    vector<Point> *points = pair.second;
     // first calculate the centroid of the cell (cube)
     // by taking the average of the position vectors
     Vector3D centroid = Vector3D(0, 0, 0);
-    for (auto const &point : *points) {
-      centroid += point->pos;
+    for (const auto &point : *points) {
+      centroid += point.pos;
     }
 
     // now assign the normals of each point to be the difference
@@ -288,8 +338,8 @@ void BallPivot::calculate_normals() {
     Vector3D avg_other_pos;
     double num_other = (points->size() > 1) ? points->size() - 1 : 1;
     for (auto &point : *points) {
-      avg_other_pos = (centroid - point->pos) / num_other;
-      point->normal = (point->pos - avg_other_pos).unit();
+      avg_other_pos = (centroid - point.pos) / num_other;
+      point.normal = (point.pos - avg_other_pos).unit();
     }
   }
 }
