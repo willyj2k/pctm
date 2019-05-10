@@ -5,15 +5,31 @@
 #include "CGL/CGL.h"
 #include "ballPivot.h"
 #include "point.h"
+#include <iostream>
 
 using namespace std;
 using namespace CGL;
+
+Point *point;
+
+bool compare(Point *a, Point *b) {
+  /* Sort in order of descending distance from *point
+   * so that we can modify the list by popping from the back
+   */
+  // TODO: we can get rid of "BallPivot B;" if we make the "dist" function static
+  // TODO: this means "point" has to be static too
+  // TODO: this might mess with our use of "point" elsewhere!
+  float dista = BallPivot::dist(*a);
+  float distb = BallPivot::dist(*b);
+  return dista < distb;
+}
 
 void BallPivot::init(std::vector <Point> points, float radius) {
   //this->used;
   this->unused = points;
   this->radius = radius;
   BallPivot::create_spatial_grid();
+  BallPivot::calculate_normals();
 }
 
 void BallPivot::create_spatial_grid() {
@@ -49,10 +65,10 @@ std::vector<Point> BallPivot::find_seed_triangle() {
   std::vector<Point> triangle;
   while (!found_valid_triangle && index < unused.size()) {
     sigma = &unused[index];
-
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
     float h = hash_position(*point);
+
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
@@ -192,16 +208,36 @@ float BallPivot::hash_position(const Point &p) {
   return pow(113, 1) * xpos + pow(113, 2) * ypos + pow(113, 3) * zpos;
 }
 
+void BallPivot::calculate_normals() {
+    for (auto pair : map) {
+        vector<Point *>* points = pair.second;
+        Vector3D centroid;
+        for (int curr = 0; curr < points->size(); curr++) {
+            centroid = Vector3D();
+            for (int i = 0; i < points->size(); i++) {
+                if (i == curr) {
+                    continue;
+                }
+                centroid += ((*points)[i])->pos;
+            }
+            if (points->size() > 1) {
+                centroid = centroid / (points->size() - 1);
+            }
+            Vector3D mag = ((*points)[curr])->pos - centroid;
+            Vector3D dir = mag.unit();
+            ((*points)[curr])->normal = dir;
+        }
+    }
+}
+
 float BallPivot::distance(const Point &a, const Point &b) {
   Vector3D ab = a.pos - b.pos;
   return ab.norm();
 }
 
-bool BallPivot::compare(Point *a, Point *b) {
-  /* Sort in order of descending distance from *point
-   * so that we can modify the list by popping from the back
-   */
-  float dista = distance(*a, *point);
-  float distb = distance(*b, *point);
-  return dista > distb;
+float BallPivot::dist(const Point &a) {
+  Vector3D ab = a.pos - point->pos;
+  return ab.norm();
 }
+
+

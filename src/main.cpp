@@ -8,7 +8,7 @@
 #include "shaderUtils.h"
 #include "rply.h"
 #include "rplyfile.h"
-#include "seedSelection.h"
+#include "ballPivot.h"
 
 #include <iostream>
 
@@ -57,8 +57,9 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
           points.push_back(p);
       }
 
-      seedSelection seed = seedSelection();
-      seed.init(points, 0.001);
+      BallPivot pivot = BallPivot();
+      pivot.init(points, 0.001);
+      pivot.find_seed_triangle();
 
       Camera* cam = new Camera();
       cam->type = CAMERA;
