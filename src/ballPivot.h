@@ -34,7 +34,7 @@ class BallPivot {
     double width;
     double height;
 
-//    static Point *point;
+//    static Point *sigma;
 
     void create_spatial_grid ();
 //    std::vector<Point *> find_seed_triangle();
@@ -44,7 +44,6 @@ class BallPivot {
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     float hash_position(const Point &p);
     void calculate_normals();
-    float distance(const Point &a, const Point &b);
 
 //    bool compare(Point *a, Point *b);
 };

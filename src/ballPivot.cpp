@@ -10,18 +10,17 @@
 using namespace std;
 using namespace CGL;
 
-Point *point;
+Point *sigma;
 
 bool compare(Point *a, Point *b) {
-  /* Sort in order of descending distance from *point
+  /* Sort in order of descending distance from *sigma
    * so that we can modify the list by popping from the back
    */
-  // TODO: we can get rid of "BallPivot B;" if we make the "dist" function static
-  // TODO: this means "point" has to be static too
-  // TODO: this might mess with our use of "point" elsewhere!
+  // TODO: this means "sigma" has to be static too
+  // TODO: this might mess with our use of "sigma" elsewhere!
   float dista = BallPivot::dist(*a);
   float distb = BallPivot::dist(*b);
-  return dista < distb;
+  return dista > distb;
 }
 
 void BallPivot::init(std::vector <Point> points, float radius) {
@@ -64,7 +63,9 @@ std::vector<Point> BallPivot::find_seed_triangle() {
   int index = 0;
   std::vector<Point> triangle;
   while (!found_valid_triangle && index < unused.size()) {
+    // update 
     sigma = &unused[index];
+
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
     float h = hash_position(*sigma);
@@ -78,7 +79,7 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       // now, build potential seed triangles
       // organize lst in order of distance from point
       // such that closer points are at the back
-      // std::sort(lst->begin(), lst->end(), &compare);
+      std::sort(lst->begin(), lst->end(), compare);
 
       // Stop when a valid seed triangle is found
       int i = 0;
@@ -230,13 +231,8 @@ void BallPivot::calculate_normals() {
     }
 }
 
-float BallPivot::distance(const Point &a, const Point &b) {
-  Vector3D ab = a.pos - b.pos;
-  return ab.norm();
-}
-
 float BallPivot::dist(const Point &a) {
-  Vector3D ab = a.pos - point->pos;
+  Vector3D ab = a.pos - sigma->pos;
   return ab.norm();
 }
 
