@@ -14,7 +14,7 @@ using namespace CGL;
 class BallPivot {
   public:
     void init(std::vector<Point> points, double radius, Vector3D bound_min, Vector3D bound_max);
-    std::vector<Point> find_seed_triangle();
+    std::vector<Point *> find_seed_triangle();
     static double dist(const Point &p);
 
   private:

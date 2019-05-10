@@ -69,12 +69,12 @@ void BallPivot::create_spatial_grid() {
   }
 }
 
-vector<Point> BallPivot::find_seed_triangle() {
+vector<Point *> BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
-  vector<Point> triangle;
+  vector<Point *> triangle;
   while (!found_valid_triangle && index < unused.size()) {
     // update 
     sigma = &unused[index];
@@ -84,33 +84,43 @@ vector<Point> BallPivot::find_seed_triangle() {
     int h = hash_position(*sigma);
 
     if (map.find(h) != map.end()) {
-      // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
+      // obtain a list of points in a (2 * rho)-neighborhood of *point,
       // or on the boundary of said neighborhood
       // (currently this just gets points in the same spatial partition)
-      vector<Point *> *lst = map.at(h);
+      vector<Point *> lst = neighborhood(2 * radius, *sigma);
 
       // now, build potential seed triangles
       // organize lst in order of distance from point
       // such that closer points are at the back
-      sort(lst->begin(), lst->end(), compare);
+      sort(lst.begin(), lst.end(), compare);
 
       // Stop when a valid seed triangle is found
       int i = 0;
-      while (!found_valid_triangle && lst->size() >= 2) {
+      while (!found_valid_triangle && lst.size() >= 2) {
         // check that the triangle normal is consistent with the vertex normals
-        Point *sigma_a = lst->at(i);
-        Point *sigma_b = lst->at(i + 1);
+        Point *sigma_a = lst.at(i);
+        Point *sigma_b = lst.at(i + 1);
 
         // triangle_normal will be the zero vector if the points don't form a
         // valid triangle
         Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
 
+        // test that there exists a p-ball with center in the outward half
+        // space that touches all three vertices and contains no other data
+        // point
         if (triangle_normal.norm2() > 0) {
-          // TODO
-          // test that there exists a p-ball with center in the outward half
-          // space that touches all three vertices and contains no other data
-          // point
-          Vector3D center = ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal);
+          Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
+          vector<Point *> r_neighborhood = neighborhood(radius, center);
+          if (r_neighborhood.size() == 3) {
+            // we don't neet to check membership in r_neighborhood because
+            // sigma, sigma_a and sigma_b are already guaranteed to be distance
+            // (radius) away from the center of the ball (assuming everything
+            // is working correctly...)
+            found_valid_triangle = true;
+            triangle.push_back(sigma);
+            triangle.push_back(sigma_a);
+            triangle.push_back(sigma_b);
+          }
         }
       }
     }
@@ -120,7 +130,7 @@ vector<Point> BallPivot::find_seed_triangle() {
     return triangle;
   } else {
     // No seed triangle was found!!
-    vector<Point> empty;
+    vector<Point *> empty;
     return empty;
   }
 }
