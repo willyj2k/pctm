@@ -21,18 +21,18 @@ vector<Vector3D> vertices;
 Vector3D vertex;
 
 static int vertex_cb(p_ply_argument argument) {
-    long eol;
-    ply_get_argument_user_data(argument, NULL, &eol);
-    double value = ply_get_argument_value(argument);
-    if (eol == 0) {
-        vertex = Vector3D(value, 0, 0);
-    } else if (eol == 1) {
-        vertex.y = value;
-    } else {
-        vertex.z = value;
-        vertices.push_back(vertex);
-    }
-    return 1;
+  long eol;
+  ply_get_argument_user_data(argument, NULL, &eol);
+  double value = ply_get_argument_value(argument);
+  if (eol == 0) {
+    vertex = Vector3D(value, 0, 0);
+  } else if (eol == 1) {
+    vertex.y = value;
+  } else {
+    vertex.z = value;
+    vertices.push_back(vertex);
+  }
+  return 1;
 }
 
 int loadFile(MeshEdit* collada_viewer, const char* path) {
@@ -40,38 +40,39 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   Scene* scene = new Scene();
 
   std::string path_str = path;
-  if (path_str.substr(path_str.length()-4, 4) == ".ply")
-  {
-      p_ply ply = ply_open(path, NULL, 0, NULL);
-      p_ply_element element = NULL;
-      int success = ply_read_header(ply);
-      long nvertices = ply_set_read_cb(ply, "vertex", "x", vertex_cb, NULL, 0);
-      ply_set_read_cb(ply, "vertex", "y", vertex_cb, NULL, 1);
-      ply_set_read_cb(ply, "vertex", "z", vertex_cb, NULL, 2);
-      if (!ply_read(ply)) return 1;
-      ply_close(ply);
+  if (path_str.substr(path_str.length()-4, 4) == ".ply") {
+    cout << "Parsing ply file for points..." << flush;
+    p_ply ply = ply_open(path, NULL, 0, NULL);
+    p_ply_element element = NULL;
+    int success = ply_read_header(ply);
+    long nvertices = ply_set_read_cb(ply, "vertex", "x", vertex_cb, NULL, 0);
+    ply_set_read_cb(ply, "vertex", "y", vertex_cb, NULL, 1);
+    ply_set_read_cb(ply, "vertex", "z", vertex_cb, NULL, 2);
+    if (!ply_read(ply)) return 1;
+    ply_close(ply);
 
-      vector<Point> points;
-      for (int i = 0; i < vertices.size(); i++) {
-          Point p = Point(vertices[i], Vector3D());
-          points.push_back(p);
-      }
+    vector<Point> points;
+    for (int i = 0; i < vertices.size(); i++) {
+      Point p = Point(vertices[i], Vector3D());
+      points.push_back(p);
+    }
+    cout << " Done\n";
 
-      BallPivot pivot = BallPivot();
-      pivot.init(points, 0.001);
-      pivot.find_seed_triangle();
+    BallPivot pivot = BallPivot();
+    pivot.init(points, 0.001);
+    pivot.find_seed_triangle();
 
-      Camera* cam = new Camera();
-      cam->type = CAMERA;
-      Node ply_node;
-      ply_node.instance = cam;
-      scene->nodes.push_back(ply_node);
+    Camera* cam = new Camera();
+    cam->type = CAMERA;
+    Node ply_node;
+    ply_node.instance = cam;
+    scene->nodes.push_back(ply_node);
 
-      Polymesh* mesh = new Polymesh();
-      mesh->type = POLYMESH;
-      ply_node.instance = mesh;
-      scene->points = vertices;
-      scene->nodes.push_back(ply_node);
+    Polymesh* mesh = new Polymesh();
+    mesh->type = POLYMESH;
+    ply_node.instance = mesh;
+    scene->points = vertices;
+    scene->nodes.push_back(ply_node);
   }
   else if (path_str.substr(path_str.length()-4, 4) == ".dae")
   {

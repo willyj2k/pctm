@@ -7,10 +7,14 @@
 #include "point.h"
 #include <iostream>
 
-using namespace std;
 using namespace CGL;
+using std::vector;
+using std::make_pair;
+using std::sort;
+using std::cout;
+using std::flush;
 
-Point *sigma;
+static Point *sigma;
 
 bool compare(Point *a, Point *b) {
   /* Sort in order of descending distance from *sigma
@@ -18,17 +22,25 @@ bool compare(Point *a, Point *b) {
    */
   // TODO: this means "sigma" has to be static too
   // TODO: this might mess with our use of "sigma" elsewhere!
-  float dista = BallPivot::dist(*a);
-  float distb = BallPivot::dist(*b);
+  double dista = BallPivot::dist(*a);
+  double distb = BallPivot::dist(*b);
   return dista > distb;
 }
 
-void BallPivot::init(std::vector <Point> points, float radius) {
+void BallPivot::init(vector<Point> points, double radius) {
+  cout << "Initializing Ball Pivot member variables..." << flush;
   //this->used;
   this->unused = points;
   this->radius = radius;
+  cout << " Done\n";
+  
+  cout << "Creating Spatial Grid..." << flush;
   BallPivot::create_spatial_grid();
+  cout << " Done\n";
+
+  cout << "Calculating vertex normals..." << flush;
   BallPivot::calculate_normals();
+  cout << " Done\n";
 }
 
 void BallPivot::create_spatial_grid() {
@@ -39,36 +51,36 @@ void BallPivot::create_spatial_grid() {
 
   for (int i = 0; i < unused.size(); i++) {
     Point *p = &unused[i];
-    float h = hash_position(*p);
+    double h = hash_position(*p);
     if (map.find(h) == map.end()) {
       // does not exist already
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
       //map.insert({h, lst});
-      map.insert(std::make_pair(h, lst));
+      map.insert(make_pair(h, lst));
     } else {
       // exists
       vector<Point *> *lst = map.at(h);
       lst->push_back(p);
       //map.insert({h, lst});
-      map.insert(std::make_pair(h, lst));
+      map.insert(make_pair(h, lst));
     }
   }
 }
 
-std::vector<Point> BallPivot::find_seed_triangle() {
+vector<Point> BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   bool consistent_normals;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   int index = 0;
-  std::vector<Point> triangle;
+  vector<Point> triangle;
   while (!found_valid_triangle && index < unused.size()) {
     // update 
     sigma = &unused[index];
 
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    float h = hash_position(*sigma);
+    double h = hash_position(*sigma);
 
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
@@ -79,7 +91,14 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       // now, build potential seed triangles
       // organize lst in order of distance from point
       // such that closer points are at the back
-      std::sort(lst->begin(), lst->end(), compare);
+      sort(lst->begin(), lst->end(), compare);
+
+      // TODO remove; just for testing
+      cout << "YAY";
+      for (Point *p : *lst) {
+        cout << dist(*p);
+      }
+      cout << "DONE";
 
       // Stop when a valid seed triangle is found
       int i = 0;
@@ -102,10 +121,10 @@ std::vector<Point> BallPivot::find_seed_triangle() {
     ++index;
   }
   if (found_valid_triangle) {
-    return triangle
+    return triangle;
   } else {
     // No seed triangle was found!!
-    std::vector<Point> empty;
+    vector<Point> empty;
     return empty;
   }
 }
@@ -134,9 +153,9 @@ Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c)
   return bary_a * a.pos + bary_b * b.pos + bary_c * c.pos;
 }
 
-Vector3D BallPivot::rho_center(double rho, const Point &a, const Point &b, const Point &c) {
+Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius
-   * rho that intersects the points a, b, c
+   * this->radius that intersects the points a, b, c
    *
    * Assumes that a, b and c form a valid triangle.
    */
@@ -145,11 +164,10 @@ Vector3D BallPivot::rho_center(double rho, const Point &a, const Point &b, const
 
   // a, b and c lie on the surface of the sphere, so we can apply the
   // the Pythagorean theorem to find the perpendicular distance from the center
-  // of the sphere to the triangle: (circumcenter - c)^2 + perp_dist^2 = rho^2
-  double perp_dist = sqrt(pow(rho, 2) - (proj_center - c.pos).norm2());
+  // of the sphere to the triangle: (circumcenter - c)^2 + perp_dist^2 = radius^2
+  double perp_dist = sqrt(pow(radius, 2) - (proj_center - c.pos).norm2());
 
   Vector3D plane_normal = correct_plane_normal(a, b, c);
-
   return proj_center + perp_dist * plane_normal;
 }
 
@@ -197,7 +215,7 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
   }
 }
 
-float BallPivot::hash_position(const Point &p) {
+double BallPivot::hash_position(const Point &p) {
   double w = 3 * width / (2 * radius);
   double h = 3 * height / (2 * radius);
   double t = max(w, h);
@@ -210,30 +228,30 @@ float BallPivot::hash_position(const Point &p) {
 }
 
 void BallPivot::calculate_normals() {
-    for (auto pair : map) {
-        vector<Point *>* points = pair.second;
-        Vector3D centroid;
-        for (int curr = 0; curr < points->size(); curr++) {
-            centroid = Vector3D();
-            for (int i = 0; i < points->size(); i++) {
-                if (i == curr) {
-                    continue;
-                }
-                centroid += ((*points)[i])->pos;
-            }
-            if (points->size() > 1) {
-                centroid = centroid / (points->size() - 1);
-            }
-            Vector3D mag = ((*points)[curr])->pos - centroid;
-            Vector3D dir = mag.unit();
-            ((*points)[curr])->normal = dir;
+  for (auto pair : map) {
+    vector<Point *>* points = pair.second;
+    Vector3D centroid;
+    for (int curr = 0; curr < points->size(); curr++) {
+      centroid = Vector3D();
+      for (int i = 0; i < points->size(); i++) {
+        if (i == curr) {
+          continue;
         }
+        centroid += ((*points)[i])->pos;
+      }
+      if (points->size() > 1) {
+        centroid = centroid / (points->size() - 1);
+      }
+      Vector3D mag = ((*points)[curr])->pos - centroid;
+      Vector3D dir = mag.unit();
+      ((*points)[curr])->normal = dir;
     }
+  }
 }
 
-float BallPivot::dist(const Point &a) {
-  Vector3D ab = a.pos - sigma->pos;
-  return ab.norm();
+double BallPivot::dist(const Point &p) {
+  Vector3D diff = p.pos - sigma->pos;
+  return diff.norm();
 }
 
 

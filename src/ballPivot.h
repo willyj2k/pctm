@@ -9,14 +9,13 @@
 #include "point.h"
 #include <unordered_map>
 
-using namespace std;
 using namespace CGL;
 
 class BallPivot {
   public:
-    void init(std::vector<Point> points, float radius);
+    void init(std::vector<Point> points, double radius);
     std::vector<Point> find_seed_triangle();
-    static float dist(const Point &a);
+    static double dist(const Point &p);
 
   private:
     // std::vector of used points
@@ -26,26 +25,19 @@ class BallPivot {
     std::vector<Point> unused;
 
     // spatial map
-    std::unordered_map<float, vector<Point *> *> map;
+    std::unordered_map<double, std::vector<Point *> *> map;
 
-    // float radius
-    float radius;
-
+    double radius;
     double width;
     double height;
 
-//    static Point *sigma;
-
     void create_spatial_grid ();
-//    std::vector<Point *> find_seed_triangle();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
-    Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
+    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    float hash_position(const Point &p);
+    double hash_position(const Point &p);
     void calculate_normals();
-
-//    bool compare(Point *a, Point *b);
 };
 
 
