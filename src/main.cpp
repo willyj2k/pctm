@@ -21,18 +21,18 @@ vector<Vector3D> vertices;
 Vector3D vertex;
 
 static int vertex_cb(p_ply_argument argument) {
-    long eol;
-    ply_get_argument_user_data(argument, NULL, &eol);
-    double value = ply_get_argument_value(argument);
-    if (eol == 0) {
-        vertex = Vector3D(value, 0, 0);
-    } else if (eol == 1) {
-        vertex.y = value;
-    } else {
-        vertex.z = value;
-        vertices.push_back(vertex);
-    }
-    return 1;
+  long eol;
+  ply_get_argument_user_data(argument, NULL, &eol);
+  double value = ply_get_argument_value(argument);
+  if (eol == 0) {
+    vertex = Vector3D(value, 0, 0);
+  } else if (eol == 1) {
+    vertex.y = value;
+  } else {
+    vertex.z = value;
+    vertices.push_back(vertex);
+  }
+  return 1;
 }
 
 int loadFile(MeshEdit* collada_viewer, const char* path) {
