@@ -79,11 +79,6 @@ std::vector<Point> BallPivot::find_seed_triangle() {
       // TODO ask Rene about the lst->begin()+4
       // Rene: lst->begin()+4 was from an example I saw online
       std::sort(lst->begin(), lst->end(), compare);
-//      std::sort(lst->begin()+4, lst->end(),
-//              [x] (const Point& lhs, const Point& rhs) {
-//                  return distance(x, lhs) < distance(x, rhs);
-//              }
-//              );
 
 
       // TODO: what happened to the hashmap of normals per vertex?
