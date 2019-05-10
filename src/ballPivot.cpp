@@ -67,7 +67,7 @@ std::vector<Point> BallPivot::find_seed_triangle() {
     sigma = &unused[index];
     // consider all pairs of points in its neighborhood
     // first get the neighborhood, aka use spatial map
-    float h = hash_position(*point);
+    float h = hash_position(*sigma);
 
     if (map.find(h) != map.end()) {
       // TODO obtain a list of points in a (2 * rho)-neighborhood of *point,
