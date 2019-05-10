@@ -39,6 +39,8 @@ class BallPivot {
 //    std::vector<Point *> find_seed_triangle();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
     Vector3D rho_center(double rho, const Point &a, const Point &b, const Point &c);
+    Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
+    Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     float hash_position(const Point &p);
     float distance(const Point &a, const Point &b);
     bool compare(Point *a, Point *b);
