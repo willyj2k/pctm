@@ -105,9 +105,11 @@ vector<Point> BallPivot::find_seed_triangle() {
         Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
 
         if (triangle_normal.norm2() > 0) {
-          // test that the p-ball with center in the outward half space touches
-          // all three vertices and contains no other data point
           // TODO
+          // test that there exists a p-ball with center in the outward half
+          // space that touches all three vertices and contains no other data
+          // point
+          Vector3D center = ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal);
         }
       }
     }
@@ -146,12 +148,14 @@ Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c)
   return bary_a * a.pos + bary_b * b.pos + bary_c * c.pos;
 }
 
-Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c) {
+Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius
-   * this->radius that intersects the points a, b, c
+   * this->radius that intersects the points a, b, c.
    *
-   * Assumes that a, b and c form a valid triangle.
+   * Assumes that a, b and c form a valid triangle, and takes the triangle's
+   * normal as an input (just to save some redundant calculation).
    */
+
   // compute the projection of the sphere center onto the triangle abc
   Vector3D proj_center = circumcenter(a, b, c);
 
@@ -160,8 +164,7 @@ Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c) 
   // of the sphere to the triangle: (circumcenter - c)^2 + perp_dist^2 = radius^2
   double perp_dist = sqrt(pow(radius, 2) - (proj_center - c.pos).norm2());
 
-  Vector3D plane_normal = correct_plane_normal(a, b, c);
-  return proj_center + perp_dist * plane_normal;
+  return proj_center + perp_dist * normal;
 }
 
 Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Point &c) {

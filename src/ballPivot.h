@@ -33,7 +33,7 @@ class BallPivot {
 
     void create_spatial_grid ();
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
+    Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     double hash_position(const Point &p);
