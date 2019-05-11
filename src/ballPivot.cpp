@@ -56,13 +56,11 @@ void BallPivot::create_spatial_grid() {
       // does not exist already
       vector<Point *> *lst = new vector<Point *>();
       lst->push_back(p);
-      //map.insert({h, lst});
       map.insert(make_pair(h, lst));
     } else {
       // exists
       vector<Point *> *lst = map.at(h);
       lst->push_back(p);
-      //map.insert({h, lst});
       map.insert(make_pair(h, lst));
     }
   }
@@ -252,6 +250,15 @@ void BallPivot::calculate_normals() {
 double BallPivot::dist(const Point &p) {
   Vector3D diff = p.pos - sigma->pos;
   return diff.norm();
+}
+
+Point  *BallPivot::ballPivot(const Point &a, const Point &b, const Point &c) {
+  // try to find point sigma-k
+  // 1. choose edge e_ij and get midpoint of that edge
+  Vector3D m = 0.5 * (a.pos + b.pos);
+  // 2. consider all points in 2p neighborhood of m
+  // 3. for each point sigma-x, compute center of ball (cx) touching sigma-x, a, and b
+  // 4. report the first point cx that exists
 }
 
 

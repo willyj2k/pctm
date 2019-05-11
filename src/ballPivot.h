@@ -16,6 +16,7 @@ class BallPivot {
     void init(std::vector<Point> points, double radius);
     std::vector<Point> find_seed_triangle();
     static double dist(const Point &p);
+    Point *ballPivot(const Point &a, const Point &b, const Point &c);
 
   private:
     // std::vector of used points
