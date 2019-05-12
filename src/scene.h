@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "point.h"
 
 #include "CGL/CGL.h"
 
@@ -57,8 +58,7 @@ namespace CGL {
   struct Scene {
 
     std::vector<Node> nodes;
-    std::vector<Vector3D> points; ///for rendering vertices
-
+    std::vector<Point*> points; /// for rendering normals
   }; // struct Scene
 
 } // namespace CGL

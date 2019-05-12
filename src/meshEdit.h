@@ -13,6 +13,7 @@
 #include "material.h"
 #include "halfEdgeMesh.h"
 #include "student_code.h"
+#include "point.h"
 
 #include <string>
 #include <iostream>
@@ -226,7 +227,7 @@ class MeshEdit : public Renderer {
   Scene* scene;
 
   vector<MeshNode> meshNodes;
-  vector<Vector3D> points;
+  vector<Point*> points;
 
   // View Frustrum Variables.
   float hfov; // FIXME : I would like to specify the view frustrum
@@ -275,12 +276,14 @@ class MeshEdit : public Renderer {
   void update_camera();
   void draw_meshes();
   void draw_points();
+  void draw_normals();
 
   // Resets the camera to the canonical initial view position.
   void reset_camera();
 
   // Rendering functions.
-  void renderPoints ( vector<Vector3D> vertices);
+  void renderPoints ( vector<Point*> points);
+  void renderNormals ( vector<Point*> points);
   void renderMesh   ( HalfedgeMesh& mesh );
   void drawFaces    ( HalfedgeMesh& mesh );
   void drawEdges    ( HalfedgeMesh& mesh );

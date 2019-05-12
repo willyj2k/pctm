@@ -8,38 +8,101 @@
 #include "CGL/CGL.h"
 #include "point.h"
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace CGL;
 
+class PivotEdge {
+    public:
+      Point a;
+      Point b;
+      PivotEdge(Point a, Point b) : a( a ), b( b ) { }
+      bool isBoundary = false;
+};
+
 class BallPivot {
   public:
-    void init(std::vector<Point> points, double radius);
-    std::vector<Point> find_seed_triangle();
+    void init(const std::vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max);
+    std::vector<Point *> find_seed_triangle();
+    std::vector<Point*> all_points;
+    std::vector<Point*> unused;
+    std::vector<Point*> used;
+
     static double dist(const Point &p);
     Point *ballPivot(const Point &a, const Point &b, const Point &c);
 
   private:
-    // std::vector of used points
-    std::vector<Point> used;
+    // cell info for hashing
+    double cell_width;
 
-    // std::vector of unused points
-    std::vector<Point> unused;
+    struct CellIndex {
+      int x_ind;
+      int y_ind;
+      int z_ind;
 
-    // spatial map
-    std::unordered_map<double, std::vector<Point *> *> map;
+      // constructors
+      CellIndex(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
 
+      // default constructor; be careful with this
+      CellIndex() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
+
+      // equality override
+      bool operator==(const CellIndex &other) const {
+        return (x_ind == other.x_ind
+                && y_ind == other.y_ind
+                && z_ind == other.z_ind);
+      }
+
+      bool operator!=(const CellIndex &other) const {
+        return (x_ind != other.x_ind
+                || y_ind == other.y_ind
+                || z_ind == other.z_ind);
+      }
+    };
+
+    std::vector<vector<PivotEdge> > front;
+
+    // spatial map of points in the cloud
+    //
+    // use this as the master data structure for storing points;
+    // we don't want to use pointers to Points here anymore and
+    // instead want to just store them here raw
+    std::unordered_map<int, std::vector<Point> *> spatial_map;
+
+    // radius of the ball to be pivoted
     double radius;
-    double width;
-    double height;
 
-    void create_spatial_grid ();
+    // vectors to define the bounding box of the point cloud for hashing
+    // TODO not sure if we really need bound_max for now
+    Vector3D bound_min;
+    Vector3D bound_max;
+
+    // set to track cells that have already been seeded and pivoted
+    std::unordered_set<int> processed_cells;
+    CellIndex seed_cell;
+    CellIndex max_cell;
+
+    // primes for hashing
+    int large_prime = 2038074743;
+    int small_prime = 113;
+
+    void create_spatial_grid(const vector<Point> &points);
+    vector<Point *> neighborhood(double r, const Point &p);
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
+    Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    double hash_position(const Point &p);
+    int hash_position(const Point &p);
+    int hash_cell(const CellIndex &c);
+    CellIndex get_cell(const Point &p);
+    Point* get_seed_candidate(const CellIndex &c);
+    void increment_seed_cell();
     void calculate_normals();
+    void join(PivotEdge e, Point sigma, int index);
+    void glue(PivotEdge ik);
+    bool on_front(Point k);
+    bool not_used(Point k);
+    bool contains_edge(vector<PivotEdge> vec, PivotEdge e);
 };
-
 
 #endif //BALLPIVOT_H

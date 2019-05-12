@@ -40,7 +40,8 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   Scene* scene = new Scene();
 
   std::string path_str = path;
-  if (path_str.substr(path_str.length()-4, 4) == ".ply") {
+  if (path_str.substr(path_str.length()-4, 4) == ".ply")
+  {
     cout << "Parsing ply file for points..." << flush;
     p_ply ply = ply_open(path, NULL, 0, NULL);
     p_ply_element element = NULL;
@@ -52,15 +53,46 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     ply_close(ply);
 
     vector<Point> points;
-    for (int i = 0; i < vertices.size(); i++) {
-      Point p = Point(vertices[i], Vector3D());
+
+    // track bounding box for spatial hashing
+    double min_x = INF_D;
+    double max_x = -INF_D;
+    double min_y = INF_D;
+    double max_y = -INF_D;
+    double min_z = INF_D;
+    double max_z = -INF_D;
+
+    for (auto const &v : vertices) {
+      if (v.x < min_x) {
+        min_x = v.x;
+      } else if (v.x > max_x) {
+        max_x = v.x;
+      }
+
+      if (v.y < min_y) {
+        min_y = v.y;
+      } else if (v.y > max_y) {
+        max_y = v.y;
+      }
+
+      if (v.z < min_z) {
+        min_z = v.z;
+      } else if (v.z > max_z) {
+        max_z = v.z;
+      }
+
+      Point p = Point(v);
       points.push_back(p);
     }
     cout << " Done\n";
 
+    Vector3D bound_min = Vector3D(min_x, min_y, min_z);
+    Vector3D bound_max = Vector3D(max_x, max_y, max_z);
+
     BallPivot pivot = BallPivot();
-    pivot.init(points, 0.001);
-//    pivot.find_seed_triangle();
+    pivot.init(points, 0.001, bound_min, bound_max);
+    vector<Point *> seed_triangle = pivot.find_seed_triangle();
+    cout << "\nFound seed triangle!\n" << flush;
 
     Camera* cam = new Camera();
     cam->type = CAMERA;
@@ -71,7 +103,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     Polymesh* mesh = new Polymesh();
     mesh->type = POLYMESH;
     ply_node.instance = mesh;
-    scene->points = vertices;
+    scene->points = pivot.all_points;
     scene->nodes.push_back(ply_node);
   }
   else if (path_str.substr(path_str.length()-4, 4) == ".dae")
@@ -110,6 +142,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   {
     return -1;
   }
+
   collada_viewer->load( scene );
 
   GLuint tex = makeTex("envmap/envmap.png");
