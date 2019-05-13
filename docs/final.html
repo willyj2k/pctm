@@ -32,13 +32,13 @@
 <body>
 
 <div align="center">
-<table style="width=100%">
-    <tr>
-        <td align="middle">
-            <img src="images/final/bun180_without_normals.png" align="middle" width="480px"/>
-        </td>
-    </tr>
-</table>
+    <table style="width=100%">
+        <tr>
+            <td align="middle">
+                <img src="images/final/bun180_without_normals.png" align="middle" width="480px"/>
+            </td>
+        </tr>
+    </table>
 </div>
 
 <br/>
@@ -81,6 +81,22 @@
         The pseudocode given for this algorithm required us to write separate helper functions such as
         find_seed_triangle, ball_pivot, join, and glue.</p>
 
+    <h4>Data Structures</h4>
+    <ul>
+        <li><p><b>Point: </b> Our point class stores a point position and its normal.</p></li>
+        <li><p><b>PivotTriangle: </b> This struct was added into our BallPivot class in order to store the 3 points
+            associated
+            with a triangle. It also stores information about an edge from the point sigma_i to sigma_j. This way, we
+            can
+            calculate the position of the ball as it pivots around a certain pivot edge.</p>
+        </li>
+        <li><p><b>Front: </b> A front is essentially a list of active edge loops that will be used to keep track of
+            growing
+            faces on the resulting mesh. In our code, this is represented as a vector of vectors of PivotEdges, where
+            edges
+            are popped or pushed back based on the removal and addition of edges in the ball pivot algorithm.</p></li>
+    </ul>
+
     <h4>Spatial Mapping</h4>
     <p>Given a list of points, we created a spatial map for these points in order to speed up the process of finding the
         seed triangle. Each 3D box had a height, width, and depth of 2 * (radius of the sphere). The hash position and
@@ -120,18 +136,74 @@
         created by the opposing edges. After running glue, any opposing edges will be removed from the front to prevent
         any repeating active edges, and the algorithm can proceed as usual.</p>
 
+    <h3>Problems</h3>
+    <ul>
+        <li>Rendering was a big challenge in this project. Initially we had relied on the existing code from MeshEdit to
+            render our mesh, but we realized that the halfedge data structure was heavily relied upon and we had chosen
+            to avoid using halfedges in our final design schema. Thus, the rendering for our vertex normals and
+            resulting mesh had to be done from scratch. Unfortunately, our group was unable to completely figure out the
+            shaders and difficult rendering syntax used by C++ and chose to prioritize completing our algorithm instead.
+            As such, our results were all in grayscale and have no sense of depth, but we felt that our time was better
+            spent on finishing our algorithm.
+        </li>
+    </ul>
+
+    <h3>Lessons Learned</h3>
+    <ul>
+        <li>Using C++ was not that great. We thought we could use our meshedit project to render, but the Halfedge data
+            structure overcomplicated the rendering so we had to create our own draw function. In the future, we would
+            use Python or Java to simplify our codebase and make navigating files easier.
+        </li>
+    </ul>
+
 
     <br>
 
     <h2>Results</h2>
+    <p>Here are a few images of the bunny and in point cloud form with normals rendered from different angled views of
+        the bunny.</p>
+    <div align="center">
+        <table style="width=100%">
+            <tr>
+                <td align="middle">
+                    <img src="images/final/bun045_with_normals.png" align="middle" width="480px"/>
+                </td>
+                <td align="middle">
+                    <img src="images/final/bun180_with_normals.png" align="middle" width="480px"/>
+                </td>
+            </tr>
+            <td align="middle">
+                <img src="images/final/bun270_with_normals.png" align="middle" width="480px"/>
+            </td>
+            <tr>
+
+            </tr>
+        </table>
+    </div>
 
     <br>
 
     <h2>References</h2>
+    <ul>
+        <li><a href="https://lidarwidgets.com/samples/bpa_tvcg.pdf" target="_blank">The Ball-Pivoting Algorithm for
+            Surface
+            Reconstruction</a></li>
+        <li><a href="http://graphics.stanford.edu/data/3Dscanrep/" target="_blank">The Stanford 3D Scanning
+            Repository</a></li>
+    </ul>
+
 
     <br>
 
     <h2>Contributions</h2>
+    <h4>Evan Chang</h4>
+    <p>Parsing and rendering points; join and glue helper methods</p>
+
+    <h4>Rene Lee</h4>
+    <p>Spatial mapping, rendering edges, helped with find_seed_triangle</p>
+
+    <h4>William Jow</h4>
+    <p>Ball_pivot function and finishing find_seed_triangle</p>
 
 </div>
 </body>
