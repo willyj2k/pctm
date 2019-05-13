@@ -277,6 +277,7 @@ class MeshEdit : public Renderer {
   void draw_meshes();
   void draw_points();
   void draw_normals();
+  void drawPivotEdges( std::vector< std::vector< PivotEdge > > edges );
 
   // Resets the camera to the canonical initial view position.
   void reset_camera();
