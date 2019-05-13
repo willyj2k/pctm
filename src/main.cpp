@@ -91,7 +91,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
 
     BallPivot pivot = BallPivot();
     pivot.init(points, 0.001, bound_min, bound_max);
-    vector<Point *> seed_triangle = pivot.find_seed_triangle();
+    BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
     cout << "\nFound seed triangle!\n" << flush;
 
     Camera* cam = new Camera();

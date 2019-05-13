@@ -167,9 +167,9 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
-    gluLookAt(0.0, 1.5, 0.0,// camera location.
-              0.0, 0.0, 0.0,// point looking at.
-              0.0, 0.0, 1.0);// up direction.
+    gluLookAt(   0.0, 0.5, 0.0,// camera location.
+        0.0, 0.0, 0.0,// point looking at.
+        0.0, 0.0, 1.0);// up direction.
 
     Vector3D c = Vector3D(0.0, 5.28586, 0.0);
     Vector3D v = Vector3D(0.0, 0.0, 0.0);
@@ -205,12 +205,12 @@ namespace CGL {
     glFlush();
   }
 
-  void MeshEdit::drawPivotEdges(std::vector<BallPivot::PivotTriangle> triangles) {
+  void MeshEdit::drawPivotTriangles(std::vector <BallPivot::PivotTriangle> edges) {
     DrawStyle *style = &defaultStyle;
-    for (BallPivot::PivotTriangle pt : triangles) {
-      Vector3D p0 = pt.sigma_i->pos;
-      Vector3D p1 = pt.sigma_j->pos;
-      Vector3D p2 = pt.sigma_o->pos;
+    for (BallPivot::PivotTriangle pe : edges) {
+        Vector3D p0 = pe.sigma_i->pos;
+        Vector3D p1 = pe.sigma_j->pos;
+        Vector3D p2 = pe.sigma_o->pos;
 
 //        setElementStyle(elementAddress(e));
 //        setColor(style->edgeColor);
