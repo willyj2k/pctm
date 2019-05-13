@@ -364,7 +364,7 @@ void BallPivot::calculate_normals() {
         double num_other = (points->size() > 1) ? points->size() - 1 : 1;
         for (auto &point : *points) {
           avg_other_pos = (centroid - point.pos) / num_other;
-          point.normal = (point.pos - avg_other_pos).unit();
+          point.normal = (point.pos - avg_other_pos);
           this->all_points.push_back(&point);
         }
     }
