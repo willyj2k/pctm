@@ -25,8 +25,7 @@ class BallPivot {
     void init(const std::vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max);
     std::vector<Point *> find_seed_triangle();
     std::vector<Point*> all_points;
-    std::vector<Point*> unused;
-    std::vector<Point*> used;
+    std::unordered_set<Point*> used;
 
     static double dist(const Point &p);
 

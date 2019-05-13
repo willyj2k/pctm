@@ -6,6 +6,7 @@
 #include "ballPivot.h"
 #include "point.h"
 #include <iostream>
+#include <unordered_set>
 
 using namespace CGL;
 using std::vector;
@@ -117,6 +118,9 @@ vector<Point *> BallPivot::find_seed_triangle() {
               triangle.push_back(sigma);
               triangle.push_back(sigma_a);
               triangle.push_back(sigma_b);
+              used.insert(sigma);
+              used.insert(sigma_a);
+              used.insert(sigma_b);
             }
           }
         }
@@ -360,9 +364,8 @@ void BallPivot::calculate_normals() {
         double num_other = (points->size() > 1) ? points->size() - 1 : 1;
         for (auto &point : *points) {
           avg_other_pos = (centroid - point.pos) / num_other;
-          point.normal = (point.pos - avg_other_pos).unit();
+          point.normal = (point.pos - avg_other_pos);
           this->all_points.push_back(&point);
-          this->unused.push_back(&point);
         }
     }
 }
@@ -432,15 +435,15 @@ void BallPivot::glue(PivotEdge ik) {
     if (loop_index1 == loop_index2) {
         //edges form entirety of loop (Scenario a)
         if (front[loop_index1].size() == 2) {
-            front.erase(front.begin() + (loop_index1 - 1));
+            front.erase(front.begin() + (loop_index1));
         } else {
             //edges form a loop and are adjacent
             if (std::abs(index1 - index2) == 1) {
-                front[loop_index1].erase(front[loop_index1].begin() + (index1 - 1));
+                front[loop_index1].erase(front[loop_index1].begin() + (index1));
                 if (index1 < index2) {
-                    front[loop_index1].erase(front[loop_index1].begin() + (index2 - 2));
-                } else {
                     front[loop_index1].erase(front[loop_index1].begin() + (index2 - 1));
+                } else {
+                    front[loop_index1].erase(front[loop_index1].begin() + (index2));
                 }
             } else {
             //edges form a loop and are not adjacent
@@ -450,18 +453,24 @@ void BallPivot::glue(PivotEdge ik) {
                     for (int i = index1 + 1; i < index2; i++) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index2 + 1; i < front[loop_index1].size() - (index2 - index1); i++) {
-                        loop2.push_back(front[loop_index1][i % front[loop_index1].size()]);
+                    for (int i = index2 + 1; i < front[loop_index1].size(); i++) {
+                        loop2.push_back(front[loop_index1][i]);
+                    }
+                    for (int i = 0; i < index1; i++) {
+                        loop2.push_back(front[loop_index1][i]);
                     }
                 } else {
                     for (int i = index2 + 1; i < index1; i++) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index1 + 1; i < front[loop_index1].size() - (index1 - index2); i++) {
-                        loop2.push_back(front[loop_index1][i % front[loop_index1].size()]);
+                    for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+                        loop2.push_back(front[loop_index1][i]);
+                    }
+                    for (int i = 0; i < index2; i++) {
+                        loop2.push_back(front[loop_index1][i]);
                     }
                 }
-                front.erase(front.begin() + (loop_index1 - 1));
+                front.erase(front.begin() + (loop_index1));
                 front.push_back(loop1);
                 front.push_back(loop2);
             }
@@ -475,14 +484,18 @@ void BallPivot::glue(PivotEdge ik) {
         for (int i = index2 + 1; i < front[loop_index2].size(); i++) {
             loop1.push_back(front[loop_index2][i]);
         }
-        for (int i = 0; i < front[loop_index2].size() - index2; i++) {
+        for (int i = 0; i < index2; i++) {
             loop1.push_back(front[loop_index2][i]);
         }
         for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
             loop1.push_back(front[loop_index1][i]);
         }
-        front.erase(front.begin() + (loop_index1 - 1));
-        front.erase(front.begin() + (loop_index2 - 1));
+        front.erase(front.begin() + (loop_index1));
+        if (loop_index1 < loop_index2) {
+            front.erase(front.begin() + (loop_index2 - 1));
+        } else {
+            front.erase(front.begin() + (loop_index2));
+        }
         front.push_back(loop1);
     }
 }
@@ -500,7 +513,7 @@ bool BallPivot::on_front(Point k) {
 }
 
 bool BallPivot::not_used(Point k) {
-    return std::find(unused.begin(), unused.end(), &k) != unused.end();
+    return !(used.find(&k) == used.end());
 }
 
 void mark_as_boundary(PivotEdge e) {
