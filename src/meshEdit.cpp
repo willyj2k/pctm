@@ -11,12 +11,11 @@
 
 namespace CGL {
 
-  void MeshEdit::init()
-  {
+  void MeshEdit::init() {
     smoothShading = false;
     shadingMode = false;
     shaderProgID = loadShaders("shader/vert", "shader/frag");
-    if(!shaderProgID)
+    if (!shaderProgID)
       shaderProgID = loadShaders("../shader/vert", "../shader/frag");
     text_mgr.init(use_hdpi);
     text_color = Color(1.0, 1.0, 1.0);
@@ -30,8 +29,8 @@ namespace CGL {
     hoveredFeature.invalidate();
 
     // Set the integer bit vector representing which keys are down.
-    left_down   = false;
-    right_down  = false;
+    left_down = false;
+    right_down = false;
     middle_down = false;
     mouse_rotate = false;
 
@@ -68,12 +67,12 @@ namespace CGL {
     // Enable antialiasing and circular points.
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable( GL_LINE_SMOOTH );
+    glEnable(GL_LINE_SMOOTH);
     //glEnable( GL_POLYGON_SMOOTH );
     glEnable(GL_POINT_SMOOTH);
-    glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     //glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-    glHint(GL_POINT_SMOOTH_HINT,GL_NICEST);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 
 
@@ -82,24 +81,23 @@ namespace CGL {
     initializeStyle();
   }
 
-  void MeshEdit::initializeStyle( void )
-  {
+  void MeshEdit::initializeStyle(void) {
     // Colors.
-    defaultStyle.halfedgeColor = Color( 0.5, 0.5, 0.5 );
-    hoverStyle.halfedgeColor = Color( 0.9, 0.9, 0.9 );
-    selectStyle.halfedgeColor = Color( 1.0, 1.0, 1.0 );
+    defaultStyle.halfedgeColor = Color(0.5, 0.5, 0.5);
+    hoverStyle.halfedgeColor = Color(0.9, 0.9, 0.9);
+    selectStyle.halfedgeColor = Color(1.0, 1.0, 1.0);
 
-    defaultStyle.faceColor = Color( 0.5, 0.50, 0.90 );
-    hoverStyle.faceColor = Color( 0.9, 0.75, 0.75 );
-    selectStyle.faceColor = Color( 1.0, 1.00, 1.00 );
+    defaultStyle.faceColor = Color(0.5, 0.50, 0.90);
+    hoverStyle.faceColor = Color(0.9, 0.75, 0.75);
+    selectStyle.faceColor = Color(1.0, 1.00, 1.00);
 
-    defaultStyle.edgeColor = Color( 0.5, 0.5, 0.50 );
-    hoverStyle.edgeColor = Color( 0.9, 0.0, 0.75 );
-    selectStyle.edgeColor = Color( 1.0, 1.0, 1.00 );
+    defaultStyle.edgeColor = Color(0.5, 0.5, 0.50);
+    hoverStyle.edgeColor = Color(0.9, 0.0, 0.75);
+    selectStyle.edgeColor = Color(1.0, 1.0, 1.00);
 
-    defaultStyle.vertexColor = Color( 1, 0, 0 );
-    hoverStyle.vertexColor = Color( 0.8, 0.0, 0.75 );
-    selectStyle.vertexColor = Color( 1.0, 1.0, 1.00 );
+    defaultStyle.vertexColor = Color(1, 0, 0);
+    hoverStyle.vertexColor = Color(0.8, 0.0, 0.75);
+    selectStyle.vertexColor = Color(1.0, 1.0, 1.00);
 
     // Primitive sizes.
     defaultStyle.strokeWidth = 1.0;
@@ -111,29 +109,26 @@ namespace CGL {
     selectStyle.vertexRadius = 20.0;
   }
 
-  void MeshEdit::render()
-  {
+  void MeshEdit::render() {
     update_camera();
     draw_normals();
 //    drawPivotEdges();
 
     // // Draw the helpful picking messages.
-    if (showHUD)
-    {
+    if (showHUD) {
       //drawHUD();
     }
 
     return;
   }
 
-  void MeshEdit::update_camera()
-  {
+  void MeshEdit::update_camera() {
     // Call resize() every time we draw, since it doesn't seem
     // to get called by the Viewer upon intial window creation
     // (this should probably be fixed!).
     GLint view[4];
-    glGetIntegerv( GL_VIEWPORT, view );
-    resize( view[2], view[3] );
+    glGetIntegerv(GL_VIEWPORT, view);
+    resize(view[2], view[3]);
 
     // Control the camera to look at the mesh.
     glMatrixMode(GL_MODELVIEW);
@@ -154,17 +149,16 @@ namespace CGL {
     v_y = view_focus.y;
     v_z = view_focus.z;
 
-    switch(up)
-    {
+    switch (up) {
       case Z_UP:
 
         up_z = 1.0;
 
         // x is horizontal screen rotational angle.
         // y is vertical screen rotational angle.
-        cx = v_x + view_distance*sin(camera_angles.x)*cos(camera_angles.y*.99);
-        cy = v_y + view_distance*cos(camera_angles.x)*cos(camera_angles.y*.99);
-        cz = v_z + view_distance*sin(camera_angles.y);
+        cx = v_x + view_distance * sin(camera_angles.x) * cos(camera_angles.y * .99);
+        cy = v_y + view_distance * cos(camera_angles.x) * cos(camera_angles.y * .99);
+        cz = v_z + view_distance * sin(camera_angles.y);
 
         break;
       default:
@@ -173,9 +167,9 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
-    gluLookAt(   0.0, 1.5, 0.0,// camera location.
-        0.0, 0.0, 0.0,// point looking at.
-        0.0, 0.0, 1.0);// up direction.
+    gluLookAt(0.0, 1.5, 0.0,// camera location.
+              0.0, 0.0, 0.0,// point looking at.
+              0.0, 0.0, 1.0);// up direction.
 
     Vector3D c = Vector3D(0.0, 5.28586, 0.0);
     Vector3D v = Vector3D(0.0, 0.0, 0.0);
@@ -185,41 +179,37 @@ namespace CGL {
 
     glUseProgram(shaderProgID);
     glUniform3fv(glGetUniformLocation(shaderProgID, "eyePos"),
-        1, eyePos);
+                 1, eyePos);
     glUniform1i(glGetUniformLocation(shaderProgID, "envmap"), 1);
     glUseProgram(0);
   }
 
-  void MeshEdit::draw_meshes()
-  {
-    for( vector<MeshNode>::iterator n = meshNodes.begin(); n != meshNodes.end(); n++ )
-    {
-      renderMesh( n->mesh );
+  void MeshEdit::draw_meshes() {
+    for (vector<MeshNode>::iterator n = meshNodes.begin(); n != meshNodes.end(); n++) {
+      renderMesh(n->mesh);
     }
 
     // Execute all of the OpenGL commands.
     glFlush();
   }
 
-  void MeshEdit::draw_points()
-  {
+  void MeshEdit::draw_points() {
     renderPoints(points);
     // Execute all of the OpenGL commands.
     glFlush();
   }
 
   void MeshEdit::draw_normals() {
-      renderNormals(points);
+    renderNormals(points);
 
-      glFlush();
+    glFlush();
   }
 
-  void MeshEdit::drawPivotEdges( std::vector< std::vector< PivotEdge > > edges )
-  {
-    DrawStyle* style = &defaultStyle;
-    for( std::vector<PivotEdge> lst : edges ) // iterate over edges
+  void MeshEdit::drawPivotEdges(std::vector <std::vector<PivotEdge> > edges) {
+    DrawStyle *style = &defaultStyle;
+    for (std::vector <PivotEdge> lst : edges) // iterate over edges
     {
-      for( PivotEdge pe : lst) {
+      for (PivotEdge pe : lst) {
         Vector3D p0 = pe.a.pos;
         Vector3D p1 = pe.b.pos;
 
@@ -236,21 +226,20 @@ namespace CGL {
   }
 
   // Guranteed to be called at the start.
-  void MeshEdit::resize( size_t w, size_t h)
-  {
+  void MeshEdit::resize(size_t w, size_t h) {
     screen_w = w;
     screen_h = h;
 
     // FIX the Text renderer.
-    text_mgr.resize(w,h);
+    text_mgr.resize(w, h);
 
     // Enter perspective projection mode.
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective( vfov,                  // Field of view in DEGREES.
-        1.0*screen_w/screen_h, // Aspect Ratio.
-        nearClip,              // distance near side of the view frustrum.
-        farClip);              // far side of the view frustrum.
+    gluPerspective(vfov,                  // Field of view in DEGREES.
+                   1.0 * screen_w / screen_h, // Aspect Ratio.
+                   nearClip,              // distance near side of the view frustrum.
+                   farClip);              // far side of the view frustrum.
   }
 
   string MeshEdit::name() {
@@ -261,14 +250,12 @@ namespace CGL {
     return "Assignment 2: MeshEdit";
   }
 
-  void MeshEdit::key_event( char key )
-  {
-    if(key >= '0' && key <= '9')
-    {
+  void MeshEdit::key_event(char key) {
+    if (key >= '0' && key <= '9') {
       glUseProgram(shaderProgID);
-      glUniform1i(glGetUniformLocation(shaderProgID, "outputID"), key-'0');
+      glUniform1i(glGetUniformLocation(shaderProgID, "outputID"), key - '0');
     }
-    switch( key ) {
+    switch (key) {
 
       // reset view transformation
       case ' ':
@@ -313,47 +300,39 @@ namespace CGL {
     }
   }
 
-  void MeshEdit::selectNextHalfedge( void )
-  {
-    Halfedge* h = NULL;
+  void MeshEdit::selectNextHalfedge(void) {
+    Halfedge *h = NULL;
     if (selectedFeature.isValid()) {
       h = selectedFeature.element->getHalfedge();
     }
-    if( h != NULL )
-    {
-      selectedFeature.element = elementAddress( h->next() );
+    if (h != NULL) {
+      selectedFeature.element = elementAddress(h->next());
     }
   }
 
-  void MeshEdit::selectTwinHalfedge( void )
-  {
-    Halfedge* h = NULL;
-    if (selectedFeature.isValid()){
+  void MeshEdit::selectTwinHalfedge(void) {
+    Halfedge *h = NULL;
+    if (selectedFeature.isValid()) {
       h = selectedFeature.element->getHalfedge();
     }
 
-    if( h != NULL )
-    {
-      selectedFeature.element = elementAddress( h->twin() );
+    if (h != NULL) {
+      selectedFeature.element = elementAddress(h->twin());
     }
   }
 
-  inline float bound(float a, float low, float high)
-  {
+  inline float bound(float a, float low, float high) {
     return min(high, max(low, a));
   }
 
   // Mouse event entry point.
-  void MeshEdit::cursor_event( float x, float y, unsigned char keys )
-  {
+  void MeshEdit::cursor_event(float x, float y, unsigned char keys) {
 
     // Mouse dragged if any moust button is held down.
     // if(keys != 0)
-    if(left_down || middle_down || right_down)
-    {
+    if (left_down || middle_down || right_down) {
       mouseD(x, y);
-    }
-    else // Mouse moved otherwise.
+    } else // Mouse moved otherwise.
     {
       mouseM(x, y);
     }
@@ -364,73 +343,64 @@ namespace CGL {
     return;
   }
 
-  void MeshEdit::scroll_event( float offset_x, float offset_y )
-  {
+  void MeshEdit::scroll_event(float offset_x, float offset_y) {
 
-    if(offset_y > 0)
-    {
-      view_distance -= offset_y*(view_distance/4);
+    if (offset_y > 0) {
+      view_distance -= offset_y * (view_distance / 4);
     }
 
-    if(offset_y < 0)
-    {
-      view_distance -= offset_y*(view_distance/4);
+    if (offset_y < 0) {
+      view_distance -= offset_y * (view_distance / 4);
     }
 
     // Ensure appropiate bounds amounts.
     view_distance = bound(view_distance,
-        min_view_distance,
-        max_view_distance);
+                          min_view_distance,
+                          max_view_distance);
 
     return;
   }
 
-  void MeshEdit::mouse_button_event( int button, int event )
-  {
-    switch(event) {
-      case MOUSE_BUTTON_RELEASE:
-        {
-          switch( button )
-          {
-            case MOUSE_BUTTON_LEFT:
-              mouseR( LEFT );
-              left_down = false;
-              break;
-            case MOUSE_BUTTON_RIGHT:
-              mouseR( RIGHT );
-              right_down = false;
-              break;
-            case MOUSE_BUTTON_MIDDLE:
-              mouseR( MIDDLE );
-              middle_down = false;
-              break;
-          }
-          break;
+  void MeshEdit::mouse_button_event(int button, int event) {
+    switch (event) {
+      case MOUSE_BUTTON_RELEASE: {
+        switch (button) {
+          case MOUSE_BUTTON_LEFT:
+            mouseR(LEFT);
+            left_down = false;
+            break;
+          case MOUSE_BUTTON_RIGHT:
+            mouseR(RIGHT);
+            right_down = false;
+            break;
+          case MOUSE_BUTTON_MIDDLE:
+            mouseR(MIDDLE);
+            middle_down = false;
+            break;
         }
-      case MOUSE_BUTTON_PRESS:
-        {
-          switch( button )
-          {
-            case MOUSE_BUTTON_LEFT:
-              left_down = true;
-              mouseP( LEFT );
-              break;
-            case MOUSE_BUTTON_RIGHT:
-              right_down = true;
-              mouseP( RIGHT );
-              break;
-            case MOUSE_BUTTON_MIDDLE:
-              middle_down = true;
-              mouseP( MIDDLE );
-              break;
-          }
-          break;
+        break;
+      }
+      case MOUSE_BUTTON_PRESS: {
+        switch (button) {
+          case MOUSE_BUTTON_LEFT:
+            left_down = true;
+            mouseP(LEFT);
+            break;
+          case MOUSE_BUTTON_RIGHT:
+            right_down = true;
+            mouseP(RIGHT);
+            break;
+          case MOUSE_BUTTON_MIDDLE:
+            middle_down = true;
+            mouseP(MIDDLE);
+            break;
         }
+        break;
+      }
     }
   }
 
-  void MeshEdit::load( Scene* scene )
-  {
+  void MeshEdit::load(Scene *scene) {
     cout << "MeshEdit: loading scene:\n";
 
     this->scene = scene;
@@ -438,36 +408,34 @@ namespace CGL {
     // Start out with 0 lights.
     this->light_num = 0;
 
-    std::vector<Node>& nodes = scene->nodes;
+    std::vector <Node> &nodes = scene->nodes;
 
     // Iterate through the nodes and initialize the relevant
     // opengl properties.
 
     int len = nodes.size();
-    for(int i = 0; i < len; i++)
-    {
-      Node & node = nodes[i];
+    for (int i = 0; i < len; i++) {
+      Node &node = nodes[i];
 
-      Instance * instance = node.instance;
+      Instance *instance = node.instance;
 
-      if(!instance)
+      if (!instance)
         continue;
 
       // FIXME : Transform Matrix?
-      switch(instance -> type)
-      {
+      switch (instance->type) {
         case CAMERA:
-          init_camera(static_cast<Camera&>(*instance));
+          init_camera(static_cast<Camera &>(*instance));
           break;
         case LIGHT:
-          init_light(static_cast<Light&>(*instance));
+          init_light(static_cast<Light &>(*instance));
           break;
         case POLYMESH:
           points = scene->points;
-          init_polymesh(static_cast<Polymesh&>(*instance));
+          init_polymesh(static_cast<Polymesh &>(*instance));
           break;
         case MATERIAL:
-          init_material(static_cast<Material&>(*instance));
+          init_material(static_cast<Material &>(*instance));
           break;
       }
 
@@ -476,24 +444,21 @@ namespace CGL {
     cerr << "Done loading scene. Mesh Ready for Editing!" << endl;
   }
 
-  void MeshEdit::init_camera(Camera& camera)
-  {
+  void MeshEdit::init_camera(Camera &camera) {
     hfov = camera.hfov;
     vfov = camera.vfov;
     nearClip = camera.nclip;
-    farClip  = camera.fclip;
+    farClip = camera.fclip;
   }
 
-  void MeshEdit::reset_camera()
-  {
-    view_distance = canonical_view_distance*2.0;
+  void MeshEdit::reset_camera() {
+    view_distance = canonical_view_distance * 2.0;
     camera_angles = Vector3D(0., 0., 0.);
   }
 
-  void MeshEdit::init_light(Light& light)
-  {
+  void MeshEdit::init_light(Light &light) {
 
-    Color & c = light.color;
+    Color &c = light.color;
 
     // FIXME : 0 - 1.0 or (-1 - 1.0?)
     GLfloat irradiance[] = {c.r, c.g, c.b, c.a};
@@ -503,32 +468,28 @@ namespace CGL {
     light_num++;
 
     /* Enable a single OpenGL light. */
-    switch(light.light_type)
-    {
-      case AMBIENT:
-        {
-          glLightfv(LIGHT_INDEX, GL_AMBIENT, irradiance);
-        }
+    switch (light.light_type) {
+      case AMBIENT: {
+        glLightfv(LIGHT_INDEX, GL_AMBIENT, irradiance);
+      }
         break;
 
-      case POINT:
-        {
-          glLightfv(LIGHT_INDEX, GL_DIFFUSE, irradiance);
-          // FIXME : Replace default position.
-          const GLfloat arg1[] = {0.0, 0.0, 0.0, 1.0};
-          glLightfv(LIGHT_INDEX, GL_POSITION, arg1);
-        }
+      case POINT: {
+        glLightfv(LIGHT_INDEX, GL_DIFFUSE, irradiance);
+        // FIXME : Replace default position.
+        const GLfloat arg1[] = {0.0, 0.0, 0.0, 1.0};
+        glLightfv(LIGHT_INDEX, GL_POSITION, arg1);
+      }
         break;
 
-      case DIRECTIONAL:
-        {
-          glLightfv(LIGHT_INDEX, GL_DIFFUSE, irradiance);
-          // w = 0.0 --> Infinitly far away.
-          const GLfloat arg2[] = {1.0, 1.0, 1.0, 0.0};
-          glLightfv(LIGHT_INDEX, GL_POSITION, arg2);
-          const GLfloat arg3[] = {0.0, 0.0, -1.0};
-          glLightfv(LIGHT_INDEX, GL_SPOT_DIRECTION, arg3);
-        }
+      case DIRECTIONAL: {
+        glLightfv(LIGHT_INDEX, GL_DIFFUSE, irradiance);
+        // w = 0.0 --> Infinitly far away.
+        const GLfloat arg2[] = {1.0, 1.0, 1.0, 0.0};
+        glLightfv(LIGHT_INDEX, GL_POSITION, arg2);
+        const GLfloat arg3[] = {0.0, 0.0, -1.0};
+        glLightfv(LIGHT_INDEX, GL_SPOT_DIRECTION, arg3);
+      }
 
         // direction?
         break;
@@ -541,8 +502,7 @@ namespace CGL {
 
   }
 
-  void MeshEdit::init_polymesh( Polymesh& polymesh )
-  {
+  void MeshEdit::init_polymesh(Polymesh &polymesh) {
     // // Create and store a mesh node object.
     // MeshNode meshNode( polymesh );
     // meshNodes.push_back( meshNode );
@@ -570,23 +530,19 @@ namespace CGL {
     up = Z_UP;
   }
 
-  void MeshEdit::init_material (Material& material)
-  {
+  void MeshEdit::init_material(Material &material) {
 
     // FIXME : Support Materials.
     return;
 
   }
 
-  void MeshEdit::mouseP(e_mouse_button b)
-  {
+  void MeshEdit::mouseP(e_mouse_button b) {
     switch (b) {
       case LEFT:
-        if(!hoveredFeature.element) {
+        if (!hoveredFeature.element) {
           mouse_rotate = true;
-        }
-        else
-        {
+        } else {
           enactPotentialSelection();
         }
         break;
@@ -598,12 +554,10 @@ namespace CGL {
     }
   }
 
-  void MeshEdit::mouseR(e_mouse_button b)
-  {
+  void MeshEdit::mouseR(e_mouse_button b) {
     switch (b) {
       case LEFT:
-        if(mouse_rotate)
-        {
+        if (mouse_rotate) {
           mouse_rotate = false;
         }
         break;
@@ -615,64 +569,57 @@ namespace CGL {
     }
   }
 
-  void MeshEdit::mouseD(float x, float y)
-  {
+  void MeshEdit::mouseD(float x, float y) {
     // Rotate the camera when the left mouse button is dragged.
     float dx = (x - mouse_x);
     float dy = (y - mouse_y);
 
-    Vertex* v = NULL;
+    Vertex *v = NULL;
     if (selectedFeature.isValid()) {
       v = selectedFeature.element->getVertex();
     }
 
-    if(!mouse_rotate && v != NULL)
-    {
+    if (!mouse_rotate && v != NULL) {
       dragPosition(dx, dy, v->position);
       return;
     }
 
 
-    if(mouse_rotate)
-    {
-      double & cx = camera_angles.x;
-      double & cy = camera_angles.y;
+    if (mouse_rotate) {
+      double &cx = camera_angles.x;
+      double &cy = camera_angles.y;
 
-      cx += dx*2*PI/screen_w;
-      cy += dy*  PI/screen_h;
+      cx += dx * 2 * PI / screen_w;
+      cy += dy * PI / screen_h;
 
       // Users can freely rotate the model's as much as they
       // want in the horizontal direction.
-      cx = cx >= 0 ? min(cx, cx - 2*PI) : (cx + 2*PI);
+      cx = cx >= 0 ? min(cx, cx - 2 * PI) : (cx + 2 * PI);
 
       // Bound the vertical view angle.
-      camera_angles.y = bound(camera_angles.y, -PI/2, PI/2);
+      camera_angles.y = bound(camera_angles.y, -PI / 2, PI / 2);
     }
   }
 
-  void MeshEdit::mouseM(float x, float y)
-  {
+  void MeshEdit::mouseM(float x, float y) {
     // Highlight the mesh element the mouse is hovering over.
     findMouseSelection(x, y);
   }
 
-  void MeshEdit::updateMouseCoordinates(float x, float y)
-  {
+  void MeshEdit::updateMouseCoordinates(float x, float y) {
     mouse_x = x;
     mouse_y = y;
   }
 
   // FIXME : Replace with standard Vector4D library call.
-  inline Vector2D to2DVector(Vector4D & V)
-  {
+  inline Vector2D to2DVector(Vector4D &V) {
     return Vector2D(V.x, V.y);
   }
 
   // Returns true iff the given point is inside of this triangle.
   // Stores barycentric coordinates in A if return is true.
   inline bool point_in_triangle_and_barycentric_coordinates(
-      Vector2D & A, Vector2D & B, Vector2D & C, Vector2D point)
-  {
+          Vector2D &A, Vector2D &B, Vector2D &C, Vector2D point) {
 
     // Compute vectors
     Vector2D v0 = C - A;
@@ -694,8 +641,7 @@ namespace CGL {
     // Check if point is in triangle.
     bool output = (u >= 0) && (v >= 0) && (u + v < 1);
 
-    if(output)
-    {
+    if (output) {
       A.x = u;
       A.y = v;
     }
@@ -703,9 +649,8 @@ namespace CGL {
     return output;
   }
 
-  inline Vector2D MeshEdit::unitCubeToScreenSpace(Vector4D & in)
-  {
-    return Vector2D(screen_w*(in.x + 1)/2, screen_h*(in.y + 1)/2);
+  inline Vector2D MeshEdit::unitCubeToScreenSpace(Vector4D &in) {
+    return Vector2D(screen_w * (in.x + 1) / 2, screen_h * (in.y + 1) / 2);
   }
 
   // IN :
@@ -723,11 +668,10 @@ namespace CGL {
   //    barycentricCoordinates --- contains the screen space barycentric coordinates of selectionPoint.
   //
   inline bool MeshEdit::triangleSelectionTest(
-      const Vector2D & selectionPoint,
-      Vector4D & A, Vector4D & B, Vector4D & C,
-      float & w,
-      Vector3D& barycentricCoordinates )
-  {
+          const Vector2D &selectionPoint,
+          Vector4D &A, Vector4D &B, Vector4D &C,
+          float &w,
+          Vector3D &barycentricCoordinates) {
     /*
      * Algorithm for computing from model space coordinates X to
      * screen space with a depth value using opengl.
@@ -765,31 +709,29 @@ namespace CGL {
     GLdouble projMatrix[16];
     GLdouble modelMatrix[16];
 
-    for(int i = 0; i < 16; i++)
-    {
-      projMatrix[i]  = 0.0;
+    for (int i = 0; i < 16; i++) {
+      projMatrix[i] = 0.0;
       modelMatrix[i] = 0.0;
     }
 
     glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
-    glGetDoublev(GL_MODELVIEW_MATRIX,  modelMatrix);
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
 
 
     Matrix4x4 P;
     Matrix4x4 M;
 
-    for(int r = 0; r < 4; r++)
-      for(int c = 0; c < 4; c++)
-      {
-        P(r, c) = projMatrix [4*c + r];
-        M(r, c) = modelMatrix[4*c + r];
+    for (int r = 0; r < 4; r++)
+      for (int c = 0; c < 4; c++) {
+        P(r, c) = projMatrix[4 * c + r];
+        M(r, c) = modelMatrix[4 * c + r];
       }
 
     // -- Step 3 & 4. Apply Model transform, then Projection transform.
 
-    A = P*M*A;
-    B = P*M*B;
-    C = P*M*C;
+    A = P * M * A;
+    B = P * M * B;
+    C = P * M * C;
 
     // -- Step 5. Projection divide.
     A /= A.w;
@@ -802,13 +744,12 @@ namespace CGL {
      */
 
     Vector2D A_out = unitCubeToScreenSpace(A);
-    Vector2D b_2d  = unitCubeToScreenSpace(B);
-    Vector2D c_2d  = unitCubeToScreenSpace(C);
+    Vector2D b_2d = unitCubeToScreenSpace(B);
+    Vector2D c_2d = unitCubeToScreenSpace(C);
     bool inside = point_in_triangle_and_barycentric_coordinates(A_out, b_2d, c_2d, selectionPoint);
 
     // If inside, then we need to go and compute the meta data.
-    if(inside)
-    {
+    if (inside) {
       // Percentage towards C.
       float bary_u = A_out.x;// u
 
@@ -829,7 +770,7 @@ namespace CGL {
       /* Interpolate Along the linear plane in the plane aligned
        * coordinate system.
        */
-      float w_new = A.w + dwu*bary_u + dwv*bary_v;
+      float w_new = A.w + dwu * bary_u + dwv * bary_v;
 
 
       /* Determine whether this triangle is closer to the viewer within
@@ -838,8 +779,7 @@ namespace CGL {
        * NOTE: w < 0.0 implies no previous satisfactory triangle
        *       has been seen.
        */
-      if(w < 0.0 || (w_new > 0 && w_new < w))
-      {
+      if (w < 0.0 || (w_new > 0 && w_new < w)) {
 
         // VERY IMPORTANT! We need to update the minnumum.
         w = w_new;
@@ -858,10 +798,8 @@ namespace CGL {
 
   // Picking algorithm entry point.
   // Linear in the number of triangles in the scene.
-  void MeshEdit::findMouseSelection(float x, float y)
-  {
-    if(shadingMode)
-    {
+  void MeshEdit::findMouseSelection(float x, float y) {
+    if (shadingMode) {
       selectedFeature.invalidate();
       hoveredFeature.invalidate();
       return;
@@ -871,7 +809,7 @@ namespace CGL {
 
     MeshFeature closestFeature;
     MeshFeature currentFeature;
-    MeshNode* closestNode;
+    MeshNode *closestNode;
 
     Vector4D A, B, C;
     Vector3D barycentric_min;
@@ -880,32 +818,30 @@ namespace CGL {
      * IMPORTANT NOTE: OpenGL coordinate system orgin at bottom left of
      * screen. Y points up, so we need to flip y by screen_h - y.
      */
-    const Vector2D selectionPoint = Vector2D( x, screen_h - y );
+    const Vector2D selectionPoint = Vector2D(x, screen_h - y);
 
     // Start out behind the camera.
     float w = -1.0;
 
     // Iterate through all meshes.
     int num_meshes = meshNodes.size();
-    for(int mesh_index = 0; mesh_index < num_meshes; mesh_index++)
-    {
-      MeshNode& node = meshNodes[mesh_index];
+    for (int mesh_index = 0; mesh_index < num_meshes; mesh_index++) {
+      MeshNode &node = meshNodes[mesh_index];
 
       // Iterate through all triangles.
-      for( FaceIter f = node.mesh.facesBegin(); f != node.mesh.facesEnd(); f++ )
-      {
+      for (FaceIter f = node.mesh.facesBegin(); f != node.mesh.facesEnd(); f++) {
         // Build a mesh feature corresponding to the current face.
-        currentFeature.element = elementAddress( f );
+        currentFeature.element = elementAddress(f);
         currentFeature.node = &node;
 
         // Copy the three vertex coordinates of the face into 4D homogeneous coordinates.
-        A = Vector4D( f->halfedge()->vertex()->position );
-        B = Vector4D( f->halfedge()->next()->vertex()->position );
-        C = Vector4D( f->halfedge()->next()->next()->vertex()->position );
+        A = Vector4D(f->halfedge()->vertex()->position);
+        B = Vector4D(f->halfedge()->next()->vertex()->position);
+        C = Vector4D(f->halfedge()->next()->next()->vertex()->position);
         A.w = B.w = C.w = 1.;
 
         Vector3D barycentricCoordinates;
-        if( triangleSelectionTest( selectionPoint, A, B, C, w, barycentricCoordinates ) )
+        if (triangleSelectionTest(selectionPoint, A, B, C, w, barycentricCoordinates))
           // If the cursor is inside triangle ABC --AND-- this triangle is closer to the viewer
           // than anything we've seen so far, we'll update the record of the closest feature
           // we've seen so far.
@@ -924,64 +860,58 @@ namespace CGL {
     } // Done iterating over meshes.
 
     // Update the Current hoveredFeature values.
-    if( foundSelection )
-    {
-      closestFeature.node->fillFeatureStructure( this->hoveredFeature, closestFeature, barycentric_min, w );
+    if (foundSelection) {
+      closestFeature.node->fillFeatureStructure(this->hoveredFeature, closestFeature, barycentric_min, w);
       hoveredFeature.node = closestNode;
-    }
-    else // If the cursor is not hovering over any element, clear the selection.
+    } else // If the cursor is not hovering over any element, clear the selection.
     {
       this->hoveredFeature.invalidate();
     }
   }
 
   // Copies 'hoveredFeature' to 'selectedFeature'.
-  void MeshEdit::enactPotentialSelection()
-  {
+  void MeshEdit::enactPotentialSelection() {
     selectedFeature = hoveredFeature;
   }
 
   // Transforms the position vector in world space according to an offset in screenspace.
   void MeshEdit::dragPosition(float screen_x_offset, float screen_y_offset,
-      Vector3D & position)
-  {
+                              Vector3D &position) {
 
     GLdouble projMatrix[16];
     GLdouble modelMatrix[16];
 
-    for(int i = 0; i < 16; i++)
-    {
-      projMatrix[i]  = 0.0;
+    for (int i = 0; i < 16; i++) {
+      projMatrix[i] = 0.0;
       modelMatrix[i] = 0.0;
     }
 
     glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
-    glGetDoublev(GL_MODELVIEW_MATRIX,  modelMatrix);
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
 
 
     Matrix4x4 P;
     Matrix4x4 M;
 
-    for(int r = 0; r < 4; r++)
-      for(int c = 0; c < 4; c++)
-      {
-        P(r, c) = projMatrix [4*c + r];
-        M(r, c) = modelMatrix[4*c + r];
+    for (int r = 0; r < 4; r++)
+      for (int c = 0; c < 4; c++) {
+        P(r, c) = projMatrix[4 * c + r];
+        M(r, c) = modelMatrix[4 * c + r];
       }
 
     Vector4D pos = Vector4D(position);
     pos.w = 1.0;
 
     // Project into 3d Homogeneous coordinates.
-    pos = P*M*pos;
+    pos = P * M * pos;
 
     // -- Step 5. Projection divide into unit cube.
     pos /= pos.w;
 
 
     // Compute the offset vector in normalized screen space coordinates.
-    Vector4D screen_offset(screen_x_offset*2/screen_w,
-        -screen_y_offset*2/screen_h, 0.0, 0.0);
+    Vector4D screen_offset(screen_x_offset * 2 / screen_w,
+                           -screen_y_offset * 2 / screen_h, 0.0, 0.0);
 
     pos += screen_offset;
 
@@ -989,7 +919,7 @@ namespace CGL {
     // Lets go back the way we came.
     pos *= pos.w;
 
-    pos = M.inv()*P.inv()*pos;
+    pos = M.inv() * P.inv() * pos;
 
     position = pos.to3D();
 
@@ -997,22 +927,18 @@ namespace CGL {
   }
 
   // -- Geometric Operations
-  void MeshEdit::mesh_up_sample()
-  {
-    HalfedgeMesh* mesh;
+  void MeshEdit::mesh_up_sample() {
+    HalfedgeMesh *mesh;
 
     // If an element is selected, resample the mesh containing that
     // element; otherwise, resample the first mesh in the scene.
-    if( selectedFeature.isValid() )
-    {
-      mesh = &( selectedFeature.node->mesh );
-    }
-    else
-    {
-      mesh = &( meshNodes.begin()->mesh );
+    if (selectedFeature.isValid()) {
+      mesh = &(selectedFeature.node->mesh);
+    } else {
+      mesh = &(meshNodes.begin()->mesh);
     }
 
-    resampler.upsample( *mesh );
+    resampler.upsample(*mesh);
 
     // Since the mesh may have changed, the selected and
     // hovered features may no longer point to valid elements.
@@ -1020,10 +946,9 @@ namespace CGL {
     hoveredFeature.invalidate();
   }
 
-  inline void MeshEdit::drawString(float x, float y, string str, size_t size, Color c)
-  {
-    int line_index = text_mgr.add_line(( x*2/screen_w) - 1.0,
-        (-y*2/screen_h) + 1.0, str, size, c);
+  inline void MeshEdit::drawString(float x, float y, string str, size_t size, Color c) {
+    int line_index = text_mgr.add_line((x * 2 / screen_w) - 1.0,
+                                       (-y * 2 / screen_h) + 1.0, str, size, c);
     messages.push_back(line_index);
   }
 
@@ -1034,13 +959,11 @@ namespace CGL {
    * if your mesh does not maintain its invariants.
    */
   // FIXME : Convert these to messages on screen with SKY's code.
-  void MeshEdit::drawHUD()
-  {
+  void MeshEdit::drawHUD() {
 
     // Delete the current Lines every time.
     int len = messages.size();
-    for(int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
       int line_index = messages[i];
       text_mgr.del_line(line_index);
     }
@@ -1050,16 +973,16 @@ namespace CGL {
     const size_t size = 16;
     const float x0 = use_hdpi ? screen_w - 350 * 2 : screen_w - 350;
     const float y0 = use_hdpi ? 128 : 64;
-    const int inc  = use_hdpi ? 48  : 24;
+    const int inc = use_hdpi ? 48 : 24;
     float y = y0 + inc - size;
 
     // No selection --> no messages.
-    if(!selectedFeature.isValid())
-    {
+    if (!selectedFeature.isValid()) {
       ostringstream m1;
       m1 << "No Mesh Feature is selected.";
 
-      drawString(x0, y, m1.str(), size, text_color);y += inc;
+      drawString(x0, y, m1.str(), size, text_color);
+      y += inc;
 
     } else {
 
@@ -1196,18 +1119,18 @@ namespace CGL {
 
     // -- First draw a lovely black rectangle.
 
-    glPushAttrib( GL_VIEWPORT_BIT );
-    glViewport( 0, 0, screen_w, screen_h );
+    glPushAttrib(GL_VIEWPORT_BIT);
+    glViewport(0, 0, screen_w, screen_h);
 
-    glMatrixMode( GL_PROJECTION );
+    glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho( 0, screen_w, screen_h, 0, 0, 1 ); // Y flipped !
+    glOrtho(0, screen_w, screen_h, 0, 0, 1); // Y flipped !
 
-    glMatrixMode( GL_MODELVIEW );
+    glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef( 0, 0, -1 );
+    glTranslatef(0, 0, -1);
 
 
     // -- Black with opacity .8;
@@ -1233,15 +1156,15 @@ namespace CGL {
     glVertex3f(max_x, min_y, z);
     glEnd();
 
-    glMatrixMode( GL_PROJECTION );
+    glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 
-    glMatrixMode( GL_MODELVIEW );
+    glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 
     glPopAttrib();
 
-    glEnable( GL_DEPTH_TEST );
+    glEnable(GL_DEPTH_TEST);
 
     text_mgr.render();
 
@@ -1255,15 +1178,13 @@ namespace CGL {
   // ----------------------- Mesh Node functions. --------------------------/
   //  **********************************************************************/
 
-  inline void setColor(Color & c)
-  {
+  inline void setColor(Color &c) {
     // FIXME? : Incorporate antialiasing.
     glColor3f(c.r, c.g, c.b);
   }
 
-  void MeshEdit::renderMesh( HalfedgeMesh& mesh )
-  {
-    if(shadingMode)
+  void MeshEdit::renderMesh(HalfedgeMesh &mesh) {
+    if (shadingMode)
       glUseProgram(shaderProgID);
     else
       glUseProgram(0);
@@ -1273,85 +1194,100 @@ namespace CGL {
 
     glUseProgram(0);
 
-    if(!shadingMode)
-    {
+    if (!shadingMode) {
       // Edges are drawn with flat shading.
       // drawEdges( mesh );
 
-      drawVertices( mesh );
+      drawVertices(mesh);
       // drawHalfedges( mesh );
     }
   }
 
-  void MeshEdit::renderPoints(vector<Point*> points)
-  {
+  void MeshEdit::renderPoints(vector<Point *> points) {
     DrawStyle *style = &defaultStyle;
     Color red = Color(1.0, 0.0, 0.0);
     glPointSize(style->vertexRadius);
-    for (Point* p : points) {
-        glBegin(GL_POINTS);
-        glVertex3d(p->pos.x, p->pos.y, p->pos.z);
-        glEnd();
+    for (Point *p : points) {
+      glBegin(GL_POINTS);
+      glVertex3d(p->pos.x, p->pos.y, p->pos.z);
+      glEnd();
     }
   }
 
-  void MeshEdit::renderNormals(vector<Point*> points) {
-      DrawStyle *style = &defaultStyle;
-      setColor(style->vertexColor);
-      glPointSize(style->vertexRadius);
-      for (Point* p : points) {
-          // glBegin(GL_LINES);
-          // glVertex3dv( &(p->pos.x) );
-          // Vector3D normal = p->pos.x + p->normal.x;
-          // glVertex3dv( &(normal.x) );
-          // glEnd();
-          glBegin(GL_POINTS);
-          glVertex3d(p->pos.x, p->pos.y, p->pos.z);
-          glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
-          glEnd();
-      }
+  void MeshEdit::renderNormals(vector<Point *> points) {
+    DrawStyle *style = &defaultStyle;
+    setColor(style->vertexColor);
+    glPointSize(style->vertexRadius);
+
+    for (Point *p : points) {
+
+//           glVertex3dv( &(p->pos.x) );
+//           Vector3D normal = p->pos.x + p->normal.x;
+//           glVertex3dv( &(normal.x) );
+
+
+      glBegin(GL_LINES);
+      glVertex3d(p->pos.x, p->pos.y, p->pos.z);
+      glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
+      glEnd();
+
+      glBegin(GL_POINTS);
+      glVertex3d(p->pos.x, p->pos.y, p->pos.z);
+      glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
+      glEnd();
+    }
+//    glEnd();
   }
 
   // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.
-  inline void MeshEdit::setElementStyle( HalfedgeElement* element )
-  {
+  inline void MeshEdit::setElementStyle(HalfedgeElement *element) {
     // Set the draw style according to whether the
     // current mesh element is hovered or selected,
     // giving priority to selection.
-    DrawStyle* style = &defaultStyle;
-    if( element == selectedFeature.element )
-    {
+    DrawStyle *style = &defaultStyle;
+    if (element == selectedFeature.element) {
       style = &selectStyle;
-    }
-    else if( element == hoveredFeature.element )
-    {
+    } else if (element == hoveredFeature.element) {
       style = &hoverStyle;
     }
 
     // Now set draw attributes according to the type of mesh element.
-    if( element->getFace()     ) { setColor( style->faceColor     );                                     return; }
-    if( element->getEdge()     ) { setColor( style->edgeColor     ); glLineWidth( style->strokeWidth  ); return; }
-    if( element->getHalfedge() ) { setColor( style->halfedgeColor ); glLineWidth( style->strokeWidth  ); return; }
-    if( element->getVertex()   ) { setColor( style->vertexColor   ); glPointSize( style->vertexRadius ); return; }
+    if (element->getFace()) {
+      setColor(style->faceColor);
+      return;
+    }
+    if (element->getEdge()) {
+      setColor(style->edgeColor);
+      glLineWidth(style->strokeWidth);
+      return;
+    }
+    if (element->getHalfedge()) {
+      setColor(style->halfedgeColor);
+      glLineWidth(style->strokeWidth);
+      return;
+    }
+    if (element->getVertex()) {
+      setColor(style->vertexColor);
+      glPointSize(style->vertexRadius);
+      return;
+    }
 
     cerr << "Warning: draw style not defined for current mesh element!" << endl;
   }
 
-  void MeshEdit::drawFaces( HalfedgeMesh& mesh )
-  {
+  void MeshEdit::drawFaces(HalfedgeMesh &mesh) {
 
-    for( FaceIter f = mesh.facesBegin(); f != mesh.facesEnd(); f++ )
-    {
+    for (FaceIter f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
 
       // These guys prevent z fighting / prevents the faces from bleeding into the edge lines and points.
       glEnable(GL_POLYGON_OFFSET_FILL);
-      glPolygonOffset( 1.0, 1.0 );
+      glPolygonOffset(1.0, 1.0);
 
       glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
       glEnable(GL_COLOR_MATERIAL);
 
       // Coloring.
-      setElementStyle( elementAddress( f ) );
+      setElementStyle(elementAddress(f));
 
       // Start specifying the polygon.
       glBegin(GL_POLYGON);
@@ -1359,23 +1295,22 @@ namespace CGL {
       // Set the normal of this face.
       Vector3D normal = f->normal();
 
-      glNormal3dv( &normal.x );
+      glNormal3dv(&normal.x);
 
       // iterate over this polygon's vertices
       HalfedgeIter h = f->halfedge();
-      do
-      {
-        if(smoothShading)
+      do {
+        if (smoothShading)
           normal = h->vertex()->normal();
-        glNormal3dv( &normal.x );
+        glNormal3dv(&normal.x);
         // Draw this vertex.
         Vector3D position = h->vertex()->position;
-        glVertex3dv( &position.x );
+        glVertex3dv(&position.x);
 
         // go to the next vertex in this polygon
         h = h->next();
 
-      } while( h != f->halfedge() ); // end of iteration over polygon vertices
+      } while (h != f->halfedge()); // end of iteration over polygon vertices
 
       // Finish drawing the polygon.
       glEnd();
@@ -1384,23 +1319,20 @@ namespace CGL {
 
   }
 
-  void MeshEdit::drawEdges( HalfedgeMesh& mesh )
-  {
-    for( EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++ ) // iterate over edges
+  void MeshEdit::drawEdges(HalfedgeMesh &mesh) {
+    for (EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) // iterate over edges
     {
       Vector3D p0 = e->halfedge()->vertex()->position;
       Vector3D p1 = e->halfedge()->twin()->vertex()->position;
 
-      setElementStyle( elementAddress( e ) );
-
+      setElementStyle(elementAddress(e));
 
 
     } // done iterating over edges
   }
 
-  void MeshEdit::drawVertices( HalfedgeMesh& mesh )
-  {
-    Vertex* v;
+  void MeshEdit::drawVertices(HalfedgeMesh &mesh) {
+    Vertex *v;
 
     glDisable(GL_DEPTH_TEST);
 
@@ -1408,13 +1340,12 @@ namespace CGL {
     // Draw the hover vertex
     if (hoveredFeature.isValid()) {
       v = hoveredFeature.element->getVertex();
-      if( v != NULL )
-      {
-        setElementStyle( v );
+      if (v != NULL) {
+        setElementStyle(v);
 
-        glBegin( GL_POINTS );
+        glBegin(GL_POINTS);
         Vector3D p = v->position;
-        glVertex3d( p.x, p.y, p.z );
+        glVertex3d(p.x, p.y, p.z);
         glEnd();
       }
     }
@@ -1422,31 +1353,29 @@ namespace CGL {
     // Draw the selected vertex.
     if (selectedFeature.isValid()) {
       v = selectedFeature.element->getVertex();
-      if( v != NULL )
-      {
-        setElementStyle( v );
+      if (v != NULL) {
+        setElementStyle(v);
 
-        glBegin( GL_POINTS );
+        glBegin(GL_POINTS);
         Vector3D p = v->position;
-        glVertex3d( p.x, p.y, p.z );
+        glVertex3d(p.x, p.y, p.z);
         glEnd();
       }
     }
 
-    for( VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++ ) {
-        Vector3D& p = v->position;
+    for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+      Vector3D &p = v->position;
 
-        glBegin(GL_POINTS);
-        glVertex3d(p.x, p.y, p.z);
-        glEnd();
+      glBegin(GL_POINTS);
+      glVertex3d(p.x, p.y, p.z);
+      glEnd();
     }
 
-    glEnable( GL_DEPTH_TEST );
+    glEnable(GL_DEPTH_TEST);
   }
 
-  void MeshEdit::drawHalfedgeArrow( Halfedge* h )
-  {
-    setElementStyle( h );
+  void MeshEdit::drawHalfedgeArrow(Halfedge *h) {
+    setElementStyle(h);
 
     Vector3D p0 = h->vertex()->position;
     Vector3D p1 = h->next()->vertex()->position;
@@ -1454,32 +1383,31 @@ namespace CGL {
 
     Vector3D N = h->face()->normal();
 
-    Vector3D e01 = p1-p0;
-    Vector3D e12 = p2-p1;
-    Vector3D e20 = p0-p2;
+    Vector3D e01 = p1 - p0;
+    Vector3D e12 = p2 - p1;
+    Vector3D e20 = p0 - p2;
 
-    Vector3D u = (e01-e20)/2.;
-    Vector3D v = (e12-e01)/2.;
+    Vector3D u = (e01 - e20) / 2.;
+    Vector3D v = (e12 - e01) / 2.;
 
-    Vector3D a = p0 + .2*u;
-    Vector3D b = p1 + .2*v;
+    Vector3D a = p0 + .2 * u;
+    Vector3D b = p1 + .2 * v;
 
-    Vector3D s = .2*(b-a);
-    Vector3D t = cross( N, s );
-    double theta = M_PI-M_PI/6.;
-    Vector3D c = b + cos(theta)*s + sin(theta)*t;
+    Vector3D s = .2 * (b - a);
+    Vector3D t = cross(N, s);
+    double theta = M_PI - M_PI / 6.;
+    Vector3D c = b + cos(theta) * s + sin(theta) * t;
 
-    glBegin( GL_LINE_STRIP );
-    glVertex3dv( &a.x );
-    glVertex3dv( &b.x );
-    glVertex3dv( &c.x );
+    glBegin(GL_LINE_STRIP);
+    glVertex3dv(&a.x);
+    glVertex3dv(&b.x);
+    glVertex3dv(&c.x);
     glEnd();
   }
 
 
-  void MeshEdit::drawHalfedges( HalfedgeMesh& mesh )
-  {
-    Halfedge* h;
+  void MeshEdit::drawHalfedges(HalfedgeMesh &mesh) {
+    Halfedge *h;
 
     glDisable(GL_DEPTH_TEST);
 
@@ -1497,38 +1425,37 @@ namespace CGL {
       }
     }
 
-    glEnable( GL_DEPTH_TEST );
+    glEnable(GL_DEPTH_TEST);
   }
 
-  void MeshNode::getBounds( Vector3D& low, Vector3D& high )
-  {
+  void MeshNode::getBounds(Vector3D &low, Vector3D &high) {
     double maxValue = numeric_limits<double>::max();
 
-    low.x = maxValue; high.x = -maxValue;
-    low.y = maxValue; high.y = -maxValue;
-    low.z = maxValue; high.z = -maxValue;
+    low.x = maxValue;
+    high.x = -maxValue;
+    low.y = maxValue;
+    high.y = -maxValue;
+    low.z = maxValue;
+    high.z = -maxValue;
 
-    for( VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++ )
-    {
-      Vector3D& p = v->position;
+    for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+      Vector3D &p = v->position;
 
-      low.x = min( low.x, p.x );
-      low.y = min( low.y, p.y );
-      low.z = min( low.z, p.z );
+      low.x = min(low.x, p.x);
+      low.y = min(low.y, p.y);
+      low.z = min(low.z, p.z);
 
-      high.x = max( high.x, p.x );
-      high.y = max( high.y, p.y );
-      high.z = max( high.z, p.z );
+      high.x = max(high.x, p.x);
+      high.y = max(high.y, p.y);
+      high.z = max(high.z, p.z);
     }
   }
 
   // Centroid / weighted average point.
-  void MeshNode::getCentroid( Vector3D& centroid )
-  {
-    centroid = Vector3D( 0., 0., 0. );
+  void MeshNode::getCentroid(Vector3D &centroid) {
+    centroid = Vector3D(0., 0., 0.);
 
-    for( VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++ )
-    {
+    for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
       centroid += v->position;
     }
 
@@ -1546,14 +1473,13 @@ namespace CGL {
    *  - Vector(A%, B%, C%), where ABC are in index order after the lookup location.
    */
   void MeshNode::fillFeatureStructure(
-      // OUTPUT:
-      MeshFeature & feature,
+          // OUTPUT:
+          MeshFeature &feature,
 
-      // INPUTS:
-      MeshFeature & lookup,
-      Vector3D    & barycentric_coords,
-      float w )
-  {
+          // INPUTS:
+          MeshFeature &lookup,
+          Vector3D &barycentric_coords,
+          float w) {
     /* Feature on Face Selection algorithm.
      *
      * coordinate c is low  if (c < low_threshold)
@@ -1561,11 +1487,12 @@ namespace CGL {
      * coordinate c is high if (c > high_threshold)
      */
 
-    Face* f = lookup.element->getFace();
-    if( f == NULL )
-    {
-      cerr << "Error in Mesh::fillFeatureStructure(): we were asked to find a feature associated with an element that is not a face!" << endl;
-      exit( 1 );
+    Face *f = lookup.element->getFace();
+    if (f == NULL) {
+      cerr
+              << "Error in Mesh::fillFeatureStructure(): we were asked to find a feature associated with an element that is not a face!"
+              << endl;
+      exit(1);
     }
 
     // Grab the three halfedges of the triangle under the cursor.
@@ -1584,34 +1511,63 @@ namespace CGL {
     feature.w = w;
 
     // Check if the cursor is closest to a vertex; if so, this is the feature we want to return.
-    if( barycentric_coords.x > high_threshold ) { feature.element = elementAddress( v1 ); return; }
-    if( barycentric_coords.y > high_threshold ) { feature.element = elementAddress( v2 ); return; }
-    if( barycentric_coords.z > high_threshold ) { feature.element = elementAddress( v3 ); return; }
+    if (barycentric_coords.x > high_threshold) {
+      feature.element = elementAddress(v1);
+      return;
+    }
+    if (barycentric_coords.y > high_threshold) {
+      feature.element = elementAddress(v2);
+      return;
+    }
+    if (barycentric_coords.z > high_threshold) {
+      feature.element = elementAddress(v3);
+      return;
+    }
 
     // Next, check if the cursor is closest to an edge; if so, we return it.
-    if( barycentric_coords.z < low_threshold) { feature.element = elementAddress( h1->edge() ); return; }
-    if( barycentric_coords.x < low_threshold) { feature.element = elementAddress( h2->edge() ); return; }
-    if( barycentric_coords.y < low_threshold) { feature.element = elementAddress( h3->edge() ); return; }
+    if (barycentric_coords.z < low_threshold) {
+      feature.element = elementAddress(h1->edge());
+      return;
+    }
+    if (barycentric_coords.x < low_threshold) {
+      feature.element = elementAddress(h2->edge());
+      return;
+    }
+    if (barycentric_coords.y < low_threshold) {
+      feature.element = elementAddress(h3->edge());
+      return;
+    }
 
     // Finally, check if the cursor is closest to a halfedge; if so, we return the associated halfedge.
-    if( barycentric_coords.z < mid_threshold) { feature.element = elementAddress( h1 ); return; }
-    if( barycentric_coords.x < mid_threshold) { feature.element = elementAddress( h2 ); return; }
-    if( barycentric_coords.y < mid_threshold) { feature.element = elementAddress( h3 ); return; }
+    if (barycentric_coords.z < mid_threshold) {
+      feature.element = elementAddress(h1);
+      return;
+    }
+    if (barycentric_coords.x < mid_threshold) {
+      feature.element = elementAddress(h2);
+      return;
+    }
+    if (barycentric_coords.y < mid_threshold) {
+      feature.element = elementAddress(h3);
+      return;
+    }
 
     // Otherwise, the cursor is closest to the (middle of) the face itself.
     feature.element = f;
     return;
   }
 
-  void MeshEdit :: flipSelectedEdge( void )
-  {
-    Edge* e = NULL;
-    if (selectedFeature.isValid()){
+  void MeshEdit::flipSelectedEdge(void) {
+    Edge *e = NULL;
+    if (selectedFeature.isValid()) {
       e = selectedFeature.element->getEdge();
     }
 
-    if( e == NULL ) { cerr << "Must select an edge." << endl; return; }
-    selectedFeature.node->mesh.flipEdge( e->halfedge()->edge() );
+    if (e == NULL) {
+      cerr << "Must select an edge." << endl;
+      return;
+    }
+    selectedFeature.node->mesh.flipEdge(e->halfedge()->edge());
 
     // Since the mesh may have changed, the selected and
     // hovered features may no longer point to valid elements.
@@ -1619,15 +1575,17 @@ namespace CGL {
     hoveredFeature.invalidate();
   }
 
-  void MeshEdit :: splitSelectedEdge( void )
-  {
-    Edge* e = NULL;
+  void MeshEdit::splitSelectedEdge(void) {
+    Edge *e = NULL;
     if (selectedFeature.isValid()) {
       e = selectedFeature.element->getEdge();
     }
 
-    if( e == NULL ) { cerr << "Must select an edge." << endl; return; }
-    selectedFeature.node->mesh.splitEdge( e->halfedge()->edge() );
+    if (e == NULL) {
+      cerr << "Must select an edge." << endl;
+      return;
+    }
+    selectedFeature.node->mesh.splitEdge(e->halfedge()->edge());
 
     // Since the mesh may have changed, the selected and
     // hovered features may no longer point to valid elements.
