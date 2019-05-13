@@ -173,7 +173,7 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
-    gluLookAt(   0.0, 1.5, 0.0,// camera location.
+    gluLookAt(   0.0, 0.5, 0.0,// camera location.
         0.0, 0.0, 0.0,// point looking at.
         0.0, 0.0, 1.0);// up direction.
 
@@ -1296,20 +1296,7 @@ namespace CGL {
   }
 
   void MeshEdit::renderNormals(vector<Point*> points) {
-      DrawStyle *style = &defaultStyle;
-      setColor(style->vertexColor);
-      glPointSize(style->vertexRadius);
-      for (Point* p : points) {
-          // glBegin(GL_LINES);
-          // glVertex3dv( &(p->pos.x) );
-          // Vector3D normal = p->pos.x + p->normal.x;
-          // glVertex3dv( &(normal.x) );
-          // glEnd();
-          glBegin(GL_POINTS);
-          glVertex3d(p->pos.x, p->pos.y, p->pos.z);
-          glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
-          glEnd();
-      }
+
   }
 
   // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.
