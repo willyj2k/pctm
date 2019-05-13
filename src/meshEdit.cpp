@@ -1220,12 +1220,6 @@ namespace CGL {
     glPointSize(style->vertexRadius);
 
     for (Point *p : points) {
-
-//           glVertex3dv( &(p->pos.x) );
-//           Vector3D normal = p->pos.x + p->normal.x;
-//           glVertex3dv( &(normal.x) );
-
-
       glBegin(GL_LINES);
       glVertex3d(p->pos.x, p->pos.y, p->pos.z);
       glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
@@ -1236,7 +1230,6 @@ namespace CGL {
       glVertex3d(p->pos.x + p->normal.x, p->pos.y + p->normal.y, p->pos.z + p->normal.z);
       glEnd();
     }
-//    glEnd();
   }
 
   // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.
