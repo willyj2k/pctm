@@ -22,8 +22,35 @@ class PivotEdge {
 
 class BallPivot {
   public:
+    // info for storing vertex information relating to ball pivoting
+    struct PivotTriangle {
+      Point *sigma_i;
+      Point *sigma_j;
+      Point *sigma_o;
+      Point *center;
+      bool empty;
+
+      // constructors
+      PivotTriangle(Point *i, Point *j, Point *o, Point *center) :
+        sigma_i( i ),
+        sigma_j( j ),
+        sigma_o( o ),
+        center( center ),
+        empty( false )
+        { }
+
+      PivotTriangle() :
+        sigma_i( NULL ),
+        sigma_j( NULL ),
+        sigma_o( NULL ),
+        center( NULL ),
+        empty( true )
+        { }
+    };
+
     void init(const std::vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max);
-    std::vector<Point *> find_seed_triangle();
+    PivotTriangle find_seed_triangle();
+    PivotTriangle pivot(PivotTriangle pt);
     std::vector<Point*> all_points;
     std::vector<Point*> unused;
     std::vector<Point*> used;
@@ -60,7 +87,7 @@ class BallPivot {
       }
     };
 
-    std::vector<vector<PivotEdge> > front;
+    std::vector<std::vector<PivotEdge>> front;
 
     // spatial map of points in the cloud
     //
@@ -86,9 +113,13 @@ class BallPivot {
     int large_prime = 2038074743;
     int small_prime = 113;
 
-    void create_spatial_grid(const vector<Point> &points);
-    vector<Point *> neighborhood(double r, const Point &p);
+    void create_spatial_grid(const std::vector<Point> &points);
+    std::vector<Point *> neighborhood(double r, const Point &p);
     Vector3D circumcenter(const Point &a, const Point &b, const Point &c);
+    bool valid_vertices(const Point &a, const Point &b, const Point &c);
+    // overload ball_center to save some computation in the case that we
+    // already know the triangle normal
+    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
     Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
@@ -102,7 +133,7 @@ class BallPivot {
     void glue(PivotEdge ik);
     bool on_front(Point k);
     bool not_used(Point k);
-    bool contains_edge(vector<PivotEdge> vec, PivotEdge e);
+    bool contains_edge(std::vector<PivotEdge> vec, PivotEdge e);
 };
 
 #endif //BALLPIVOT_H

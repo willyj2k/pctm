@@ -214,7 +214,7 @@ namespace CGL {
   }
 
   // TODO: DRAW EDGES
-  void MeshEdit::drawPivotEdges( std::vector< std::vector< PivotEdge > > edges )
+  void MeshEdit::drawPivotEdges(std::vector<std::vector<PivotEdge>> edges)
   {
 //    DrawStyle* style = &defaultStyle;
     for( std::vector<PivotEdge> lst : edges ) // iterate over edges
