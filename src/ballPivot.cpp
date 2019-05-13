@@ -157,7 +157,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
-      double theta = circle_sphere_intersection(pt.center, trajectory_radius, *c_x);
+      double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
       // TODO correct the checks for a valid intersection
       if (theta > 0 && theta < 2 * PI && theta < min_theta) {
         min_theta = theta;
@@ -171,6 +171,12 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   } else {
     return PivotTriangle();
   }
+}
+
+double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
+  /* TODO documentation
+   */
+  return 0.0;
 }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
