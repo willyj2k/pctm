@@ -52,8 +52,7 @@ class BallPivot {
     PivotTriangle find_seed_triangle();
     PivotTriangle pivot(PivotTriangle pt);
     std::vector<Point*> all_points;
-    std::vector<Point*> unused;
-    std::vector<Point*> used;
+    std::unordered_set<Point*> used;
 
     static double dist(const Point &p);
     Point *ballPivot(const Point &a, const Point &b, const Point &c);

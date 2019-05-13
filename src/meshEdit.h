@@ -14,6 +14,7 @@
 #include "halfEdgeMesh.h"
 #include "student_code.h"
 #include "point.h"
+#include "ballPivot.h"
 
 #include <string>
 #include <iostream>
