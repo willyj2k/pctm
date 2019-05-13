@@ -108,7 +108,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
             // space that touches all three vertices and contains no other data
             // point
             if (triangle_normal.norm2() > 0) {
-              Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
+              Point center = *ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal);
               vector<Point *> r_neighborhood = neighborhood(radius, center);
               if (r_neighborhood.size() == 3) {
                 // we don't neet to check membership in r_neighborhood because
@@ -147,8 +147,8 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   if (pt.empty) {
     return pt;
   }
-  Point m = Point((pt.i.pos + pt.j.pos) / 2.0);
-  double trajectory_radius = (pt.center - m).norm();
+  Point m = Point((pt.sigma_i->pos + pt.sigma_j->pos) / 2.0);
+  double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
   Point *first_hit;
@@ -157,13 +157,13 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
-      double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
+      //double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
       // TODO correct the checks for a valid intersection
-      if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-        min_theta = theta;
-        first_hit = sigma_x;
-        first_center = c_x;
-      }
+      // if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+      //   min_theta = theta;
+      //   first_hit = sigma_x;
+      //   first_center = c_x;
+      // }
     }
   }
   if (first_hit != NULL) {
@@ -173,11 +173,11 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   }
 }
 
-double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
-  /* TODO documentation
-   */
-  return 0.0;
-}
+// double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
+//   /* TODO documentation
+//    */
+//   return 0.0;
+// }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
@@ -252,12 +252,12 @@ bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
   return true;
 }
 
-Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c) {
+Point* BallPivot::ball_center(const Point &a, const Point &b, const Point &c) {
   const Vector3D normal = correct_plane_normal(a, b, c);
   return ball_center(a, b, c, normal);
 }
 
-Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal) {
+Point* BallPivot::ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius
    * this->radius that intersects the points a, b, c.
    *
@@ -273,7 +273,7 @@ Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c, 
   // of the sphere to the triangle: (circumcenter - c)^2 + perp_dist^2 = radius^2
   double perp_dist = sqrt(pow(radius, 2) - (proj_center - c.pos).norm2());
 
-  return proj_center + perp_dist * normal;
+  return new Point(proj_center + perp_dist * normal, normal);
 }
 
 Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Point &c) {
@@ -449,8 +449,8 @@ void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int ind
     this->front[index].push_back(kj);
 }
 
-bool compare_edge(PivotTriangle e1, PivotTriangle e2) {
-    return compare_3D(e1.sigma_i.pos, e2.sigma_i.pos) && compare_3D(e1.sigma_j.pos, e2.sigma_j.pos);
+bool compare_edge(BallPivot::PivotTriangle e1, BallPivot::PivotTriangle e2) {
+    return compare_3D(e1.sigma_i->pos, e2.sigma_i->pos) && compare_3D(e1.sigma_j->pos, e2.sigma_j->pos);
 }
 
 bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
@@ -463,7 +463,7 @@ bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
 }
 
 void BallPivot::glue(PivotTriangle ij) {
-    PivotTriangle ji = PivotEdge(ij.sigma_j, ij.sigma_i, ij.sigma_k, ij.center);
+    PivotTriangle ji = PivotTriangle(ij.sigma_j, ij.sigma_i, ij.sigma_o, ij.center);
     int loop_index1 = 0;
     int loop_index2 = 0;
     int index1 = 0;
@@ -566,7 +566,7 @@ bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); i++) {
         for (int j = 0; j < front.size(); j++) {
-            if (compare_3D(front[i][j].a.pos, k.pos) || compare_3D(front[i][j].b.pos, k.pos)) {
+            if (compare_3D(front[i][j].sigma_i->pos, k.pos) || compare_3D(front[i][j].sigma_j->pos, k.pos)) {
                 internal_mesh_vertex = true;
             }
         }
@@ -578,6 +578,6 @@ bool BallPivot::not_used(Point k) {
     return !(used.find(&k) == used.end());
 }
 
-void mark_as_boundary(PivotTriangle e) {
+void mark_as_boundary(BallPivot::PivotTriangle e) {
     e.isBoundary = true;
 }

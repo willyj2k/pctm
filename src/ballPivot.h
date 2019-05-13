@@ -117,11 +117,11 @@ class BallPivot {
     bool valid_vertices(const Point &a, const Point &b, const Point &c);
     // overload ball_center to save some computation in the case that we
     // already know the triangle normal
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
+    Point* ball_center(const Point &a, const Point &b, const Point &c);
+    Point* ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    double ball_intersection(trajectory_center, trajectory_radius, ball_center);
+    // double ball_intersection(trajectory_center, trajectory_radius, ball_center);
     int hash_position(const Point &p);
     int hash_cell(const CellIndex &c);
     CellIndex get_cell(const Point &p);
