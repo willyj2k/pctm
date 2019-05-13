@@ -2,6 +2,7 @@
 #include "shaderUtils.h"
 #include "GL/glew.h"
 #include "point.h"
+#include "ballPivot.h"
 
 #define PI 3.14159265
 
@@ -213,15 +214,14 @@ namespace CGL {
       glFlush();
   }
 
-  // TODO: DRAW EDGES
   void MeshEdit::drawPivotEdges( std::vector< std::vector< PivotEdge > > edges )
   {
-//    DrawStyle* style = &defaultStyle;
+    DrawStyle* style = &defaultStyle;
     for( std::vector<PivotEdge> lst : edges ) // iterate over edges
     {
       for( PivotEdge pe : lst) {
-        Vector3D p0 = pe->a->pos;
-        Vector3D p1 = pe->b->pos;
+        Vector3D p0 = pe.a.pos;
+        Vector3D p1 = pe.b.pos;
 
 //        setElementStyle(elementAddress(e));
 //        setColor(style->edgeColor);
