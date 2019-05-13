@@ -205,13 +205,13 @@ namespace CGL {
     glFlush();
   }
 
-  void MeshEdit::drawPivotEdges(std::vector <std::vector<PivotEdge> > edges) {
+  void MeshEdit::drawPivotTriangles(std::vector <std::vector<BallPivot::PivotTriangle> > edges) {
     DrawStyle *style = &defaultStyle;
-    for (std::vector <PivotEdge> lst : edges) // iterate over edges
+    for (std::vector <BallPivot::PivotTriangle> lst : edges) // iterate over edges
     {
-      for (PivotEdge pe : lst) {
-        Vector3D p0 = pe.a.pos;
-        Vector3D p1 = pe.b.pos;
+      for (BallPivot::PivotTriangle pe : lst) {
+        Vector3D p0 = pe.sigma_i->pos;
+        Vector3D p1 = pe.sigma_j->pos;
 
 //        setElementStyle(elementAddress(e));
 //        setColor(style->edgeColor);

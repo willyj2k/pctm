@@ -441,19 +441,19 @@ bool compare_3D(Vector3D a, Vector3D b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
-void BallPivot::join(PivotEdge e, Point k, int index) {
+void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int index) {
     this->front[index].pop_back();
-    PivotEdge ik = PivotEdge(e.a, k);
-    PivotEdge kj = PivotEdge(k, e.b);
+    PivotTriangle ik = PivotTriangle(e.sigma_i, sigma_k, e.sigma_j, new_center);
+    PivotTriangle kj = PivotTriangle(sigma_k, e.sigma_j, e.sigma_i, new_center);
     this->front[index].push_back(ik);
     this->front[index].push_back(kj);
 }
 
-bool compare_edge(PivotEdge e1, PivotEdge e2) {
-    return compare_3D(e1.a.pos, e2.a.pos) && compare_3D(e1.b.pos, e2.b.pos);
+bool compare_edge(PivotTriangle e1, PivotTriangle e2) {
+    return compare_3D(e1.sigma_i.pos, e2.sigma_i.pos) && compare_3D(e1.sigma_j.pos, e2.sigma_j.pos);
 }
 
-bool BallPivot::contains_edge(vector<PivotEdge> vec, PivotEdge e) {
+bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
     for (int i = 0; i < vec.size(); i++) {
         if (compare_edge(e, vec[i])) {
             return true;
@@ -462,26 +462,26 @@ bool BallPivot::contains_edge(vector<PivotEdge> vec, PivotEdge e) {
     return false;
 }
 
-void BallPivot::glue(PivotEdge ik) {
-    PivotEdge ki = PivotEdge(ik.b, ik.a);
+void BallPivot::glue(PivotTriangle ij) {
+    PivotTriangle ji = PivotEdge(ij.sigma_j, ij.sigma_i, ij.sigma_k, ij.center);
     int loop_index1 = 0;
     int loop_index2 = 0;
     int index1 = 0;
     int index2 = 0;
 
     for (int i = 0; i < front.size(); i++) {
-        if (contains_edge(front[i], ik)) {
+        if (contains_edge(front[i], ij)) {
             loop_index1 = i;
             for (int j = 0; j < front[i].size(); j++) {
-                if (compare_edge(front[i][j], ik)) {
+                if (compare_edge(front[i][j], ij)) {
                     index1 = j;
                 }
             }
         }
-        if (contains_edge(front[i], ki)) {
+        if (contains_edge(front[i], ji)) {
             loop_index2 = i;
             for (int j = 0; j < front[i].size(); j++) {
-                if (compare_edge(front[i][j], ki)) {
+                if (compare_edge(front[i][j], ji)) {
                     index2 = j;
                 }
             }
@@ -489,7 +489,7 @@ void BallPivot::glue(PivotEdge ik) {
     }
 
     //no duplicate edges contained- no need for gluing
-    if (!(contains_edge(front[loop_index1], ik) && contains_edge(front[loop_index2], ki))) {
+    if (!(contains_edge(front[loop_index1], ij) && contains_edge(front[loop_index2], ji))) {
         return;
     }
 
@@ -509,8 +509,8 @@ void BallPivot::glue(PivotEdge ik) {
                 }
             } else {
             //edges form a loop and are not adjacent
-                vector<PivotEdge> loop1;
-                vector<PivotEdge> loop2;
+                vector<PivotTriangle> loop1;
+                vector<PivotTriangle> loop2;
                 if (index1 < index2) {
                     for (int i = index1 + 1; i < index2; i++) {
                         loop1.push_back(front[loop_index1][i]);
@@ -539,7 +539,7 @@ void BallPivot::glue(PivotEdge ik) {
         }
     } else {
         //edges are in different loops
-        vector<PivotEdge> loop1;
+        vector<PivotTriangle> loop1;
         for (int i = 0; i < index1; i++) {
             loop1.push_back(front[loop_index1][i]);
         }
@@ -578,6 +578,6 @@ bool BallPivot::not_used(Point k) {
     return !(used.find(&k) == used.end());
 }
 
-void mark_as_boundary(PivotEdge e) {
+void mark_as_boundary(PivotTriangle e) {
     e.isBoundary = true;
 }
