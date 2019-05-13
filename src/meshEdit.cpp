@@ -2,6 +2,7 @@
 #include "shaderUtils.h"
 #include "GL/glew.h"
 #include "point.h"
+#include "ballPivot.h"
 
 #define PI 3.14159265
 
@@ -114,6 +115,7 @@ namespace CGL {
   {
     update_camera();
     draw_normals();
+//    drawPivotEdges();
 
     // // Draw the helpful picking messages.
     if (showHUD)
@@ -210,6 +212,27 @@ namespace CGL {
       renderNormals(points);
 
       glFlush();
+  }
+
+  void MeshEdit::drawPivotEdges( std::vector< std::vector< PivotEdge > > edges )
+  {
+    DrawStyle* style = &defaultStyle;
+    for( std::vector<PivotEdge> lst : edges ) // iterate over edges
+    {
+      for( PivotEdge pe : lst) {
+        Vector3D p0 = pe.a.pos;
+        Vector3D p1 = pe.b.pos;
+
+//        setElementStyle(elementAddress(e));
+//        setColor(style->edgeColor);
+        glLineWidth(style->strokeWidth);
+
+        glBegin(GL_LINES);
+        glVertex3dv(&p0.x);
+        glVertex3dv(&p1.x);
+        glEnd();
+      }
+    } // done iterating over edges
   }
 
   // Guranteed to be called at the start.

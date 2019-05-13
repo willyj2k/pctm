@@ -28,6 +28,7 @@ class BallPivot {
     std::unordered_set<Point*> used;
 
     static double dist(const Point &p);
+    Point *ballPivot(const Point &a, const Point &b, const Point &c);
 
   private:
     // cell info for hashing
