@@ -205,24 +205,32 @@ namespace CGL {
     glFlush();
   }
 
-  void MeshEdit::drawPivotTriangles(std::vector <std::vector<BallPivot::PivotTriangle> > edges) {
+  void MeshEdit::drawPivotTriangles(std::vector <BallPivot::PivotTriangle> edges) {
     DrawStyle *style = &defaultStyle;
-    for (std::vector <BallPivot::PivotTriangle> lst : edges) // iterate over edges
-    {
-      for (BallPivot::PivotTriangle pe : lst) {
+    for (BallPivot::PivotTriangle pe : edges) {
         Vector3D p0 = pe.sigma_i->pos;
         Vector3D p1 = pe.sigma_j->pos;
+        Vector3D p2 = pe.sigma_o->pos;
 
 //        setElementStyle(elementAddress(e));
 //        setColor(style->edgeColor);
-        glLineWidth(style->strokeWidth);
+      glLineWidth(style->strokeWidth);
 
-        glBegin(GL_LINES);
-        glVertex3dv(&p0.x);
-        glVertex3dv(&p1.x);
-        glEnd();
-      }
-    } // done iterating over edges
+      glBegin(GL_LINES);
+      glVertex3d(p0.x, p0.y, p0.z);
+      glVertex3d(p1.x, p1.y, p1.z);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glVertex3d(p1.x, p1.y, p1.z);
+      glVertex3d(p2.x, p2.y, p2.z);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glVertex3d(p2.x, p2.y, p2.z);
+      glVertex3d(p0.x, p0.y, p0.z);
+      glEnd();
+    }
   }
 
   // Guranteed to be called at the start.
