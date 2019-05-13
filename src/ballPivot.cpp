@@ -70,9 +70,9 @@ void BallPivot::create_spatial_grid(const vector<Point> &points) {
   }
 }
 
-vector<Point *> BallPivot::find_seed_triangle() {
+BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
-  vector<Point *> triangle;
+  PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   while (!found_valid_triangle && seed_cell != max_cell) {
     int h = hash_cell(seed_cell);
@@ -99,44 +99,84 @@ vector<Point *> BallPivot::find_seed_triangle() {
           Point *sigma_a = lst.at(i - 1);
           Point *sigma_b = lst.at(i);
 
-          // triangle_normal will be the zero vector if the points don't form a
-          // valid triangle
-          Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
+          if (valid_vertices(*sigma, *sigma_a, *sigma_b)) {
+            // triangle_normal will be the zero vector if the points don't form a
+            // valid triangle
+            Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
 
-          // test that there exists a p-ball with center in the outward half
-          // space that touches all three vertices and contains no other data
-          // point
-          if (triangle_normal.norm2() > 0) {
-            Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
-            vector<Point *> r_neighborhood = neighborhood(radius, center);
-            if (r_neighborhood.size() == 3) {
-              // we don't neet to check membership in r_neighborhood because
-              // sigma, sigma_a and sigma_b are already guaranteed to be distance
-              // (radius) away from the center of the ball (assuming everything
-              // is working correctly...)
-              found_valid_triangle = true;
-              triangle.push_back(sigma);
-              triangle.push_back(sigma_a);
-              triangle.push_back(sigma_b);
-              used.insert(sigma);
-              used.insert(sigma_a);
-              used.insert(sigma_b);
+            // test that there exists a p-ball with center in the outward half
+            // space that touches all three vertices and contains no other data
+            // point
+            if (triangle_normal.norm2() > 0) {
+              Point center = Point(ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal));
+              vector<Point *> r_neighborhood = neighborhood(radius, center);
+              if (r_neighborhood.size() == 3) {
+                // we don't neet to check membership in r_neighborhood because
+                // sigma, sigma_a and sigma_b are already guaranteed to be distance
+                // (radius) away from the center of the ball (assuming everything
+                // is working correctly...)
+                found_valid_triangle = true;
+                triangle = PivotTriangle(sigma, sigma_a, sigma_b, &center);
+                used.insert(sigma);
+                used.insert(sigma_a);
+                used.insert(sigma_b);
+              }
             }
           }
         }
       }
+      // put this here because apparently we only want to consider one
+      // candidate *vertex* per cell, rather than one seed triangle per cell
       processed_cells.insert(h);
     }
     increment_seed_cell();
   }
 
-  if (found_valid_triangle) {
-    return triangle;
-  } else {
-    // No seed triangle was found!!
-    vector<Point *> empty;
-    return empty;
+  return triangle;
+}
+
+BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
+  /* Return the triangle vertices of the new triangle and the center of the
+   * corresponding ball found by pivoting if such a triangle is found.
+   *
+   * Always pivots around the first two edges in pt; pt.sigma_i and pt.sigma_j.
+   *
+   * Takes in the vertices and center of the corresponding ball for the
+   * previous triangle.
+   */
+  if (pt.empty) {
+    return pt;
   }
+  Point m = Point((pt.i.pos + pt.j.pos) / 2.0);
+  double trajectory_radius = (pt.center - m).norm();
+
+  vector<Point *> candidates = neighborhood(2 * radius, m);
+  Point *first_hit;
+  Point *first_center;
+  double min_theta = INF_D;
+  for (Point *sigma_x : candidates) {
+    if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
+      Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
+      double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
+      // TODO correct the checks for a valid intersection
+      if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+        min_theta = theta;
+        first_hit = sigma_x;
+        first_center = c_x;
+      }
+    }
+  }
+  if (first_hit != NULL) {
+    return PivotTriangle(pt.sigma_i, pt.sigma_j, first_hit, first_center);
+  } else {
+    return PivotTriangle();
+  }
+}
+
+double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
+  /* TODO documentation
+   */
+  return 0.0;
 }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
@@ -195,6 +235,28 @@ Vector3D BallPivot::circumcenter(const Point &a, const Point &b, const Point &c)
   return bary_a * a.pos + bary_b * b.pos + bary_c * c.pos;
 }
 
+bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
+  /* Returns true if the input vertices can be touched by a ball of radius
+   * this->radius.
+   */
+  Vector3D proj_center = circumcenter(a, b, c);
+  double a_dist = (a.pos - proj_center).norm();
+  if (a_dist > radius) return false;
+
+  double b_dist = (b.pos - proj_center).norm();
+  if (b_dist > radius) return false;
+
+  double c_dist = (c.pos - proj_center).norm();
+  if (c_dist > radius) return false;
+
+  return true;
+}
+
+Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c) {
+  const Vector3D normal = correct_plane_normal(a, b, c);
+  return ball_center(a, b, c, normal);
+}
+
 Vector3D BallPivot::ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal) {
   /* Returns the Cartesian coordinates of the center of a sphere with radius
    * this->radius that intersects the points a, b, c.
@@ -232,9 +294,9 @@ Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Poi
 
 Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const Point &c) {
   /* Returns the correctly oriented plane normal, or the zero vector if no such
-   * vector exists
+   * vector exists.
    *
-   * Note: We can therefore use this to also verify that the vertex normals
+   * Note: We can therefore use this to verify that the vertex normals
    * (of a, b and c) are aligned.
    */
   Vector3D naive_normal = naive_plane_normal(a, b, c);
