@@ -112,7 +112,7 @@ namespace CGL {
   void MeshEdit::render() {
     update_camera();
     draw_normals();
-//    drawPivotEdges();
+    drawPivotTriangles();
 
     // // Draw the helpful picking messages.
     if (showHUD) {
@@ -205,9 +205,9 @@ namespace CGL {
     glFlush();
   }
 
-  void MeshEdit::drawPivotTriangles(std::vector <BallPivot::PivotTriangle> edges) {
+  void MeshEdit::drawPivotTriangles() {
     DrawStyle *style = &defaultStyle;
-    for (BallPivot::PivotTriangle pe : edges) {
+    for (BallPivot::PivotTriangle pe : triangles) {
         Vector3D p0 = pe.sigma_i->pos;
         Vector3D p1 = pe.sigma_j->pos;
         Vector3D p2 = pe.sigma_o->pos;
@@ -440,6 +440,7 @@ namespace CGL {
           break;
         case POLYMESH:
           points = scene->points;
+          triangles = scene->triangles;
           init_polymesh(static_cast<Polymesh &>(*instance));
           break;
         case MATERIAL:
