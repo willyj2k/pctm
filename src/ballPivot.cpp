@@ -7,6 +7,8 @@
 #include "point.h"
 #include <iostream>
 #include <unordered_set>
+#include <cmath>
+#include <algorithm>
 
 using namespace CGL;
 using std::vector;
@@ -147,7 +149,8 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   if (pt.empty) {
     return pt;
   }
-  Point m = Point((pt.i.pos + pt.j.pos) / 2.0);
+  // TODO make sure that the normal of m is facing the proper direction
+  Point m = Point((pt.i.pos + pt.j.pos) / 2.0, (pt.j.pos - pt.i.pos).unit());
   double trajectory_radius = (pt.center - m).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
@@ -157,7 +160,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
-      double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
+      double theta = ball_intersection(m, trajectory_radius, *c_x);
       // TODO correct the checks for a valid intersection
       if (theta > 0 && theta < 2 * PI && theta < min_theta) {
         min_theta = theta;
@@ -173,10 +176,90 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   }
 }
 
-double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
-  /* TODO documentation
+double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x) {
+  /* Returns the angle along the circular trajectory defined by center tc,
+   * radius tr and starting point ts that the p-ball hits the point x. If the
+   * ball never hits x, the this returns 0 instead.
+   *
+   * Assumes that the normal of tc is orthogonal to the trajectory plane and is
+   * oriented so that the trajectory goes counterclockwise when facing against
+   * the normal (i.e., if the normal is pointing "up" out of the face of
+   * the clock).
+   *
+   * Implementation adapted from https://gamedev.stackexchange.com/questions/
+   * 75756/sphere-sphere-intersection-and-circle-sphere-intersection
    */
-  return 0.0;
+  double d = abs(dot(tc.normal, (x.pos - tc.pos)));
+  if (d > radius) {
+    // trajectory plane doesn't intersect the ball
+    return 0;
+  }
+
+  Vector3D intersection;
+
+  // center of the ball centered at x, projected onto the trajectory plane
+  Vector3D x_pc = x.pos + d * tc.normal;
+
+  if (d == radius) {
+    // the trajectory plane is tangent to the ball, so x_pc is the only
+    // intersection point
+    if ((x_pc - tc).norm() == tr) {
+      return angle_between(tc, ts, x_pc);
+    } else {
+      return 0;
+    }
+  }
+
+  // radius of the circular slice of the ball in the trajectory plane
+  double x_pr = sqrt(radius * radius  - d * d);
+  
+  // now we do circle-circle intersection
+  double d_p = (tc.pos - x_pc).norm();
+  if (tr + x_pr > d_p) {
+    // circles too far away
+    return 0;
+
+  } else if (d_p + min(tr, x_pr) < max(tr, x_pr)) {
+    // one circle entirely contained in the other
+    return 0;
+
+  } else if (tr + x_pr == d_p) {
+    // circles are tangent (exterior)
+    intersection = tc + tr * (tc.pos - x_pc).unit();
+    return angle_between(tc, ts, intersection);
+
+  } else if (d_p + tr == x_pr) {
+    // circles are tangent, trajectory inside ball
+    intersection = x_pc + x_pr * (tc.pos - x_pc).unit()
+    return angle_between(tc, ts, intersection);
+
+  } else if (d_p + x_pr == tr) {
+    // circles are tangent, ball inside trajectory
+    intersection = tc.pos + tr * (x_pc - tc.pos()).unit()
+    return angle_between(tc, ts, intersection);
+
+  } else {
+    // circles intersect at two points
+    double h = 0.5 + (tr * tr - x_pr * x_pr) / (2 * d_p * d_p);
+    Vector3D c_i = tc.pos + h * (x_pc - tc.pos);
+    double r_i = sqrt(tr * tr - h * h * d_p * d_p);
+    Vector3D r_i_dir = cross(tc.normal, c_i).unit();
+    Vector3D intersection1 = c_i + r_i * r_i_dir;
+    Vector3D intersection2 = c_i - r_i * r_i_dir;
+    double theta1 = angle_between(tc, ts, intersection1);
+    double theta2 = angle_between(tc, ts, intersection2);
+    return min(theta1, theta2);
+  }
+}
+
+double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D &i) {
+  /* Returns the angle between (tc.pos - tc.pos) and (i - tc.pos); the angle is
+   * measured counterclockwise from ts about tc (where the normal of tc is
+   * facing out of the clock face)
+   */
+  Vector3D start = (ts.pos - tc.pos).unit();
+  Vector3D end = (i - tc.pos).unit();
+  return atan2(dot(cross(start, end), tc.normal), dot(start, end));
 }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
