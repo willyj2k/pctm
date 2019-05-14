@@ -663,6 +663,9 @@ bool BallPivot::on_front(Point k) {
     return internal_mesh_vertex;
 }
 
+void BallPivot::insert_edge(BallPivot::PivotTriangle e, BallPivot::VertexSpecifier v1, BallPivot::VertexSpecifier v2) {
+}
+
 bool BallPivot::not_used(Point k) {
     return !(used.find(&k) == used.end());
 }

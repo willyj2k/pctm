@@ -15,6 +15,8 @@ using namespace CGL;
 class BallPivot {
   public:
     // info for storing vertex information relating to ball pivoting
+    enum class VertexSpecifier {i, j, k};
+
     struct PivotTriangle {
       Point *sigma_i;
       Point *sigma_j;
@@ -43,6 +45,16 @@ class BallPivot {
         empty( true ),
         isBoundary( false ),
         isFrozen( false )
+        { }
+
+      PivotTriangle(const PivotTriangle &other) :
+        sigma_i( other.sigma_i ),
+        sigma_j( other.sigma_j ),
+        sigma_o( other.sigma_o ),
+        center( other.center ),
+        empty( other.empty ),
+        isBoundary( other.isBoundary ),
+        isFrozen( other.isFrozen )
         { }
     };
 
@@ -84,7 +96,7 @@ class BallPivot {
       }
     };
 
-    std::vector<std::vector<PivotTriangle> > front;
+    std::vector<std::vector<PivotTriangle>> front;
 
     // spatial map of points in the cloud
     //
@@ -133,6 +145,7 @@ class BallPivot {
     bool on_front(Point k);
     bool not_used(Point k);
     bool contains_edge(std::vector<PivotTriangle> vec, PivotTriangle e);
+    void insert_edge(PivotTriangle e, VertexSpecifier v1, VertexSpecifier v2);
 };
 
 #endif //BALLPIVOT_H
