@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <style>
+        body {
+            padding: 100px;
+            margin: auto;
+            text-align: left;
+            font-weight: 400;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 12pt;
+            color: #000000;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        /*
+        div.padded {
+          padding-top: 0px;
+          padding-right: 100px;
+          padding-bottom: 0.25in;
+          padding-left: 100px;
+        }
+        */
+    </style>
+    <title>Final Report</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen"/>
+</head>
+<body>
+
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td align="middle">
+                <img src="images/final/bun180_without_normals.png" align="middle" width="480px"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<br/>
+<h1 align="middle">Final Report: Point Cloud to Mesh</h1>
+<h2 align="middle">Evan Chang, Rene Lee, William Jow</h2>
+<br>
+<br>
+
+<!--<a href="https://drive.google.com/open?id=1qWXYMsk_iGdAqTHUru9skpUl9y8UUay7" target="_blank">Video Explanation</a>-->
+
+
+<div class="padded">
+    <h2>Abstract</h2>
+    <p>In this project, we parsed .ply files in order to get 3D vertices or our point cloud. Using these vertices, we
+        calculated the normals. To calculate the vertex normals, we took advantage of the already calculated spatial
+        mapping that will be used for the ball pivot algorithm. With spatial mapping, we were able to calculate the
+        centroid of every vertex closeby and calculated a vector from the centroid to the vertex in question. The
+        “normal” was then simply the direction of that vector, and we updated the normal attribute in each vertex. Then,
+        with the point cloud and normals we implemented the ball-pivoting algorithm in order to create a 3D mesh.
+    </p>
+
+    <br>
+
+    <h2>Technical Approach</h2>
+
+    <h3>Parsing .ply Files</h3>
+    <p>To parse .ply files, our group decided to utilize the rply library. Using this library, parsing each line in the
+        .ply file for vertex positions became rather straightforward, and we were able to successfully extract a list of
+        Vector3D vertices from passed in ply files. To render .ply files, we took advantage of the already existing
+        rendering code inside meshEdit.cpp from project 2. Our group decided to not utilize the halfedge data structure
+        though, and as a result, a majority of the code in meshEdit was unused. However, we were able to follow some of
+        the rendering patterns from the file, and were able to successfully render points and edges from our algorithm
+        results. Unfortunately, our group was unable to figure out the opengl shader program, and as such our renderings
+        only came out in a single color.
+    </p>
+
+    <h3>Ball Pivoting Algorithm</h3>
+    <h4>Overview</h4>
+    <p>We followed the algorithm detailed in the research paper: The Ball-Pivoting Algorithm for Surface Reconstruction.
+        The pseudocode given for this algorithm required us to write separate helper functions such as
+        find_seed_triangle, ball_pivot, join, and glue.</p>
+
+    <h4>Data Structures</h4>
+    <ul>
+        <li><p><b>Point: </b> Our point class stores a point position and its normal.</p></li>
+        <li><p><b>PivotTriangle: </b> This struct was added into our BallPivot class in order to store the 3 points
+            associated
+            with a triangle. It also stores information about an edge from the point sigma_i to sigma_j. This way, we
+            can
+            calculate the position of the ball as it pivots around a certain pivot edge.</p>
+        </li>
+        <li><p><b>Front: </b> A front is essentially a list of active edge loops that will be used to keep track of
+            growing
+            faces on the resulting mesh. In our code, this is represented as a vector of vectors of PivotEdges, where
+            edges
+            are popped or pushed back based on the removal and addition of edges in the ball pivot algorithm.</p></li>
+    </ul>
+
+    <h4>Spatial Mapping</h4>
+    <p>Given a list of points, we created a spatial map for these points in order to speed up the process of finding the
+        seed triangle. Each 3D box had a height, width, and depth of 2 * (radius of the sphere). The hash position and
+        create spatial grid functions were essentially the same as our project 4 clothsim's spatial mapping
+        functions.</p>
+
+    <h4>Find Seed Triangle</h4>
+    <p></p>
+
+    <h4>Ball Pivot</h4>
+    <p></p>
+
+    <h4>Join</h4>
+    <p>To generate triangles from the ball pivot algorithm, we utilized two helper methods to add and remove edges to a
+        growing list of edge loops. To add edges, we used a helper method called join, which adds two edges eik and ekj
+        connecting an unused vertex vk touched by the ball in the ball pivot algorithm when pivoting on an active edge
+        eij. The resulting triangle is stored in an external list that keeps track of every triangle we will render at
+        the end of the algorithm, and the edge eij is removed from the front and eik and ekj are added to the front to
+        be expanded upon later. If the vertex vk is actually already used, then that means the vertex is either inside
+        the mesh, which means the edge eij should be marked as a boundary edge, or the vertex vk is already in the front
+        and we need to remove potentially repeating active edges in the front. This removal of extra edges is taken care
+        of in the second helper function glue().</p>
+
+    <h4>Glue</h4>
+    <p>The glue function serves to remove any extraneous edges created by the join function above, essentially “gluing”
+        the edges together and removing sub-loops that could be formed in the front. To check for this, glue takes in a
+        newly created edge eij and checks the loops in the front for the existence of any opposing edges eji. According
+        to the paper, there are four possible scenarios if an opposing edge eji exists and four different ways to handle
+        each scenario. In the first scenario, the opposing edge eji and eij are the only two edges in the loop. If this
+        happens, we know that eij has already been checked and thus both edges can be removed from the front and the
+        loop is deleted. In the second scenario, both edges belong to the same loop and are adjacent to each other. If
+        this occurs, we simply remove the sub-loop created by the opposing edges and the loop in the front is therefore
+        shortened. In the third scenario, both edges belong to the same loop, but are not adjacent to each other. In
+        this situation, we remove the loop created by the opposing edges and split the original loop into two. In the
+        fourth scenario, the edges do not belong to the same loop, and we must then connect both loops into one. To do
+        this, we take the beginning of loop1 and connect that to the end of loop2 and vice versa, deleting the sub-loop
+        created by the opposing edges. After running glue, any opposing edges will be removed from the front to prevent
+        any repeating active edges, and the algorithm can proceed as usual.</p>
+
+    <h3>Problems</h3>
+    <ul>
+        <li>Rendering was a big challenge in this project. Initially we had relied on the existing code from MeshEdit to
+            render our mesh, but we realized that the halfedge data structure was heavily relied upon and we had chosen
+            to avoid using halfedges in our final design schema. Thus, the rendering for our vertex normals and
+            resulting mesh had to be done from scratch. Unfortunately, our group was unable to completely figure out the
+            shaders and difficult rendering syntax used by C++ and chose to prioritize completing our algorithm instead.
+            As such, our results were all in grayscale and have no sense of depth, but we felt that our time was better
+            spent on finishing our algorithm.
+        </li>
+    </ul>
+
+    <h3>Lessons Learned</h3>
+    <ul>
+        <li>Using C++ was not that great. We thought we could use our meshedit project to render, but the Halfedge data
+            structure overcomplicated the rendering so we had to create our own draw function. In the future, we would
+            use Python or Java to simplify our codebase and make navigating files easier.
+        </li>
+    </ul>
+
+
+    <br>
+
+    <h2>Results</h2>
+    <p>Here are a few images of the bunny and in point cloud form with normals rendered from different angled views of
+        the bunny.</p>
+    <div align="center">
+        <table style="width=100%">
+            <tr>
+                <td align="middle">
+                    <img src="images/final/bun045_with_normals.png" align="middle" width="480px"/>
+                </td>
+                <td align="middle">
+                    <img src="images/final/bun180_with_normals.png" align="middle" width="480px"/>
+                </td>
+            </tr>
+            <td align="middle">
+                <img src="images/final/bun270_with_normals.png" align="middle" width="480px"/>
+            </td>
+            <tr>
+
+            </tr>
+        </table>
+    </div>
+
+    <br>
+
+    <h2>References</h2>
+    <ul>
+        <li><a href="https://lidarwidgets.com/samples/bpa_tvcg.pdf" target="_blank">The Ball-Pivoting Algorithm for
+            Surface
+            Reconstruction</a></li>
+        <li><a href="http://graphics.stanford.edu/data/3Dscanrep/" target="_blank">The Stanford 3D Scanning
+            Repository</a></li>
+    </ul>
+
+
+    <br>
+
+    <h2>Contributions</h2>
+    <h4>Evan Chang</h4>
+    <p>Parsing and rendering points; join and glue helper methods</p>
+
+    <h4>Rene Lee</h4>
+    <p>Spatial mapping, rendering edges, helped with find_seed_triangle</p>
+
+    <h4>William Jow</h4>
+    <p>Ball_pivot function and find_seed_triangle</p>
+
+</div>
+</body>
+</html>

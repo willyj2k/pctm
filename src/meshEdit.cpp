@@ -167,9 +167,9 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
-    gluLookAt(0.0, 1.5, 0.0,// camera location.
-              0.0, 0.0, 0.0,// point looking at.
-              0.0, 0.0, 1.0);// up direction.
+    gluLookAt(   0.0, 0.5, 0.0,// camera location.
+        0.0, 0.0, 0.0,// point looking at.
+        0.0, 0.0, 1.0);// up direction.
 
     Vector3D c = Vector3D(0.0, 5.28586, 0.0);
     Vector3D v = Vector3D(0.0, 0.0, 0.0);
@@ -205,24 +205,32 @@ namespace CGL {
     glFlush();
   }
 
-  void MeshEdit::drawPivotEdges(std::vector <std::vector<PivotEdge> > edges) {
+  void MeshEdit::drawPivotTriangles(std::vector <BallPivot::PivotTriangle> edges) {
     DrawStyle *style = &defaultStyle;
-    for (std::vector <PivotEdge> lst : edges) // iterate over edges
-    {
-      for (PivotEdge pe : lst) {
-        Vector3D p0 = pe.a.pos;
-        Vector3D p1 = pe.b.pos;
+    for (BallPivot::PivotTriangle pe : edges) {
+        Vector3D p0 = pe.sigma_i->pos;
+        Vector3D p1 = pe.sigma_j->pos;
+        Vector3D p2 = pe.sigma_o->pos;
 
 //        setElementStyle(elementAddress(e));
 //        setColor(style->edgeColor);
-        glLineWidth(style->strokeWidth);
+      glLineWidth(style->strokeWidth);
 
-        glBegin(GL_LINES);
-        glVertex3dv(&p0.x);
-        glVertex3dv(&p1.x);
-        glEnd();
-      }
-    } // done iterating over edges
+      glBegin(GL_LINES);
+      glVertex3d(p0.x, p0.y, p0.z);
+      glVertex3d(p1.x, p1.y, p1.z);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glVertex3d(p1.x, p1.y, p1.z);
+      glVertex3d(p2.x, p2.y, p2.z);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glVertex3d(p2.x, p2.y, p2.z);
+      glVertex3d(p0.x, p0.y, p0.z);
+      glEnd();
+    }
   }
 
   // Guranteed to be called at the start.

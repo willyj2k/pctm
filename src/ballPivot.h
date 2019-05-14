@@ -12,14 +12,6 @@
 
 using namespace CGL;
 
-class PivotEdge {
-    public:
-      Point a;
-      Point b;
-      PivotEdge(Point a, Point b) : a( a ), b( b ) { }
-      bool isBoundary = false;
-};
-
 class BallPivot {
   public:
     // info for storing vertex information relating to ball pivoting
@@ -29,6 +21,8 @@ class BallPivot {
       Point *sigma_o;
       Point *center;
       bool empty;
+      bool isBoundary;
+      bool isFrozen;
 
       // constructors
       PivotTriangle(Point *i, Point *j, Point *o, Point *center) :
@@ -36,7 +30,10 @@ class BallPivot {
         sigma_j( j ),
         sigma_o( o ),
         center( center ),
-        empty( false )
+        empty( false ),
+        isBoundary( false ),
+        isFrozen( false )
+
         { }
 
       PivotTriangle() :
@@ -44,7 +41,9 @@ class BallPivot {
         sigma_j( NULL ),
         sigma_o( NULL ),
         center( NULL ),
-        empty( true )
+        empty( true ),
+        isBoundary( false ),
+        isFrozen( false )
         { }
     };
 
@@ -86,7 +85,7 @@ class BallPivot {
       }
     };
 
-    std::vector<std::vector<PivotEdge>> front;
+    std::vector<std::vector<PivotTriangle> > front;
 
     // spatial map of points in the cloud
     //
@@ -118,8 +117,8 @@ class BallPivot {
     bool valid_vertices(const Point &a, const Point &b, const Point &c);
     // overload ball_center to save some computation in the case that we
     // already know the triangle normal
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c);
-    Vector3D ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
+    Point* ball_center(const Point &a, const Point &b, const Point &c);
+    Point* ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
     double ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x);
@@ -130,11 +129,11 @@ class BallPivot {
     Point* get_seed_candidate(const CellIndex &c);
     void increment_seed_cell();
     void calculate_normals();
-    void join(PivotEdge e, Point sigma, int index);
-    void glue(PivotEdge ik);
+    void join(PivotTriangle e, Point* sigma_k, Point* new_center, int index);
+    void glue(PivotTriangle ik);
     bool on_front(Point k);
     bool not_used(Point k);
-    bool contains_edge(std::vector<PivotEdge> vec, PivotEdge e);
+    bool contains_edge(std::vector<PivotTriangle> vec, PivotTriangle e);
 };
 
 #endif //BALLPIVOT_H
