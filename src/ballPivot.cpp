@@ -656,6 +656,7 @@ bool BallPivot::on_front(Point k) {
         for (int j = 0; j < front.size(); j++) {
             if (compare_3D(front[i][j].sigma_i->pos, k.pos) || compare_3D(front[i][j].sigma_j->pos, k.pos)) {
                 internal_mesh_vertex = true;
+                return internal_mesh_vertex;
             }
         }
     }
