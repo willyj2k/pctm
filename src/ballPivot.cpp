@@ -259,7 +259,7 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
    */
   Vector3D start = (ts.pos - tc.pos).unit();
   Vector3D end = (i - tc.pos).unit();
-  return atan2(dot(cross(end, start), tc.normal), dot(start, end));
+  return atan2(dot(cross(start, end), tc.normal), dot(start, end));
 }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
