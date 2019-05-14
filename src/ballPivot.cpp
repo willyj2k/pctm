@@ -79,7 +79,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   while (!found_valid_triangle && seed_cell != max_cell) {
-    cout << "Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << "\n" << flush;
+//    cout << "Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << "\n" << flush;
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
