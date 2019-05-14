@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include "point.h"
+#include "ballPivot.h"
 
 #include "CGL/CGL.h"
 
@@ -59,6 +60,7 @@ namespace CGL {
 
     std::vector<Node> nodes;
     std::vector<Point*> points; /// for rendering normals
+    std::vector <BallPivot::PivotTriangle> triangles; /// for rendering edges
   }; // struct Scene
 
 } // namespace CGL

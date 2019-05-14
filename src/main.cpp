@@ -137,6 +137,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
       }
     }
 
+
     Camera* cam = new Camera();
     cam->type = CAMERA;
     Node ply_node;
@@ -148,6 +149,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     ply_node.instance = mesh;
     scene->points = pivot.all_points;
     scene->nodes.push_back(ply_node);
+//    scene->triangles = triangles;
   }
   else if (path_str.substr(path_str.length()-4, 4) == ".dae")
   {
