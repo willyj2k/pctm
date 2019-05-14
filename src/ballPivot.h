@@ -96,7 +96,7 @@ class BallPivot {
       }
     };
 
-    std::vector<std::vector<PivotTriangle>> front;
+    std::vector< std::vector<PivotTriangle> > front;
 
     // spatial map of points in the cloud
     //

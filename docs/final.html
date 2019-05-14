@@ -81,20 +81,26 @@
         The pseudocode given for this algorithm required us to write separate helper functions such as
         find_seed_triangle, ball_pivot, join, and glue.</p>
 
+    <div align="center">
+        <img src="images/final/ballpivot.png" align="middle" width="480px"/>
+    </div>
+    <p>The above picture shows an example of how the ball-pivot algorithm works. With a seed triangle where a 3D ball is
+        resting on all three points, the ball pivots over an edge eij until it touches another point vertex k. The new
+        triangle ijk is stored to be rendered after the algorithm is complete, and from that new position, the center of
+        the sphere is calculated and the ball continues to pivot over the new edges ij and kj.</p>
+
     <h4>Data Structures</h4>
     <ul>
         <li><p><b>Point: </b> Our point class stores a point position and its normal.</p></li>
         <li><p><b>PivotTriangle: </b> This struct was added into our BallPivot class in order to store the 3 points
-            associated
-            with a triangle. It also stores information about an edge from the point sigma_i to sigma_j. This way, we
-            can
-            calculate the position of the ball as it pivots around a certain pivot edge.</p>
+            associated with a triangle. It also stores information about an edge from the point sigma_i to sigma_j. This
+            way, we can calculate the position of the ball as it pivots around a certain pivot edge.</p>
         </li>
         <li><p><b>Front: </b> A front is essentially a list of active edge loops that will be used to keep track of
-            growing
-            faces on the resulting mesh. In our code, this is represented as a vector of vectors of PivotEdges, where
-            edges
-            are popped or pushed back based on the removal and addition of edges in the ball pivot algorithm.</p></li>
+            growing faces on the resulting mesh. In our code, this is represented as a vector of vectors of PivotEdges,
+            where edges are popped or pushed back based on the removal and addition of edges in the ball pivot
+            algorithm.</p>
+        </li>
     </ul>
 
     <h4>Spatial Mapping</h4>
@@ -183,8 +189,30 @@
     <br>
 
     <h2>Results</h2>
-    <p>Here are a few images of the bunny and in point cloud form with normals rendered from different angled views of
-        the bunny.</p>
+    <h4>Point Clouds:</h4>
+    <div align="center">
+        <table style="width=100%">
+            <tr>
+                <td align="middle">
+                    <img src="images/final/bun045_without_normals.png" align="middle" width="480px"/>
+                    <figcaption align="middle">bun045.ply</figcaption>
+                </td>
+                <td align="middle">
+                    <img src="images/final/bun180_without_normals.png" align="middle" width="480px"/>
+                    <figcaption align="middle">bun180.ply</figcaption>
+                </td>
+            </tr>
+            <td align="middle">
+                <img src="images/final/bun270_without_normals.png" align="middle" width="480px"/>
+                <figcaption align="middle">bun270.ply</figcaption>
+            </td>
+            <tr>
+
+            </tr>
+        </table>
+    </div>
+
+    <h4>Point Cloud with Normals:</h4>
     <div align="center">
         <table style="width=100%">
             <tr>

@@ -229,6 +229,7 @@ class MeshEdit : public Renderer {
 
   vector<MeshNode> meshNodes;
   vector<Point*> points;
+  vector<BallPivot::PivotTriangle> triangles;
 
   // View Frustrum Variables.
   float hfov; // FIXME : I would like to specify the view frustrum
@@ -278,7 +279,7 @@ class MeshEdit : public Renderer {
   void draw_meshes();
   void draw_points();
   void draw_normals();
-  void drawPivotTriangles(std::vector <BallPivot::PivotTriangle > edges);
+  void drawPivotTriangles();
 
   // Resets the camera to the canonical initial view position.
   void reset_camera();
