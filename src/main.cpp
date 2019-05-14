@@ -17,7 +17,7 @@ using namespace CGL;
 
 #define msg(s) cerr << "[Collada Viewer] " << s << endl;
 
-vector<Vector3D> vertices;
+vector <Vector3D> vertices;
 Vector3D vertex;
 
 static int vertex_cb(p_ply_argument argument) {
@@ -35,13 +35,12 @@ static int vertex_cb(p_ply_argument argument) {
   return 1;
 }
 
-int loadFile(MeshEdit* collada_viewer, const char* path) {
+int loadFile(MeshEdit *collada_viewer, const char *path) {
 
-  Scene* scene = new Scene();
+  Scene *scene = new Scene();
 
   std::string path_str = path;
-  if (path_str.substr(path_str.length()-4, 4) == ".ply")
-  {
+  if (path_str.substr(path_str.length() - 4, 4) == ".ply") {
     cout << "Parsing ply file for points..." << flush;
     p_ply ply = ply_open(path, NULL, 0, NULL);
     p_ply_element element = NULL;
@@ -52,7 +51,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     if (!ply_read(ply)) return 1;
     ply_close(ply);
 
-    vector<Point> points;
+    vector <Point> points;
 
     // track bounding box for spatial hashing
     double min_x = INF_D;
@@ -89,89 +88,103 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
-    vector<BallPivot::PivotTriangle> triangles;
+    vector <BallPivot::PivotTriangle> triangles;
 
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
-    pivot.init(points, 0.001, bound_min, bound_max);
+//    pivot.init(points, 0.001, bound_min, bound_max);
+    pivot.init(points, 8, bound_min, bound_max);
+    int index;
     while (true) {
-        int index = pivot.get_active_edge();
-        while (index != -1) {
-            BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
-            BallPivot::PivotTriangle t_k = pivot.pivot(t);
-            Point* k = t_k.sigma_o;
-            if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
-                triangles.push_back(t_k);
-                pivot.join(t, k, t_k.center, index);
-                BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
-                BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
-                if (pivot.front_contains_edge(ki)) {
-                    pivot.glue(ki);
-                }
-                if (pivot.front_contains_edge(jk)) {
-                    pivot.glue(jk);
-                }
-            } else {
-                pivot.mark_as_boundary(t_k);
-            }
-            int index = pivot.get_active_edge();
+      std::cout << "-----------------------------\n" << std::flush;
+      index = pivot.get_active_edge();
+      while (index != -1) {
+        BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
+        std::cout << "Found active edge\n" << std::flush;
+
+        BallPivot::PivotTriangle t_k = pivot.pivot(t);
+        std::cout << "Pivoted ball successfully\n" << std::flush;
+        Point *k = t_k.sigma_o;
+
+        if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
+          std::cout << "Valid triangle found by pivoting\n" << std::flush;
+          triangles.push_back(t_k);
+          pivot.join(t, k, t_k.center, index);
+          BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
+          BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
+          if (pivot.front_contains_edge(ki)) {
+            pivot.glue(ki);
+            std::cout << "Glued\n" << std::flush;
+          }
+          if (pivot.front_contains_edge(jk)) {
+            pivot.glue(jk);
+            std::cout << "Glued\n" << std::flush;
+          }
+        } else {
+          pivot.mark_as_boundary(t_k);
+          std::cout << "Found Boundary Edge\n" << std::flush;
         }
+        index = pivot.get_active_edge();
+        std::cout << "New active edge found\n" << std::flush;
+      }
+
+      std::cout << "Finding Seed Triangle... " << std::flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
+      std::cout << "Done\n" << std::flush;
 
       if (!seed_triangle.empty) {
         // output triangle
         triangles.push_back(seed_triangle);
-        vector<BallPivot::PivotTriangle> edge_ij;
-        vector<BallPivot::PivotTriangle> edge_jk;
-        vector<BallPivot::PivotTriangle> edge_ki;
-        BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(seed_triangle.sigma_j, seed_triangle.sigma_o, seed_triangle.sigma_i, seed_triangle.center);
-        BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(seed_triangle.sigma_o, seed_triangle.sigma_i, seed_triangle.sigma_j, seed_triangle.center);
+        vector <BallPivot::PivotTriangle> edge_ij;
+        vector <BallPivot::PivotTriangle> edge_jk;
+        vector <BallPivot::PivotTriangle> edge_ki;
+        BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(seed_triangle.sigma_j, seed_triangle.sigma_o,
+                                                               seed_triangle.sigma_i, seed_triangle.center);
+        BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(seed_triangle.sigma_o, seed_triangle.sigma_i,
+                                                               seed_triangle.sigma_j, seed_triangle.center);
         edge_ij.push_back(seed_triangle);
         edge_jk.push_back(jk);
         edge_ki.push_back(ki);
         pivot.insert_edge(edge_ij);
         pivot.insert_edge(edge_jk);
         pivot.insert_edge(edge_ki);
+        std::cout << "Found seed triangle\n" << std::flush;
       } else {
         break;
       }
     }
 
+//    std::cout << "Hello" << std::flush;
 
-    Camera* cam = new Camera();
+    Camera *cam = new Camera();
     cam->type = CAMERA;
     Node ply_node;
     ply_node.instance = cam;
     scene->nodes.push_back(ply_node);
 
-    Polymesh* mesh = new Polymesh();
+    Polymesh *mesh = new Polymesh();
     mesh->type = POLYMESH;
     ply_node.instance = mesh;
     scene->points = pivot.all_points;
     scene->nodes.push_back(ply_node);
-//    scene->triangles = triangles;
-  }
-  else if (path_str.substr(path_str.length()-4, 4) == ".dae")
-  {
+    scene->triangles = triangles;
+  } else if (path_str.substr(path_str.length() - 4, 4) == ".dae") {
     if (ColladaParser::load(path, scene) < 0) {
       delete scene;
       return -1;
     }
-  }
-  else if (path_str.substr(path_str.length()-4, 4) == ".bez")
-  {
-    Camera* cam = new Camera();
+  } else if (path_str.substr(path_str.length() - 4, 4) == ".bez") {
+    Camera *cam = new Camera();
     cam->type = CAMERA;
     Node node;
     node.instance = cam;
     scene->nodes.push_back(node);
-    Polymesh* mesh = new Polymesh();
+    Polymesh *mesh = new Polymesh();
 
-    FILE* file = fopen(path, "r");
+    FILE *file = fopen(path, "r");
     int n = 0;
     fscanf(file, "%d", &n);
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       BezierPatch patch;
       patch.loadControlPoints(file);
       patch.add2mesh(mesh);
@@ -182,16 +195,14 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     mesh->type = POLYMESH;
     node.instance = mesh;
     scene->nodes.push_back(node);
-  }
-  else
-  {
+  } else {
     return -1;
   }
 
-  collada_viewer->load( scene );
+  collada_viewer->load(scene);
 
   GLuint tex = makeTex("envmap/envmap.png");
-  if(!tex) tex = makeTex("../envmap/envmap.png");
+  if (!tex) tex = makeTex("../envmap/envmap.png");
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, tex);
   glActiveTexture(GL_TEXTURE2);
@@ -199,19 +210,18 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
   return 0;
 }
 
-int main( int argc, char** argv ) {
+int main(int argc, char **argv) {
 
-  const char* path = argv[1];
+  const char *path = argv[1];
   std::string path_str = path;
 
   //////////////////////////////
   // Bezier curve viewer code //
   //////////////////////////////
 
-  if (path_str.substr(path_str.length()-4, 4) == ".bzc")
-  {
+  if (path_str.substr(path_str.length() - 4, 4) == ".bzc") {
     // Each file contains a single Bezier curve's control points
-    FILE* file = fopen(path, "r");
+    FILE *file = fopen(path, "r");
 
     int numControlPoints;
     fscanf(file, "%d", &numControlPoints);
@@ -235,7 +245,7 @@ int main( int argc, char** argv ) {
   Viewer viewer = Viewer();
 
   // create collada_viewer
-  MeshEdit* collada_viewer = new MeshEdit();
+  MeshEdit *collada_viewer = new MeshEdit();
 
   // set collada_viewer as renderer
   viewer.set_renderer(collada_viewer);
@@ -244,10 +254,11 @@ int main( int argc, char** argv ) {
   viewer.init();
 
   // load tests
-  if( argc == 2 ) {
+  if (argc == 2) {
     if (loadFile(collada_viewer, argv[1]) < 0) exit(0);
   } else {
-    msg("Usage: ./meshedit <path to scene file>"); exit(0);
+    msg("Usage: ./meshedit <path to scene file>");
+    exit(0);
   }
 
   // start viewer
