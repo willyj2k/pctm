@@ -257,8 +257,8 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
    * measured counterclockwise from ts about tc (where the normal of tc is
    * facing out of the clock face)
    */
-  Vector3D start = (ts.pos - tc.pos).unit();
-  Vector3D end = (i - tc.pos).unit();
+  Vector3D start = (ts.pos - tc.pos);
+  Vector3D end = (i - tc.pos);
   return atan2(dot(cross(start, end), tc.normal), dot(start, end));
 }
 
