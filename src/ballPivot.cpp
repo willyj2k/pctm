@@ -525,9 +525,9 @@ double BallPivot::dist(const Point &p) {
   return diff.norm();
 }
 
-bool compare_3D(Vector3D a, Vector3D b) {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
-}
+// bool compare_3D(Vector3D a, Vector3D b) {
+//     return a.x == b.x && a.y == b.y && a.z == b.z;
+// }
 
 void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int index) {
     this->front[index].pop_back();
@@ -538,7 +538,7 @@ void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int ind
 }
 
 bool compare_edge(BallPivot::PivotTriangle e1, BallPivot::PivotTriangle e2) {
-    return compare_3D(e1.sigma_i->pos, e2.sigma_i->pos) && compare_3D(e1.sigma_j->pos, e2.sigma_j->pos);
+    return (e1.sigma_i->pos == e2.sigma_i->pos) && (e1.sigma_j->pos == e2.sigma_j->pos);
 }
 
 bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
@@ -654,7 +654,7 @@ bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); i++) {
         for (int j = 0; j < front.size(); j++) {
-            if (compare_3D(front[i][j].sigma_i->pos, k.pos) || compare_3D(front[i][j].sigma_j->pos, k.pos)) {
+            if ((front[i][j].sigma_i->pos == k.pos) || (front[i][j].sigma_j->pos == k.pos)) {
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
@@ -670,3 +670,4 @@ bool BallPivot::not_used(Point k) {
 void mark_as_boundary(BallPivot::PivotTriangle e) {
     e.isBoundary = true;
 }
+

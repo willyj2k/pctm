@@ -70,7 +70,7 @@ class BallPivot {
       // default constructor; be careful with this
       CellIndex() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
 
-      // equality override
+      // equality overrides
       bool operator==(const CellIndex &other) const {
         return (x_ind == other.x_ind
                 && y_ind == other.y_ind
