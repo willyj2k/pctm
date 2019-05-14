@@ -332,6 +332,8 @@ bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
   double c_dist = (c.pos - proj_center).norm();
   if (c_dist > radius) return false;
 
+  if (correct_plane_normal(a, b, c).norm2() == 0) return false;
+
   return true;
 }
 
