@@ -33,7 +33,6 @@ class BallPivot {
         empty( false ),
         isBoundary( false ),
         isFrozen( false )
-
         { }
 
       PivotTriangle() :
@@ -71,7 +70,7 @@ class BallPivot {
       // default constructor; be careful with this
       CellIndex() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
 
-      // equality override
+      // equality overrides
       bool operator==(const CellIndex &other) const {
         return (x_ind == other.x_ind
                 && y_ind == other.y_ind
@@ -121,7 +120,8 @@ class BallPivot {
     Point* ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
-    // double ball_intersection(trajectory_center, trajectory_radius, ball_center);
+    double ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x);
+    double angle_between(const Point &tc, const Point &ts, const Vector3D &i);
     int hash_position(const Point &p);
     int hash_cell(const CellIndex &c);
     CellIndex get_cell(const Point &p);

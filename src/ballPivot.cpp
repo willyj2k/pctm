@@ -7,6 +7,8 @@
 #include "point.h"
 #include <iostream>
 #include <unordered_set>
+#include <cmath>
+#include <algorithm>
 
 using namespace CGL;
 using std::vector;
@@ -147,7 +149,12 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   if (pt.empty) {
     return pt;
   }
-  Point m = Point((pt.sigma_i->pos + pt.sigma_j->pos) / 2.0);
+  Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
+  Vector3D tri_normal = correct_plane_normal(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
+  Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
+  Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
+
+  Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
@@ -157,13 +164,12 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
-      //double theta = ball_intersection(pt.center, trajectory_radius, *c_x);
-      // TODO correct the checks for a valid intersection
-      // if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-      //   min_theta = theta;
-      //   first_hit = sigma_x;
-      //   first_center = c_x;
-      // }
+      double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
+       if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+         min_theta = theta;
+         first_hit = sigma_x;
+         first_center = c_x;
+       }
     }
   }
   if (first_hit != NULL) {
@@ -173,11 +179,91 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   }
 }
 
-// double BallPivot::ball_intersection(trajectory_center, trajectory_radius, ball_center) {
-//   /* TODO documentation
-//    */
-//   return 0.0;
-// }
+double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x) {
+  /* Returns the angle along the circular trajectory defined by center tc,
+   * radius tr and starting point ts that the p-ball hits the point x. If the
+   * ball never hits x, this returns 0 instead.
+   *
+   * Assumes that the normal of tc is orthogonal to the trajectory plane and is
+   * oriented so that the trajectory goes counterclockwise when facing against
+   * the normal (i.e., if the normal is pointing "up" out of the face of
+   * the clock).
+   *
+   * Implementation adapted from https://gamedev.stackexchange.com/questions/
+   * 75756/sphere-sphere-intersection-and-circle-sphere-intersection
+   */
+  double d = abs(dot(tc.normal, (x.pos - tc.pos)));
+  if (d > radius) {
+    // trajectory plane doesn't intersect the ball
+    return 0;
+  }
+
+  Vector3D intersection;
+
+  // center of the ball centered at x, projected onto the trajectory plane
+  Vector3D x_pc = x.pos + d * tc.normal;
+
+  if (d == radius) {
+    // the trajectory plane is tangent to the ball, so x_pc is the only
+    // intersection point
+    if ((x_pc - tc.pos).norm() == tr) {
+      return angle_between(tc, ts, x_pc);
+    } else {
+      return 0;
+    }
+  }
+
+  // radius of the circular slice of the ball in the trajectory plane
+  double x_pr = sqrt(radius * radius  - d * d);
+  
+  // now we do circle-circle intersection
+  double d_p = (tc.pos - x_pc).norm();
+  if (tr + x_pr > d_p) {
+    // circles too far away
+    return 0;
+
+  } else if (d_p + min(tr, x_pr) < max(tr, x_pr)) {
+    // one circle entirely contained in the other
+    return 0;
+
+  } else if (tr + x_pr == d_p) {
+    // circles are tangent (exterior)
+    intersection = tc.pos + tr * (tc.pos - x_pc).unit();
+    return angle_between(tc, ts, intersection);
+
+  } else if (d_p + tr == x_pr) {
+    // circles are tangent, trajectory inside ball
+    intersection = x_pc + x_pr * (tc.pos - x_pc).unit();
+    return angle_between(tc, ts, intersection);
+
+  } else if (d_p + x_pr == tr) {
+    // circles are tangent, ball inside trajectory
+    intersection = tc.pos + tr * (x_pc - tc.pos).unit();
+    return angle_between(tc, ts, intersection);
+
+  } else {
+    // circles intersect at two points
+    double h = 0.5 + (tr * tr - x_pr * x_pr) / (2 * d_p * d_p);
+    Vector3D c_i = tc.pos + h * (x_pc - tc.pos);
+    double r_i = sqrt(tr * tr - h * h * d_p * d_p);
+    Vector3D r_i_dir = cross(tc.normal, c_i).unit();
+    Vector3D intersection1 = c_i + r_i * r_i_dir;
+    Vector3D intersection2 = c_i - r_i * r_i_dir;
+    double theta1 = angle_between(tc, ts, intersection1);
+    double theta2 = angle_between(tc, ts, intersection2);
+    return min(theta1, theta2);
+  }
+}
+
+double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D &i) {
+  /* Returns the angle between (tc.pos - tc.pos) and (i - tc.pos); the angle is
+   * measured counterclockwise from ts about tc (where the normal of tc is
+   * facing out of the clock face)
+   */
+  Vector3D start = (ts.pos - tc.pos);
+  Vector3D end = (i - tc.pos);
+  return atan2(dot(cross(start, end), tc.normal), dot(start, end));
+}
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
@@ -248,6 +334,8 @@ bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
 
   double c_dist = (c.pos - proj_center).norm();
   if (c_dist > radius) return false;
+
+  if (correct_plane_normal(a, b, c).norm2() == 0) return false;
 
   return true;
 }
@@ -391,10 +479,10 @@ void BallPivot::calculate_normals() {
     // for (auto pair : map) {
     //     vector<Point *>* points = pair.second;
     //     Vector3D centroid;
-    //     for (int curr = 0; curr < points->size(); curr++) {
+    //     for (int curr = 0; curr < points->size(); ++curr) {
     //         Vector3D pos = ((*points)[curr])->pos;
     //         centroid = Vector3D();
-    //         for (int i = 0; i < points->size(); i++) {
+    //         for (int i = 0; i < points->size(); ++i) {
     //             if (i == curr) {
     //                 continue;
     //             }
@@ -437,9 +525,9 @@ double BallPivot::dist(const Point &p) {
   return diff.norm();
 }
 
-bool compare_3D(Vector3D a, Vector3D b) {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
-}
+// bool compare_3D(Vector3D a, Vector3D b) {
+//     return a.x == b.x && a.y == b.y && a.z == b.z;
+// }
 
 void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int index) {
     this->front[index].pop_back();
@@ -450,11 +538,11 @@ void BallPivot::join(PivotTriangle e, Point* sigma_k, Point* new_center, int ind
 }
 
 bool compare_edge(BallPivot::PivotTriangle e1, BallPivot::PivotTriangle e2) {
-    return compare_3D(e1.sigma_i->pos, e2.sigma_i->pos) && compare_3D(e1.sigma_j->pos, e2.sigma_j->pos);
+    return (e1.sigma_i->pos == e2.sigma_i->pos) && (e1.sigma_j->pos == e2.sigma_j->pos);
 }
 
 bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
-    for (int i = 0; i < vec.size(); i++) {
+    for (int i = 0; i < vec.size(); ++i) {
         if (compare_edge(e, vec[i])) {
             return true;
         }
@@ -469,10 +557,10 @@ void BallPivot::glue(PivotTriangle ij) {
     int index1 = 0;
     int index2 = 0;
 
-    for (int i = 0; i < front.size(); i++) {
+    for (int i = 0; i < front.size(); ++i) {
         if (contains_edge(front[i], ij)) {
             loop_index1 = i;
-            for (int j = 0; j < front[i].size(); j++) {
+            for (int j = 0; j < front[i].size(); ++j) {
                 if (compare_edge(front[i][j], ij)) {
                     index1 = j;
                 }
@@ -480,7 +568,7 @@ void BallPivot::glue(PivotTriangle ij) {
         }
         if (contains_edge(front[i], ji)) {
             loop_index2 = i;
-            for (int j = 0; j < front[i].size(); j++) {
+            for (int j = 0; j < front[i].size(); ++j) {
                 if (compare_edge(front[i][j], ji)) {
                     index2 = j;
                 }
@@ -512,23 +600,23 @@ void BallPivot::glue(PivotTriangle ij) {
                 vector<PivotTriangle> loop1;
                 vector<PivotTriangle> loop2;
                 if (index1 < index2) {
-                    for (int i = index1 + 1; i < index2; i++) {
+                    for (int i = index1 + 1; i < index2; ++i) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index2 + 1; i < front[loop_index1].size(); i++) {
+                    for (int i = index2 + 1; i < front[loop_index1].size(); ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
-                    for (int i = 0; i < index1; i++) {
+                    for (int i = 0; i < index1; ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
                 } else {
-                    for (int i = index2 + 1; i < index1; i++) {
+                    for (int i = index2 + 1; i < index1; ++i) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+                    for (int i = index1 + 1; i < front[loop_index1].size(); ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
-                    for (int i = 0; i < index2; i++) {
+                    for (int i = 0; i < index2; ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
                 }
@@ -540,16 +628,16 @@ void BallPivot::glue(PivotTriangle ij) {
     } else {
         //edges are in different loops
         vector<PivotTriangle> loop1;
-        for (int i = 0; i < index1; i++) {
+        for (int i = 0; i < index1; ++i) {
             loop1.push_back(front[loop_index1][i]);
         }
-        for (int i = index2 + 1; i < front[loop_index2].size(); i++) {
+        for (int i = index2 + 1; i < front[loop_index2].size(); ++i) {
             loop1.push_back(front[loop_index2][i]);
         }
-        for (int i = 0; i < index2; i++) {
+        for (int i = 0; i < index2; ++i) {
             loop1.push_back(front[loop_index2][i]);
         }
-        for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+        for (int i = index1 + 1; i < front[loop_index1].size(); ++i) {
             loop1.push_back(front[loop_index1][i]);
         }
         front.erase(front.begin() + (loop_index1));
@@ -564,10 +652,11 @@ void BallPivot::glue(PivotTriangle ij) {
 
 bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
-    for (int i = 0; i < front.size(); i++) {
-        for (int j = 0; j < front.size(); j++) {
-            if (compare_3D(front[i][j].sigma_i->pos, k.pos) || compare_3D(front[i][j].sigma_j->pos, k.pos)) {
+    for (int i = 0; i < front.size(); ++i) {
+        for (int j = 0; j < front.size(); ++j) {
+            if ((front[i][j].sigma_i->pos == k.pos) || (front[i][j].sigma_j->pos == k.pos)) {
                 internal_mesh_vertex = true;
+                return internal_mesh_vertex;
             }
         }
     }
@@ -581,3 +670,4 @@ bool BallPivot::not_used(Point k) {
 void mark_as_boundary(BallPivot::PivotTriangle e) {
     e.isBoundary = true;
 }
+

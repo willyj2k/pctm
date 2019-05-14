@@ -95,6 +95,16 @@ class Vector3D {
     (*this) *= ( 1./c );
   }
 
+  // equality override
+  bool operator==(const Vector3D &other) const {
+    return (x == other.x) && (y == other.y) && (z == other.z);
+  }
+
+  // inequality override
+  bool operator!=(const Vector3D &other) const {
+    return (x != other.x) || (y != other.y) || (z != other.z);
+  }
+
   /**
    * Returns Euclidean length.
    */

@@ -89,6 +89,7 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
+    // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
     pivot.init(points, 0.001, bound_min, bound_max);
     BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
