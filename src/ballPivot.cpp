@@ -160,13 +160,13 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
-      //double theta = ball_intersection(m, trajectory_radius, *c_x);
-      // TODO correct the checks for a valid intersection
-      // if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-      //   min_theta = theta;
-      //   first_hit = sigma_x;
-      //   first_center = c_x;
-      // }
+      double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
+       //TODO correct the checks for a valid intersection
+       if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+         min_theta = theta;
+         first_hit = sigma_x;
+         first_center = c_x;
+       }
     }
   }
   if (first_hit != NULL) {
@@ -203,7 +203,7 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
   if (d == radius) {
     // the trajectory plane is tangent to the ball, so x_pc is the only
     // intersection point
-    if ((x_pc - tc).norm() == tr) {
+    if ((x_pc - tc.pos).norm() == tr) {
       return angle_between(tc, ts, x_pc);
     } else {
       return 0;
@@ -225,17 +225,17 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
 
   } else if (tr + x_pr == d_p) {
     // circles are tangent (exterior)
-    intersection = tc + tr * (tc.pos - x_pc).unit();
+    intersection = tc.pos + tr * (tc.pos - x_pc).unit();
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + tr == x_pr) {
     // circles are tangent, trajectory inside ball
-    intersection = x_pc + x_pr * (tc.pos - x_pc).unit()
+    intersection = x_pc + x_pr * (tc.pos - x_pc).unit();
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + x_pr == tr) {
     // circles are tangent, ball inside trajectory
-    intersection = tc.pos + tr * (x_pc - tc.pos()).unit()
+    intersection = tc.pos + tr * (x_pc - tc.pos).unit();
     return angle_between(tc, ts, intersection);
 
   } else {
