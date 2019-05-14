@@ -36,8 +36,7 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->bound_max = bound_max;
   this->seed_cell = CellIndex(0, 0, 0);
   this->max_cell = get_cell(Point(bound_max));
-  // add 1 to max_cell_z because we'll traverse the cells such that z values
-  // are contiguous
+  // add 1 to each index for comparisons
   this->max_cell.x_ind += 1;
   this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
@@ -78,8 +77,8 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  while (!found_valid_triangle && seed_cell != max_cell) {
-    cout << "Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << "\n" << flush;
+  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
+    cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
