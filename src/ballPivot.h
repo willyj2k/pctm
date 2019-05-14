@@ -65,7 +65,15 @@ class BallPivot {
     std::unordered_set<Point*> used;
 
     static double dist(const Point &p);
-    Point *ballPivot(const Point &a, const Point &b, const Point &c);
+    int get_active_edge();
+    PivotTriangle retrieve_active_edge(int index);
+    void join(PivotTriangle e, Point* sigma_k, Point* new_center, int index);
+    void glue(PivotTriangle ik);
+    bool on_front(Point k);
+    bool not_used(Point k);
+    bool front_contains_edge(PivotTriangle t);
+    void insert_edge(vector<PivotTriangle> edge);
+    void mark_as_boundary(PivotTriangle e);
 
   private:
     // cell info for hashing
@@ -96,7 +104,7 @@ class BallPivot {
       }
     };
 
-    std::vector< std::vector<PivotTriangle> > front;
+    std::vector<std::vector<PivotTriangle> > front;
 
     // spatial map of points in the cloud
     //
@@ -140,10 +148,6 @@ class BallPivot {
     Point* get_seed_candidate(const CellIndex &c);
     void increment_seed_cell();
     void calculate_normals();
-    void join(PivotTriangle e, Point* sigma_k, Point* new_center, int index);
-    void glue(PivotTriangle ik);
-    bool on_front(Point k);
-    bool not_used(Point k);
     bool contains_edge(std::vector<PivotTriangle> vec, PivotTriangle e);
     void insert_edge(PivotTriangle e, VertexSpecifier v1, VertexSpecifier v2);
 };

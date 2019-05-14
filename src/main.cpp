@@ -89,13 +89,49 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
+    vector<BallPivot::PivotTriangle> triangles;
+
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
     pivot.init(points, 0.001, bound_min, bound_max);
     while (true) {
+        int index = pivot.get_active_edge();
+        while (index != -1) {
+            BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
+            BallPivot::PivotTriangle t_k = pivot.pivot(t);
+            Point* k = t_k.sigma_o;
+            if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
+                triangles.push_back(t_k);
+                pivot.join(t, k, t_k.center, index);
+                BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
+                BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
+                if (pivot.front_contains_edge(ki)) {
+                    pivot.glue(ki);
+                }
+                if (pivot.front_contains_edge(jk)) {
+                    pivot.glue(jk);
+                }
+            } else {
+                pivot.mark_as_boundary(t_k);
+            }
+            int index = pivot.get_active_edge();
+        }
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
+
       if (!seed_triangle.empty) {
         // output triangle
+        triangles.push_back(seed_triangle);
+        vector<BallPivot::PivotTriangle> edge_ij;
+        vector<BallPivot::PivotTriangle> edge_jk;
+        vector<BallPivot::PivotTriangle> edge_ki;
+        BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(seed_triangle.sigma_j, seed_triangle.sigma_o, seed_triangle.sigma_i, seed_triangle.center);
+        BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(seed_triangle.sigma_o, seed_triangle.sigma_i, seed_triangle.sigma_j, seed_triangle.center);
+        edge_ij.push_back(seed_triangle);
+        edge_jk.push_back(jk);
+        edge_ki.push_back(ki);
+        pivot.insert_edge(edge_ij);
+        pivot.insert_edge(edge_jk);
+        pivot.insert_edge(edge_ki);
       } else {
         break;
       }

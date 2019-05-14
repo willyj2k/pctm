@@ -106,14 +106,37 @@
     <h4>Spatial Mapping</h4>
     <p>Given a list of points, we created a spatial map for these points in order to speed up the process of finding the
         seed triangle. Each 3D box had a height, width, and depth of 2 * (radius of the sphere). The hash position and
-        create spatial grid functions were essentially the same as our project 4 clothsim's spatial mapping
-        functions.</p>
+        create spatial grid functions were similar to our project 4 clothsim's spatial mapping functions.</p>
 
     <h4>Find Seed Triangle</h4>
-    <p></p>
+    <p>The first step in the ball-pivoting algorithm is to identify a "seed" from which to begin the pivoting action.
+        Naturally, to begin the search for candidates we iterate over points using the spatial map described in the
+        previous section. We also take an advantage of an optimization mentioned in our reference paper, where we only
+        consider one candiate seed triangle per spatial partition. This scheme allows us to avoid constructing
+        artifacts from noise and only "catch" components that span a volume greater than a few partitions. Therefore,
+        to find a seed, we keep track of partitions containing no elements of the constructed mesh, and search over
+        said partitions until no more remain. Additionally, because the algorithm simulates a ball rolling along the
+        surface of the mesh, we search over points in order of descending dot product with the average normal of the
+        partition. This heuristic allows us to more reliably seed the ball "on" the surface, so that we're ready to
+        roll.</p>
+
+    <p>Then, after identifying the first candidate point using the scheme above, we iterate over pairs of points in a
+        2&rho;-neighborhood in order of increasing distance, where &rho; is the radius of the ball. Then, among these
+        points, we check whether the triplet of points forms a valid triangle (i.e., their normals are aligned and
+        there exists a ball of radius &rho; that touches all three points and contains no other point). If so, then a
+        valid seed triangle has been identified and we return it.</p>
 
     <h4>Ball Pivot</h4>
-    <p></p>
+    <p>In this part, we simulate the ball rolling along the surface to identify new points of the mesh. In particular,
+        we simulate the ball rotating outward from the surface from its initial position, about the axis defined by the
+        pivoting edge (the edge around which we're rolling). During this motion, we want to find the first point that
+        the ball hits (with a valid normal); then this new point along with the pivoting edge form a new triangle with
+        edges from which we can continue pivoting.</p>
+
+    <p>Of course, in practice it would be inefficient (and potentially inaccurate) to actually simulate the rolling
+        motion of the ball, so instead we search over all points that could potentially be hit by the rolling ball and
+        analytically solve for the angle of rotation along the ball's trajectory that each candidate point is hit. Then,
+        we simply take the argmin of these angles.</p>
 
     <h4>Join</h4>
     <p>To generate triangles from the ball pivot algorithm, we utilized two helper methods to add and remove edges to a
@@ -151,6 +174,17 @@
             shaders and difficult rendering syntax used by C++ and chose to prioritize completing our algorithm instead.
             As such, our results were all in grayscale and have no sense of depth, but we felt that our time was better
             spent on finishing our algorithm.
+        </li>
+        <li>The concept of the algorithm didn't seem very daunting at first, but it turned out that the reference paper
+            somewhat glossed over many of the mathematical details of the implementation (unlike the specifications for
+            the class projects!). Consequently, it took us much more time than expected to sort these out (for example,
+            searching the interet for solution methods and convincing ourselves that results we found were indeed
+            correct!).
+        </li>
+        <li>As with any other somewhat sizeable coding project, the choice of initial design (data structures, classes,
+            etc.) is decisive in determining the complexity of programming the algorithm. Unfortunately, we apparently
+            didn't have a solid enough understanding of the algorithm and its specifics initially, and began the
+            project with code that we would mostly end up entirely rewriting later on.
         </li>
     </ul>
 

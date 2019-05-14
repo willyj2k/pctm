@@ -215,7 +215,7 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
 
   // radius of the circular slice of the ball in the trajectory plane
   double x_pr = sqrt(radius * radius  - d * d);
-  
+
   // now we do circle-circle intersection
   double d_p = (tc.pos - x_pc).norm();
   if (tr + x_pr > d_p) {
@@ -550,6 +550,15 @@ bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
     return false;
 }
 
+bool BallPivot::front_contains_edge(PivotTriangle t) {
+    for (int i = 0; i < front.size(); i++) {
+        if (contains_edge(front[i], t)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void BallPivot::glue(PivotTriangle ij) {
     PivotTriangle ji = PivotTriangle(ij.sigma_j, ij.sigma_i, ij.sigma_o, ij.center);
     int loop_index1 = 0;
@@ -670,7 +679,25 @@ bool BallPivot::not_used(Point k) {
     return !(used.find(&k) == used.end());
 }
 
-void mark_as_boundary(BallPivot::PivotTriangle e) {
+void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
     e.isBoundary = true;
 }
 
+int BallPivot::get_active_edge() {
+    for (int i = 0; i < front.size(); i++) {
+        if (front[i][0].sigma_i->pos == front[i][front[i].size() - 1].sigma_j->pos) {
+            continue;
+        } else {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void BallPivot::insert_edge(vector<PivotTriangle> edge) {
+    front.push_back(edge);
+}
+
+BallPivot::PivotTriangle BallPivot::retrieve_active_edge(int index) {
+    return front[index][front[index].size() - 1];
+}
