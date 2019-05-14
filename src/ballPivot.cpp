@@ -163,13 +163,13 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   double min_theta = INF_D;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
-      Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
+      Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *sigma_x);
       double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
-       if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-         min_theta = theta;
-         first_hit = sigma_x;
-         first_center = c_x;
-       }
+      if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+        min_theta = theta;
+        first_hit = sigma_x;
+        first_center = c_x;
+      }
     }
   }
   if (first_hit != NULL) {
