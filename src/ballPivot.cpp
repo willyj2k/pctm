@@ -38,6 +38,8 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->max_cell = get_cell(Point(bound_max));
   // add 1 to max_cell_z because we'll traverse the cells such that z values
   // are contiguous
+  this->max_cell.x_ind += 1;
+  this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
   this->cell_width = 2 * radius;
   cout << " Done\n";
@@ -457,21 +459,19 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.z_ind >= max_cell.z_ind) {
-    seed_cell.z_ind = 0;
-    seed_cell.y_ind += 1;
-    if (seed_cell.y_ind >= max_cell.y_ind) {
-      seed_cell.y_ind = 0;
-      seed_cell.x_ind += 1;
-      if (seed_cell.x_ind >= max_cell.x_ind) {
-        // at this point all cells should
-        // have been traversed
-      }
-    } else {
-      seed_cell.y_ind += 1;
-    }
+  if (seed_cell.x_ind < max_cell.x_ind) {
+    seed_cell.x_ind += 1;
   } else {
-    seed_cell.z_ind += 1;
+    if (seed_cell.y_ind < max_cell.y_ind) {
+      seed_cell.x_ind = 0;
+      seed_cell.y_ind += 1;
+    } else {
+      if (seed_cell.z_ind < max_cell.z_ind) {
+        seed_cell.x_ind = 0;
+        seed_cell.y_ind = 0;
+        seed_cell.z_ind += 1;
+      }
+    }
   }
 }
 
