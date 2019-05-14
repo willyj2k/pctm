@@ -182,7 +182,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
 double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x) {
   /* Returns the angle along the circular trajectory defined by center tc,
    * radius tr and starting point ts that the p-ball hits the point x. If the
-   * ball never hits x, the this returns 0 instead.
+   * ball never hits x, this returns 0 instead.
    *
    * Assumes that the normal of tc is orthogonal to the trajectory plane and is
    * oriented so that the trajectory goes counterclockwise when facing against
@@ -479,10 +479,10 @@ void BallPivot::calculate_normals() {
     // for (auto pair : map) {
     //     vector<Point *>* points = pair.second;
     //     Vector3D centroid;
-    //     for (int curr = 0; curr < points->size(); curr++) {
+    //     for (int curr = 0; curr < points->size(); ++curr) {
     //         Vector3D pos = ((*points)[curr])->pos;
     //         centroid = Vector3D();
-    //         for (int i = 0; i < points->size(); i++) {
+    //         for (int i = 0; i < points->size(); ++i) {
     //             if (i == curr) {
     //                 continue;
     //             }
@@ -542,7 +542,7 @@ bool compare_edge(BallPivot::PivotTriangle e1, BallPivot::PivotTriangle e2) {
 }
 
 bool BallPivot::contains_edge(vector<PivotTriangle> vec, PivotTriangle e) {
-    for (int i = 0; i < vec.size(); i++) {
+    for (int i = 0; i < vec.size(); ++i) {
         if (compare_edge(e, vec[i])) {
             return true;
         }
@@ -557,10 +557,10 @@ void BallPivot::glue(PivotTriangle ij) {
     int index1 = 0;
     int index2 = 0;
 
-    for (int i = 0; i < front.size(); i++) {
+    for (int i = 0; i < front.size(); ++i) {
         if (contains_edge(front[i], ij)) {
             loop_index1 = i;
-            for (int j = 0; j < front[i].size(); j++) {
+            for (int j = 0; j < front[i].size(); ++j) {
                 if (compare_edge(front[i][j], ij)) {
                     index1 = j;
                 }
@@ -568,7 +568,7 @@ void BallPivot::glue(PivotTriangle ij) {
         }
         if (contains_edge(front[i], ji)) {
             loop_index2 = i;
-            for (int j = 0; j < front[i].size(); j++) {
+            for (int j = 0; j < front[i].size(); ++j) {
                 if (compare_edge(front[i][j], ji)) {
                     index2 = j;
                 }
@@ -600,23 +600,23 @@ void BallPivot::glue(PivotTriangle ij) {
                 vector<PivotTriangle> loop1;
                 vector<PivotTriangle> loop2;
                 if (index1 < index2) {
-                    for (int i = index1 + 1; i < index2; i++) {
+                    for (int i = index1 + 1; i < index2; ++i) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index2 + 1; i < front[loop_index1].size(); i++) {
+                    for (int i = index2 + 1; i < front[loop_index1].size(); ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
-                    for (int i = 0; i < index1; i++) {
+                    for (int i = 0; i < index1; ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
                 } else {
-                    for (int i = index2 + 1; i < index1; i++) {
+                    for (int i = index2 + 1; i < index1; ++i) {
                         loop1.push_back(front[loop_index1][i]);
                     }
-                    for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+                    for (int i = index1 + 1; i < front[loop_index1].size(); ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
-                    for (int i = 0; i < index2; i++) {
+                    for (int i = 0; i < index2; ++i) {
                         loop2.push_back(front[loop_index1][i]);
                     }
                 }
@@ -628,16 +628,16 @@ void BallPivot::glue(PivotTriangle ij) {
     } else {
         //edges are in different loops
         vector<PivotTriangle> loop1;
-        for (int i = 0; i < index1; i++) {
+        for (int i = 0; i < index1; ++i) {
             loop1.push_back(front[loop_index1][i]);
         }
-        for (int i = index2 + 1; i < front[loop_index2].size(); i++) {
+        for (int i = index2 + 1; i < front[loop_index2].size(); ++i) {
             loop1.push_back(front[loop_index2][i]);
         }
-        for (int i = 0; i < index2; i++) {
+        for (int i = 0; i < index2; ++i) {
             loop1.push_back(front[loop_index2][i]);
         }
-        for (int i = index1 + 1; i < front[loop_index1].size(); i++) {
+        for (int i = index1 + 1; i < front[loop_index1].size(); ++i) {
             loop1.push_back(front[loop_index1][i]);
         }
         front.erase(front.begin() + (loop_index1));
@@ -652,8 +652,8 @@ void BallPivot::glue(PivotTriangle ij) {
 
 bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
-    for (int i = 0; i < front.size(); i++) {
-        for (int j = 0; j < front.size(); j++) {
+    for (int i = 0; i < front.size(); ++i) {
+        for (int j = 0; j < front.size(); ++j) {
             if ((front[i][j].sigma_i->pos == k.pos) || (front[i][j].sigma_j->pos == k.pos)) {
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
