@@ -149,8 +149,12 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   if (pt.empty) {
     return pt;
   }
-  // TODO make sure that the normal of m is facing the proper direction
-  Point m = Point((pt.sigma_i->pos + pt.sigma_j->pos) / 2.0);
+  Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
+  Vector3D tri_normal = correct_plane_normal(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
+  Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
+  Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
+
+  Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
@@ -161,7 +165,6 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *c_x);
       double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
-       //TODO correct the checks for a valid intersection
        if (theta > 0 && theta < 2 * PI && theta < min_theta) {
          min_theta = theta;
          first_hit = sigma_x;

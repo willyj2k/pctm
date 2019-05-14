@@ -33,7 +33,6 @@ class BallPivot {
         empty( false ),
         isBoundary( false ),
         isFrozen( false )
-
         { }
 
       PivotTriangle() :
