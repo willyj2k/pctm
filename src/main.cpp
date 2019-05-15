@@ -114,7 +114,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
-          cout << "\nJoined" << flush;
+          cout << "\n(main) Joined" << flush;
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {

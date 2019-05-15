@@ -731,7 +731,9 @@ void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
 
 int BallPivot::get_active_edge() {
     for (int i = 0; i < front.size(); i++) {
-        if (front[i][0].sigma_i->pos == front[i][front[i].size() - 1].sigma_j->pos) {
+        if (front[i].size() == 0) {
+            continue;
+        } else if (front[i][0].sigma_i->pos == front[i][front[i].size() - 1].sigma_j->pos) {
             continue;
         } else {
             return i;
