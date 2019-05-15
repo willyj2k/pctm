@@ -88,6 +88,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
+    cout << "\n min x: " << bound_min.x << flush;
+    cout << "\n max x: " << bound_max.x << flush;
+
     vector <BallPivot::PivotTriangle> triangles;
 
     // TODO write main loops for ball pivoting and output
@@ -149,6 +152,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         pivot.insert_edge(edge_ki);
         std::cout << "Found seed triangle\n" << std::flush;
       } else {
+        std::cout << "Did not find seed triangle\n" << std::flush;
         break;
       }
     }
