@@ -95,44 +95,44 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
-    pivot.init(points, 0.001, bound_min, bound_max);
+    pivot.init(points, 50, bound_min, bound_max);
     int index;
     while (true) {
-      std::cout << "-----------------------------\n" << std::flush;
+      cout << "\n-----------------------------" << flush;
       index = pivot.get_active_edge();
       while (index != -1) {
         BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
-        std::cout << "Found active edge\n" << std::flush;
+        cout << "\nFound active edge" << flush;
 
         BallPivot::PivotTriangle t_k = pivot.pivot(t);
-        std::cout << "Pivoted ball successfully\n" << std::flush;
+        cout << "\nPivoted ball successfully" << flush;
         Point *k = t_k.sigma_o;
 
         if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
-          std::cout << "Valid triangle found by pivoting\n" << std::flush;
+          cout << "\nValid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {
             pivot.glue(ki);
-            std::cout << "Glued\n" << std::flush;
+            cout << "\nGlued" << flush;
           }
           if (pivot.front_contains_edge(jk)) {
             pivot.glue(jk);
-            std::cout << "Glued\n" << std::flush;
+            cout << "\nGlued" << flush;
           }
         } else {
           pivot.mark_as_boundary(t_k);
-          std::cout << "Found Boundary Edge\n" << std::flush;
+          cout << "\nFound Boundary Edge" << flush;
         }
         index = pivot.get_active_edge();
-        std::cout << "New active edge found\n" << std::flush;
+        cout << "\nNew active edge found" << flush;
       }
 
-      std::cout << "Finding Seed Triangle... " << std::flush;
+      cout << "\nCalling Seed Triangle... " << flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
-      std::cout << "\nDone\n" << std::flush;
+      cout << "\nDone Calling Seed Triangle\n" << flush;
 
       if (!seed_triangle.empty) {
         // output triangle
@@ -150,14 +150,14 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         pivot.insert_edge(edge_ij);
         pivot.insert_edge(edge_jk);
         pivot.insert_edge(edge_ki);
-        std::cout << "Found seed triangle\n" << std::flush;
+        cout << "Found seed triangle\n" << flush;
       } else {
-        std::cout << "Did not find seed triangle\n" << std::flush;
+        cout << "Did not find seed triangle\n" << flush;
         break;
       }
     }
 
-//    std::cout << "Hello" << std::flush;
+//    cout << "Hello" << flush;
 
     Camera *cam = new Camera();
     cam->type = CAMERA;

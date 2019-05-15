@@ -79,12 +79,22 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   while (!found_valid_triangle && seed_cell != max_cell) {
     int h = hash_cell(seed_cell);
 
+    cout << "\n Hash h: " << h << flush;
     if (processed_cells.find(h) == processed_cells.end()) {
+<<<<<<< HEAD
       sigma = get_seed_candidate(seed_cell);
+=======
+      cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
+>>>>>>> 8ebcfb43b112ce8e65cf75f6e9abf337ef0d2582
 
       // consider all pairs of points in its neighborhood
       // first get the neighborhood, aka use spatial map
       if (spatial_map.find(h) != spatial_map.end()) {
+<<<<<<< HEAD
+=======
+        cout << "\nIndexing into spatial map for candidate seeding cell" << flush;
+        sigma = get_seed_candidate(seed_cell);
+>>>>>>> 8ebcfb43b112ce8e65cf75f6e9abf337ef0d2582
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
         // (currently this just gets points in the same spatial partition)
@@ -95,6 +105,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
         // such that closer points are at the back
         sort(lst.begin(), lst.end(), compare);
 
+        cout << "Searching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
         // Stop when a valid seed triangle is found
         for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
           // check that the triangle normal is consistent with the vertex normals
@@ -268,16 +279,24 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   vector<Point *> r_neighborhood = vector<Point *>();
-  int reach = ceil(r / cell_width);
+  unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
   CellIndex cur_cell;
   int cur_hash;
   vector<Point> *cur_points;
 
   // literally check all the cells that are possibly within reach...
-  for (int x = (c.x_ind - reach); x <= (c.x_ind + reach); ++x) {
-    for (int y = (c.y_ind - reach); y <= (c.y_ind + reach); ++y) {
-      for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
+  unsigned long long int min_x = (c.x_ind > reach) ? c.x_ind - reach : 0;
+  unsigned long long int min_y = (c.y_ind > reach) ? c.y_ind - reach : 0;
+  unsigned long long int min_z = (c.z_ind > reach) ? c.z_ind - reach : 0;
+
+  unsigned long long int max_x = (c.x_ind + reach < max_cell.x_ind) ? c.x_ind + reach : max_cell.x_ind;
+  unsigned long long int max_y = (c.y_ind + reach < max_cell.y_ind) ? c.y_ind + reach : max_cell.y_ind;
+  unsigned long long int max_z = (c.z_ind + reach < max_cell.z_ind) ? c.z_ind + reach : max_cell.z_ind;
+
+  for (unsigned long long int x = min_x; x < max_x; ++x) {
+    for (unsigned long long int y = min_y; y < max_y; ++y) {
+      for (unsigned long long int z = min_z; z < max_z; ++z) {
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
         if (spatial_map.find(cur_hash) != spatial_map.end()) {
@@ -409,20 +428,29 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
 }
 
 int BallPivot::hash_position(const Point &p) {
-  // divide the bounding box in to cubic cells with side length 2 * radius
-  // truncate the position of p to a specific 3D box
   CellIndex cell = get_cell(p);
   return hash_cell(cell);
 }
 
 int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
-  return (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
+  cout << "\nHash Cell: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
+  int hash = (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
+  cout << " (int) hash: " << hash << flush;
+  return hash;
 }
 
 BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
+<<<<<<< HEAD
   int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
   int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
   int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
+=======
+  // divide the bounding box in to cubic cells with side length 2 * radius
+  // truncate the position of p to a specific 3D box
+  unsigned long long int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
+  unsigned long long int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
+  unsigned long long int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
+>>>>>>> 8ebcfb43b112ce8e65cf75f6e9abf337ef0d2582
   return CellIndex(x_ind, y_ind, z_ind);
 }
 
@@ -662,8 +690,8 @@ void BallPivot::glue(PivotTriangle ij) {
 bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
-        for (int j = 0; j < front.size(); ++j) {
-            if ((front[i][j].sigma_i->pos == k.pos) || (front[i][j].sigma_j->pos == k.pos)) {
+        for (int j = 0; j < front.at(i).size(); ++j) {
+            if ((front.at(i).at(j).sigma_i->pos == k.pos) || (front.at(i).at(j).sigma_j->pos == k.pos)) {
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
