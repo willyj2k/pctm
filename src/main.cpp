@@ -107,27 +107,28 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         if (verbose) cout << "\n(main) Found active edge" << flush;
 
         BallPivot::PivotTriangle t_k = pivot.pivot(t);
-        if (verbose) cout << "\n(main) Pivoted ball successfully" << flush;
-        Point *k = t_k.sigma_o;
 
-        if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
-          if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
-          triangles.push_back(t_k);
-          pivot.join(t, k, t_k.center, index);
-          cout << "\n(main) Joined" << flush;
-          BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
-          BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
-          if (pivot.front_contains_edge(ki)) {
-            pivot.glue(ki);
-            if (verbose) cout << "\n(main) Glued" << flush;
+        if (!t_k.empty) {
+          Point *k = t_k.sigma_o;
+          if (pivot.not_used(*k) || pivot.on_front(*k)) {
+            if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
+            triangles.push_back(t_k);
+            pivot.join(t, k, t_k.center, index);
+            cout << "\n(main) Joined" << flush;
+            BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
+            BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
+            if (pivot.front_contains_edge(ki)) {
+              pivot.glue(ki);
+              if (verbose) cout << "\n(main) Glued" << flush;
+            }
+            if (pivot.front_contains_edge(jk)) {
+              pivot.glue(jk);
+              if (verbose) cout << "\n(main) Glued" << flush;
+            }
+          } else {
+            pivot.mark_as_boundary(t_k);
+            if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
           }
-          if (pivot.front_contains_edge(jk)) {
-            pivot.glue(jk);
-            if (verbose) cout << "\n(main) Glued" << flush;
-          }
-        } else {
-          pivot.mark_as_boundary(t_k);
-          if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
         }
         index = pivot.get_active_edge();
         if (verbose) cout << "\n(main) New active edge found" << flush;
