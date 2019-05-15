@@ -69,8 +69,8 @@ class BallPivot {
     PivotTriangle *retrieve_active_edge(int index);
     void join(PivotTriangle e, Point* sigma_k, Point* new_center, int index);
     void glue(PivotTriangle ik);
-    bool on_front(Point k);
-    bool not_used(Point k);
+    bool on_front(Point *k);
+    bool not_used(Point *k);
     bool front_contains_edge(PivotTriangle t);
     void insert_edge(vector<PivotTriangle> edge);
     void mark_as_boundary(PivotTriangle *e);

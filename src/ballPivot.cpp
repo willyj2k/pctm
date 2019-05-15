@@ -714,11 +714,22 @@ void BallPivot::glue(PivotTriangle ij) {
     }
 }
 
-bool BallPivot::on_front(Point k) {
+bool BallPivot::on_front(Point *k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
         for (int j = 0; j < front.at(i).size(); ++j) {
-            if ((front.at(i).at(j).sigma_i->pos == k.pos) || (front.at(i).at(j).sigma_j->pos == k.pos)) {
+          cout << "\n On Front" << i << " " << j << flush;
+          cout << "\n Sigma i" << front.at(i).at(j).sigma_i->pos.x << flush;
+          cout << "\n" << front.at(i).at(j).sigma_i->pos.y << flush;
+          cout << "\n" << front.at(i).at(j).sigma_i->pos.z << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.x << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.y << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.z << flush;
+          cout << "\n" << k->pos.x << flush;
+          cout << "\n" << k->pos.y << flush;
+          cout << "\n" << k->pos.z << flush;
+            if ((front.at(i).at(j).sigma_i->pos == k->pos) || (front.at(i).at(j).sigma_j->pos == k->pos)) {
+              cout << "\n in if statement" << flush;
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
@@ -730,8 +741,9 @@ bool BallPivot::on_front(Point k) {
 void BallPivot::insert_edge(BallPivot::PivotTriangle e, BallPivot::VertexSpecifier v1, BallPivot::VertexSpecifier v2) {
 }
 
-bool BallPivot::not_used(Point k) {
-    return (used.find(&k) == used.end());
+bool BallPivot::not_used(Point *k) {
+  cout << "\n Not used" << flush;
+    return (used.find(k) == used.end());
 }
 
 void BallPivot::mark_as_boundary(BallPivot::PivotTriangle *e) {
