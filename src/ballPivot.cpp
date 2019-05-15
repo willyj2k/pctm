@@ -80,10 +80,8 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
   cout << "\nMax Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
   while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
-    cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
-    cout << "\n Hash h: " << h << flush;
     if (processed_cells.find(h) == processed_cells.end()) {
       cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
 
@@ -102,7 +100,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
         // such that closer points are at the back
         sort(lst.begin(), lst.end(), compare);
 
-        cout << "Searching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
+        cout << "\nSearching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
         // Stop when a valid seed triangle is found
         for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
           // check that the triangle normal is consistent with the vertex normals
@@ -110,7 +108,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
           Point *sigma_b = lst.at(i);
 
           if (valid_vertices(*sigma, *sigma_a, *sigma_b)) {
-            cout << "\nVALID VERTICES FOUND FOR SEED" << flush;
+            cout << "\nValid vertices found for seed" << flush;
             // triangle_normal will be the zero vector if the points don't form a
             // valid triangle
             Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
@@ -119,8 +117,12 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
             // space that touches all three vertices and contains no other data
             // point
             if (triangle_normal.norm2() > 0) {
+              cout << "\nVertex normals are aligned" << flush;
               Point center = *ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal);
+              cout << "\nTriangle: " << sigma->pos << " " << sigma_a->pos << " " << sigma_b->pos << flush;
+              cout << "\nBall Center: " << center.pos << flush;
               vector<Point *> r_neighborhood = neighborhood(radius, center);
+              cout << "\nBall contains " << r_neighborhood.size() << " points" << flush;
               if (r_neighborhood.size() == 3) {
                 // we don't neet to check membership in r_neighborhood because
                 // sigma, sigma_a and sigma_b are already guaranteed to be distance
@@ -131,11 +133,12 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
                 used.insert(sigma);
                 used.insert(sigma_a);
                 used.insert(sigma_b);
+                cout << "\nFound valid triangle!" << flush;
               }
             }
           }
         }
-        cout << "\nNO VALID VERTICES FOUND FOR SEED" << flush;
+        cout << "\nNo valid vertices found for seed" << flush;
       }
       // put this here because apparently we only want to consider one
       // candidate *vertex* per cell, rather than one seed triangle per cell
@@ -289,22 +292,33 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   unsigned long long int min_x = (c.x_ind > reach) ? c.x_ind - reach : 0;
   unsigned long long int min_y = (c.y_ind > reach) ? c.y_ind - reach : 0;
   unsigned long long int min_z = (c.z_ind > reach) ? c.z_ind - reach : 0;
+  cout << "\n(Neighborhood) c.z_ind, reach: " << c.z_ind << ", " << reach << flush;
+  cout << "\n(Neighborhood) c.z_ind + reach: " << c.z_ind + reach << flush;
 
-  unsigned long long int max_x = (c.x_ind + reach < max_cell.x_ind) ? c.x_ind + reach : max_cell.x_ind;
-  unsigned long long int max_y = (c.y_ind + reach < max_cell.y_ind) ? c.y_ind + reach : max_cell.y_ind;
-  unsigned long long int max_z = (c.z_ind + reach < max_cell.z_ind) ? c.z_ind + reach : max_cell.z_ind;
+  unsigned long long int c_reach_x = c.x_ind + reach;
+  unsigned long long int c_reach_y = c.y_ind + reach;
+  unsigned long long int c_reach_z = c.z_ind + reach;
 
+  unsigned long long int max_x = (c_reach_x < max_cell.x_ind && c_reach_x > 0) ? c.x_ind + reach : max_cell.x_ind;
+  unsigned long long int max_y = (c_reach_y < max_cell.y_ind && c_reach_y > 0) ? c.y_ind + reach : max_cell.y_ind;
+  unsigned long long int max_z = (c_reach_z < max_cell.z_ind && c_reach_z > 0) ? c.z_ind + reach : max_cell.z_ind;
+
+  cout << "\n(Neighborhood) Min indexes: " << min_x << " " << min_y << " " << min_z << flush;
+  cout << "\n(Neighborhood) Max indexes: " << max_x << " " << max_y << " " << max_z << flush;
   for (unsigned long long int x = min_x; x < max_x; ++x) {
     for (unsigned long long int y = min_y; y < max_y; ++y) {
       for (unsigned long long int z = min_z; z < max_z; ++z) {
+        cout << "\n(Neighborhood) Current cell: " << x << " " << y << " " << z << flush;
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
         if (spatial_map.find(cur_hash) != spatial_map.end()) {
+          cout << "\n(Neighborhood) Found a cell in the spatial map (i.e., a cell that contains points)" << flush;
           cur_points = spatial_map.at(cur_hash);
           for (auto &q : *cur_points) {
             // we actually include the boundary of the neighborhood because
             // we're interested in consider spheres that could intersect
             // such points
+            cout << "\n(Neighborhood) Iterating through cell and checking containment" << flush;
             if ((q.pos - p.pos).norm() <= r) {
               r_neighborhood.push_back(&q);
             }
@@ -377,10 +391,10 @@ Point* BallPivot::ball_center(const Point &a, const Point &b, const Point &c, co
 
   // a, b and c lie on the surface of the sphere, so we can apply the
   // the Pythagorean theorem to find the perpendicular distance from the center
-  // of the sphere to the triangle: (circumcenter - c)^2 + perp_dist^2 = radius^2
-  double perp_dist = sqrt(pow(radius, 2) - (proj_center - c.pos).norm2());
+  // of the sphere to the triangle: ||c - circumcenter||^2 + perp_dist^2 = radius^2
+  double perp_dist = sqrt(radius * radius - (c.pos - proj_center).norm2());
 
-  return new Point(proj_center + perp_dist * normal, normal);
+  return new Point(proj_center + perp_dist * normal);
 }
 
 Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Point &c) {
@@ -440,11 +454,11 @@ int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
 }
 
 BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
-  // divide the bounding box in to cubic cells with side length 2 * radius
+  // divide the bounding box in to cubic cells with side length cell_width
   // truncate the position of p to a specific 3D box
-  unsigned long long int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
-  unsigned long long int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
-  unsigned long long int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
+  unsigned long long int x_ind = (p.pos.x - bound_min.x) / cell_width;
+  unsigned long long int y_ind = (p.pos.y - bound_min.y) / cell_width;
+  unsigned long long int z_ind = (p.pos.z - bound_min.z) / cell_width;
   return CellIndex(x_ind, y_ind, z_ind);
 }
 
