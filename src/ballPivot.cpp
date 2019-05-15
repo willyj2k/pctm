@@ -166,7 +166,9 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
+  bool verbose = true;
   if (pt.empty) {
+    if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
     return pt;
   }
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
@@ -174,12 +176,14 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
 
+  if (verbose) cout << "\n(pivot) Pivoting around edge midpoint " << mid_ij.x << " " << mid_ij.y << " " << mid_ij.z << flush;
+
   Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
-  Point *first_hit;
-  Point *first_center;
+  Point *first_hit = NULL;
+  Point *first_center = NULL;
   double min_theta = INF_D;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
@@ -193,8 +197,10 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
     }
   }
   if (first_hit != NULL) {
+    if (verbose) cout << "\n(pivot) Pivoting ball hit a valid point" << flush;
     return PivotTriangle(pt.sigma_i, pt.sigma_j, first_hit, first_center);
   } else {
+    if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
     return PivotTriangle();
   }
 }
@@ -287,9 +293,9 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
-  bool verbose = true;
+  bool verbose = false;
 
-  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z << flush;
+  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z  << ")" << flush;
   vector<Point *> r_neighborhood = vector<Point *>();
   unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
@@ -744,7 +750,7 @@ int BallPivot::get_active_edge() {
   for (int i = 0; i < front.size(); ++i) {
     if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
       if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
-        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge" << flush;
+        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge index " << i << flush;
         return i;
       }
     }

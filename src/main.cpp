@@ -107,10 +107,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         if (verbose) cout << "\n(main) Found active edge" << flush;
 
         BallPivot::PivotTriangle t_k = pivot.pivot(t);
-        if (verbose) cout << "\n(main) Pivoted ball successfully" << flush;
         Point *k = t_k.sigma_o;
 
-        if (k != NULL && (pivot.not_used(k) || pivot.on_front(k))) {
+        if (!t_k.empty && (pivot.not_used(*k) || pivot.on_front(*k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
@@ -126,8 +125,8 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
             if (verbose) cout << "\n(main) Glued" << flush;
           }
         } else {
-          pivot.mark_as_boundary(t_k);
-          if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
+            pivot.mark_as_boundary(t);
+            if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
         }
         index = pivot.get_active_edge();
         if (verbose) cout << "\n(main) New active edge found" << flush;
