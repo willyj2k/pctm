@@ -83,6 +83,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
     cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
+    cout << "\n Hash h: " << h << flush;
     if (processed_cells.find(h) == processed_cells.end()) {
       cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
       sigma = get_seed_candidate(seed_cell);
