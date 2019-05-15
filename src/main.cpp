@@ -130,9 +130,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         cout << "\nNew active edge found" << flush;
       }
 
-      cout << "\nCalling Seed Triangle... " << flush;
+      cout << "\nCalling seed triangle... " << flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
-      cout << "\nDone Calling Seed Triangle\n" << flush;
+      cout << "\nDone calling seed triangle\n" << flush;
 
       if (!seed_triangle.empty) {
         // output triangle
@@ -150,9 +150,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         pivot.insert_edge(edge_ij);
         pivot.insert_edge(edge_jk);
         pivot.insert_edge(edge_ki);
-        cout << "Found seed triangle\n" << flush;
+        cout << "\nFound seed triangle\n" << flush;
       } else {
-        cout << "Did not find seed triangle\n" << flush;
+        cout << "\nDid not find seed triangle\n" << flush;
         break;
       }
     }
