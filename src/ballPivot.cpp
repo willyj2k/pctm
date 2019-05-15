@@ -176,6 +176,8 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
 
+  if (verbose) cout << "\n(pivot) Pivoting around edge midpoint " << mid_ij.x << " " << mid_ij.y << " " << mid_ij.z << flush;
+
   Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
@@ -291,7 +293,7 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
-  bool verbose = true;
+  bool verbose = false;
 
   if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z  << ")" << flush;
   vector<Point *> r_neighborhood = vector<Point *>();
@@ -736,7 +738,7 @@ int BallPivot::get_active_edge() {
   for (int i = 0; i < front.size(); ++i) {
     if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
       if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
-        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge" << flush;
+        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge index " << i << flush;
         return i;
       }
     }
