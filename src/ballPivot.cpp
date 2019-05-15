@@ -197,11 +197,12 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   if (verbose) cout << "\n(pivot) angles of hits:" << flush;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
-      cout << " (valid vertex) " << flush;
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *sigma_x);
       if (on_trajectory(m, trajectory_radius, *c_x)) {
-        cout << " (vertex on trajectory) " << flush;
-        double theta = ball_intersection(m, trajectory_radius, *(pt.center), *sigma_x);
+        // TODO figure out why the passed-in old ball center isn't correct
+        Point *obc = ball_center(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
+        if (verbose) cout << "\n(pivot) m.pos == obc->pos: " << (m.pos == obc->pos) << flush;
+        double theta = ball_intersection(m, trajectory_radius, *obc, *sigma_x);
         if (verbose) cout << " " << theta << flush;
         if (theta > 0 && theta < 2 * PI && theta < min_theta) {
           min_theta = theta;
@@ -229,18 +230,22 @@ bool BallPivot::on_trajectory(const Point &tc, double tr, const Point &x) {
   double dist = diff.norm();
   double cos = dot(tc.normal, diff.unit());
   // set tolerance for imprecision
-  double tol = 5;
+  double tol = 0.2;
 
-  // check whether x lies on the sphere radius tr around tc
-  if (dist > tr + tol || dist < tr - tol) {
-    if (verbose) cout << "\n(on trajectory) Point is too not on the trajectory sphere";
-    return false;
-  }
   // check whether x lies in the trajectory plane
-  if (cos > tol || cos < -tol) {
-    if (verbose) cout << "\n(on trajectory) Point is not on the trajectory plane";
+  if (abs(cos) > tol) {
+    if (verbose) cout << "\n(on trajectory) Point is not on the trajectory plane" << flush;
+    if (verbose) cout << " (dot product with rotation axis: " << cos << ")" << flush;
     return false;
   }
+  // check whether x lies on the sphere radius tr around tc
+  if (abs(dist - tr) > tol) {
+    if (verbose) cout << "\n(on trajectory) Point is too not on the trajectory sphere" << flush;
+    if (verbose) cout << " (distance to the radius: " << abs(dist - tr) << ")" << flush;
+    return false;
+  }
+  if (verbose) cout << "\n(on trajectory) Point is on the trajectory!" << flush;
+  return true;
 }
 
 double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x) {
@@ -256,10 +261,13 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
    * Implementation adapted from https://gamedev.stackexchange.com/questions/
    * 75756/sphere-sphere-intersection-and-circle-sphere-intersection
    */
+  bool verbose = true;
+  double tol = 0.2;
   double d = abs(dot(tc.normal, (x.pos - tc.pos)));
   if (d > radius) {
     // trajectory plane doesn't intersect the ball
     return 0;
+    if (verbose) cout << "\n(ball_intersection) Trajectory plane doesn't intersect the ball" << flush;
   }
 
   Vector3D intersection;
@@ -273,6 +281,7 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
     if ((x_pc - tc.pos).norm() == tr) {
       return angle_between(tc, ts, x_pc);
     } else {
+      if (verbose) cout << "\n(ball_intersection) Trajectory plane is tangent to the ball, but no intersection" << flush;
       return 0;
     }
   }
@@ -282,37 +291,59 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
 
   // now we do circle-circle intersection
   double d_p = (tc.pos - x_pc).norm();
-  if (tr + x_pr > d_p) {
+  if (tr + x_pr > d_p + tol) {
     // circles too far away
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles too far away" << flush;
     return 0;
 
-  } else if (d_p + min(tr, x_pr) < max(tr, x_pr)) {
+  } else if (d_p + min(tr, x_pr) < max(tr, x_pr) - tol) {
     // one circle entirely contained in the other
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: one circle contained in the other" << flush;
     return 0;
 
   } else if (tr + x_pr == d_p) {
     // circles are tangent (exterior)
     intersection = tc.pos + tr * (tc.pos - x_pc).unit();
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, trajectory outside";
+    if (verbose) cout << " (intersection: ";
+    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + tr == x_pr) {
     // circles are tangent, trajectory inside ball
     intersection = x_pc + x_pr * (tc.pos - x_pc).unit();
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, trajectory inside";
+    if (verbose) cout << " (intersection: ";
+    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + x_pr == tr) {
     // circles are tangent, ball inside trajectory
     intersection = tc.pos + tr * (x_pc - tc.pos).unit();
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, ball inside";
+    if (verbose) cout << " (intersection: ";
+    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
     return angle_between(tc, ts, intersection);
 
   } else {
     // circles intersect at two points
+    if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles intersect at two points";
     double h = 0.5 + (tr * tr - x_pr * x_pr) / (2 * d_p * d_p);
     Vector3D c_i = tc.pos + h * (x_pc - tc.pos);
     double r_i = sqrt(tr * tr - h * h * d_p * d_p);
     Vector3D r_i_dir = cross(tc.normal, c_i).unit();
     Vector3D intersection1 = c_i + r_i * r_i_dir;
     Vector3D intersection2 = c_i - r_i * r_i_dir;
+
+    // TODO problem: r_i is nan
+    if (verbose) cout << " (c_i: " << c_i << ", r_i^2: " << (tr * tr - h * h * d_p * d_p) << ", ";
+    if (verbose) cout << " r_i_dir: {" << r_i_dir.x << ", " << r_i_dir.y << ", " << r_i_dir.z << "})" << flush;
+
+    if (verbose) cout << " (intersection1: ";
+    if (verbose) cout << "{" << intersection1.x << ", " << intersection1.y << ", " << intersection1.z << "}" << flush;
+    if (verbose) cout << " (intersection2: ";
+    if (verbose) cout << "{" << intersection2.x << ", " << intersection2.y << ", " << intersection2.z << "}" << flush;
+
     double theta1 = angle_between(tc, ts, intersection1);
     double theta2 = angle_between(tc, ts, intersection2);
     return min(theta1, theta2);
@@ -320,13 +351,26 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
 }
 
 double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D &i) {
-  /* Returns the angle between (tc.pos - tc.pos) and (i - tc.pos); the angle is
+  /* Returns the angle between (ts.pos - tc.pos) and (i - tc.pos); the angle is
    * measured counterclockwise from ts about tc (where the normal of tc is
    * facing out of the clock face)
    */
+  bool verbose = true;
+  if (verbose) cout << "\n(angle_between) tc.pos: { " << tc.pos.x << " " << tc.pos.y << " " << tc.pos.z << " }" << flush;
+  if (verbose) cout << "\n(angle_between) ts.pos: { " << ts.pos.x << " " << ts.pos.y << " " << ts.pos.z << " }" << flush;
+  if (verbose) cout << "\n(angle_between) i: { " << i.x << " " << i.y << " " << i.z << " }" << flush;
   Vector3D start = (ts.pos - tc.pos);
   Vector3D end = (i - tc.pos);
-  return atan2(dot(cross(start, end), tc.normal), dot(start, end));
+  if (verbose) cout << "\n(angle_between) Calling angle_between" << flush;
+  if (verbose) cout << " { " << start.x << " " << start.y << " " << start.z << " }" << flush;
+  if (verbose) cout << " { " << end.x << " " << end.y << " " << end.z << " }" << flush;
+  if (verbose) cout << "\n(angle_between) atan2 " << flush;
+  if (verbose) cout << " " << dot(cross(start, end), tc.normal) << ", " << dot(start, end) << flush;
+  double theta = atan2(dot(cross(start, end), tc.normal), dot(start, end));
+  if (theta < 0) {
+    theta = 2 * PI + theta;
+  }
+  return theta;
 }
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
