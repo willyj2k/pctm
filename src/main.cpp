@@ -85,7 +85,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     }
     if (verbose) cout << " Done\n";
 
-    double radius = 0.001;
+    double radius = 50;
 
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
@@ -110,7 +110,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         if (verbose) cout << "\n(main) Pivoted ball successfully" << flush;
         Point *k = t_k.sigma_o;
 
-        if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
+        if (k != NULL && (pivot.not_used(k) || pivot.on_front(k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
