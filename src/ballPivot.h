@@ -66,14 +66,14 @@ class BallPivot {
 
     static double dist(const Point &p);
     int get_active_edge();
-    PivotTriangle retrieve_active_edge(int index);
+    PivotTriangle *retrieve_active_edge(int index);
     void join(PivotTriangle e, Point* sigma_k, Point* new_center, int index);
     void glue(PivotTriangle ik);
     bool on_front(Point k);
     bool not_used(Point k);
     bool front_contains_edge(PivotTriangle t);
     void insert_edge(vector<PivotTriangle> edge);
-    void mark_as_boundary(PivotTriangle e);
+    void mark_as_boundary(PivotTriangle *e);
 
   private:
     // cell info for hashing

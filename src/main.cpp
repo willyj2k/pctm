@@ -103,19 +103,19 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
       if (verbose) cout << "\n-----------------------------" << flush;
       index = pivot.get_active_edge();
       while (index != -1) {
-        BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
+        BallPivot::PivotTriangle *t = pivot.retrieve_active_edge(index);
         if (verbose) cout << "\n(main) Found active edge" << flush;
 
-        BallPivot::PivotTriangle t_k = pivot.pivot(t);
+        BallPivot::PivotTriangle t_k = pivot.pivot(*t);
         Point *k = t_k.sigma_o;
 
         if (!t_k.empty && (pivot.not_used(*k) || pivot.on_front(*k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
-          pivot.join(t, k, t_k.center, index);
+          pivot.join(*t, k, t_k.center, index);
           cout << "\n(main) Joined" << flush;
-          BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
-          BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
+          BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t->sigma_i, t->sigma_j, t_k.center);
+          BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t->sigma_j, k, t->sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {
             pivot.glue(ki);
             if (verbose) cout << "\n(main) Glued" << flush;
