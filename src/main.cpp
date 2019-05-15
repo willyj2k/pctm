@@ -85,13 +85,14 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     }
     if (verbose) cout << " Done\n";
 
-    double radius = 0.0005;
+    double radius = 0.0008;
 
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
     if (verbose) cout << "\n(main) min x: " << bound_min.x << flush;
     if (verbose) cout << "\n(main) max x: " << bound_max.x << flush;
+    if (verbose) cout << "\n(main) radius: " << radius << flush;
 
     vector <BallPivot::PivotTriangle> triangles;
 

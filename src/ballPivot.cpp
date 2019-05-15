@@ -30,7 +30,7 @@ bool compare(Point *a, Point *b) {
 }
 
 void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
-  bool verbose = false;
+  bool verbose = true;
   if (verbose) cout << "\n(init) Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
   this->cell_width = 2 * radius;
@@ -41,6 +41,8 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->max_cell = get_cell(Point(bound_max));
   // add 1 to max_cell_z because we'll traverse the cells such that z values
   // or contiguous
+  this->max_cell.x_ind += 1;
+  this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
   if (verbose) cout << " Done";
 
@@ -79,9 +81,9 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
-  if (verbose) cout << "\n(find_seed_triangle) Max Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
-  while (!found_valid_triangle && seed_cell != max_cell) {
+  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
+    if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
+    if (verbose) cout << "\n(find_seed_triangle) Max Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
@@ -169,7 +171,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
-  bool verbose = false;
+  bool verbose = true;
   if (pt.empty) {
     if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
     return PivotTriangle();
@@ -190,17 +192,24 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
+  if (verbose) cout << "\n(pivot) Number of candidate points to check for hits: " << candidates.size() << flush;
   Point *first_hit = NULL;
   Point *first_center = NULL;
   double min_theta = INF_D;
+  if (verbose) cout << "\n(pivot) angles of hits:" << flush;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
+      cout << " (valid vertex) " << flush;
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *sigma_x);
-      double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
-      if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-        min_theta = theta;
-        first_hit = sigma_x;
-        first_center = c_x;
+      if (on_trajectory(m, trajectory_radius, *c_x)) {
+        cout << " (vertex on trajectory) " << flush;
+        double theta = ball_intersection(m, trajectory_radius, *(pt.center), *sigma_x);
+        if (verbose) cout << " " << theta << flush;
+        if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+          min_theta = theta;
+          first_hit = sigma_x;
+          first_center = c_x;
+        }
       }
     }
   }
@@ -210,6 +219,29 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   } else {
     if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
     return PivotTriangle();
+  }
+}
+
+bool BallPivot::on_trajectory(const Point &tc, double tr, const Point &x) {
+  /* Returns true if x lies on the circular trajectory defined by center tc and
+   * radius tr
+   */
+  bool verbose = true;
+  Vector3D diff = x.pos - tc.pos;
+  double dist = diff.norm();
+  double cos = dot(tc.normal, diff.unit());
+  // set tolerance for imprecision
+  double tol = 5;
+
+  // check whether x lies on the sphere radius tr around tc
+  if (dist > tr + tol || dist < tr - tol) {
+    if (verbose) cout << "\n(on trajectory) Point is too not on the trajectory sphere";
+    return false;
+  }
+  // check whether x lies in the trajectory plane
+  if (cos > tol || cos < -tol) {
+    if (verbose) cout << "\n(on trajectory) Point is not on the trajectory plane";
+    return false;
   }
 }
 
@@ -379,17 +411,25 @@ bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
   /* Returns true if the input vertices can be touched by a ball of radius
    * this->radius.
    */
+  bool verbose = false;
   Vector3D proj_center = circumcenter(a, b, c);
   double a_dist = (a.pos - proj_center).norm();
-  if (a_dist > radius) return false;
+  if (a_dist > radius) {
+    if (verbose) cout << "\n(valid_vertices) Rejecting triangle for distant vertices" << flush;
+    return false;
+  }
 
-  double b_dist = (b.pos - proj_center).norm();
-  if (b_dist > radius) return false;
+  // circumcenter is guaranteed to be equidistant from all vertices
+  // double b_dist = (b.pos - proj_center).norm();
+  // if (b_dist > radius) return false;
 
-  double c_dist = (c.pos - proj_center).norm();
-  if (c_dist > radius) return false;
+  // double c_dist = (c.pos - proj_center).norm();
+  // if (c_dist > radius) return false;
 
-  if (correct_plane_normal(a, b, c).norm2() == 0) return false;
+  if (correct_plane_normal(a, b, c).norm2() == 0) {
+    if (verbose) cout << "\n(valid_vertices) Rejecting triangle for misaligned normals" << flush;
+    return false;
+  }
 
   return true;
 }
@@ -514,21 +554,19 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.z_ind >= max_cell.z_ind) {
-    seed_cell.z_ind = 0;
-    seed_cell.y_ind += 1;
-    if (seed_cell.y_ind >= max_cell.y_ind) {
-      seed_cell.y_ind = 0;
-      seed_cell.x_ind += 1;
-      if (seed_cell.x_ind >= max_cell.x_ind) {
-        // at this point all cells should
-        // have been traversed
-      }
-    } else {
-      seed_cell.y_ind += 1;
-    }
+  if (seed_cell.x_ind < max_cell.x_ind) {
+    seed_cell.x_ind += 1;
   } else {
-    seed_cell.z_ind += 1;
+    if (seed_cell.y_ind < max_cell.y_ind) {
+      seed_cell.x_ind = 0;
+      seed_cell.y_ind += 1;
+    } else {
+      if (seed_cell.z_ind < max_cell.z_ind) {
+        seed_cell.x_ind = 0;
+        seed_cell.y_ind = 0;
+        seed_cell.z_ind += 1;
+      }
+    }
   }
 }
 
@@ -721,18 +759,7 @@ bool BallPivot::on_front(Point *k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
         for (int j = 0; j < front.at(i).size(); ++j) {
-          cout << "\n On Front" << i << " " << j << flush;
-          cout << "\n Sigma i" << front.at(i).at(j).sigma_i->pos.x << flush;
-          cout << "\n" << front.at(i).at(j).sigma_i->pos.y << flush;
-          cout << "\n" << front.at(i).at(j).sigma_i->pos.z << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.x << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.y << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.z << flush;
-          cout << "\n" << k->pos.x << flush;
-          cout << "\n" << k->pos.y << flush;
-          cout << "\n" << k->pos.z << flush;
             if ((front.at(i).at(j).sigma_i->pos == k->pos) || (front.at(i).at(j).sigma_j->pos == k->pos)) {
-              cout << "\n in if statement" << flush;
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
