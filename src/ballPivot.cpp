@@ -36,9 +36,8 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->bound_max = bound_max;
   this->seed_cell = CellIndex(0, 0, 0);
   this->max_cell = get_cell(Point(bound_max));
-  // add 1 to each index for comparisons
-  this->max_cell.x_ind += 1;
-  this->max_cell.y_ind += 1;
+  // add 1 to max_cell_z because we'll traverse the cells such that z values
+  // or contiguous
   this->max_cell.z_ind += 1;
   this->cell_width = 2 * radius;
   cout << " Done\n";
@@ -77,20 +76,15 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
-  cout << "\nMax Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
-  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
-    cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
+  while (!found_valid_triangle && seed_cell != max_cell) {
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
-      cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
       sigma = get_seed_candidate(seed_cell);
 
       // consider all pairs of points in its neighborhood
       // first get the neighborhood, aka use spatial map
       if (spatial_map.find(h) != spatial_map.end()) {
-        cout << "\nIndexing into spatial map for candidate seeding cell" << flush;
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
         // (currently this just gets points in the same spatial partition)
@@ -108,7 +102,6 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
           Point *sigma_b = lst.at(i);
 
           if (valid_vertices(*sigma, *sigma_a, *sigma_b)) {
-            cout << "\nVALID VERTICES FOUND FOR SEED" << flush;
             // triangle_normal will be the zero vector if the points don't form a
             // valid triangle
             Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
@@ -133,13 +126,11 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
             }
           }
         }
-        cout << "\nNO VALID VERTICES FOUND FOR SEED" << flush;
       }
       // put this here because apparently we only want to consider one
       // candidate *vertex* per cell, rather than one seed triangle per cell
       processed_cells.insert(h);
     }
-    cout << "\nCandidate cell has already been processed" << flush;
     increment_seed_cell();
   }
 
@@ -429,9 +420,9 @@ int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
 }
 
 BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
-  unsigned long long int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
-  unsigned long long int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
-  unsigned long long int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
+  int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
+  int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
+  int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
   return CellIndex(x_ind, y_ind, z_ind);
 }
 
@@ -465,19 +456,21 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.x_ind < max_cell.x_ind) {
-    seed_cell.x_ind += 1;
-  } else {
-    if (seed_cell.y_ind < max_cell.y_ind) {
-      seed_cell.x_ind = 0;
-      seed_cell.y_ind += 1;
-    } else {
-      if (seed_cell.z_ind < max_cell.z_ind) {
-        seed_cell.x_ind = 0;
-        seed_cell.y_ind = 0;
-        seed_cell.z_ind += 1;
+  if (seed_cell.z_ind >= max_cell.z_ind) {
+    seed_cell.z_ind = 0;
+    seed_cell.y_ind += 1;
+    if (seed_cell.y_ind >= max_cell.y_ind) {
+      seed_cell.y_ind = 0;
+      seed_cell.x_ind += 1;
+      if (seed_cell.x_ind >= max_cell.x_ind) {
+        // at this point all cells should
+        // have been traversed
       }
+    } else {
+      seed_cell.y_ind += 1;
     }
+  } else {
+    seed_cell.z_ind += 1;
   }
 }
 
