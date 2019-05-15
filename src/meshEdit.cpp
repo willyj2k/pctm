@@ -111,6 +111,7 @@ namespace CGL {
 
   void MeshEdit::render() {
     update_camera();
+    //draw_points();
     drawPivotTriangles();
 
     // // Draw the helpful picking messages.
@@ -166,9 +167,13 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
+    //bun045
     gluLookAt(   0.0, 0.37, 0.0,// camera location.
         0.1, -1.7, 0.1,// point looking at.
         0.0, 0.0, 1.0);// up direction.
+    // gluLookAt(   0.0, 0.0, 0.0,// camera location.
+    //     0.0, 0.0, 0.0,// point looking at.
+    //     0.0, 0.0, 1.0);// up direction.
 
     Vector3D c = Vector3D(0.0, 5.28586, 0.0);
     Vector3D v = Vector3D(0.0, 0.0, 0.0);
@@ -1213,7 +1218,6 @@ namespace CGL {
 
   void MeshEdit::renderPoints(vector<Point *> points) {
     DrawStyle *style = &defaultStyle;
-    Color red = Color(1.0, 0.0, 0.0);
     glPointSize(style->vertexRadius);
     for (Point *p : points) {
       glBegin(GL_POINTS);
