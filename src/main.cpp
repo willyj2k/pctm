@@ -95,44 +95,44 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
-    pivot.init(points, 0.001, bound_min, bound_max);
+    pivot.init(points, 50, bound_min, bound_max);
     int index;
     while (true) {
-      std::cout << "-----------------------------\n" << std::flush;
+      std::cout << "\n-----------------------------" << std::flush;
       index = pivot.get_active_edge();
       while (index != -1) {
         BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
-        std::cout << "Found active edge\n" << std::flush;
+        std::cout << "\nFound active edge" << std::flush;
 
         BallPivot::PivotTriangle t_k = pivot.pivot(t);
-        std::cout << "Pivoted ball successfully\n" << std::flush;
+        std::cout << "\nPivoted ball successfully" << std::flush;
         Point *k = t_k.sigma_o;
 
         if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
-          std::cout << "Valid triangle found by pivoting\n" << std::flush;
+          std::cout << "\nValid triangle found by pivoting" << std::flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {
             pivot.glue(ki);
-            std::cout << "Glued\n" << std::flush;
+            std::cout << "\nGlued" << std::flush;
           }
           if (pivot.front_contains_edge(jk)) {
             pivot.glue(jk);
-            std::cout << "Glued\n" << std::flush;
+            std::cout << "\nGlued" << std::flush;
           }
         } else {
           pivot.mark_as_boundary(t_k);
-          std::cout << "Found Boundary Edge\n" << std::flush;
+          std::cout << "\nFound Boundary Edge" << std::flush;
         }
         index = pivot.get_active_edge();
-        std::cout << "New active edge found\n" << std::flush;
+        std::cout << "\nNew active edge found" << std::flush;
       }
 
-      std::cout << "Finding Seed Triangle... " << std::flush;
+      std::cout << "\nCalling Seed Triangle... " << std::flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
-      std::cout << "\nDone\n" << std::flush;
+      std::cout << "\nDone Calling Seed Triangle\n" << std::flush;
 
       if (!seed_triangle.empty) {
         // output triangle

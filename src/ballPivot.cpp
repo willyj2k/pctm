@@ -419,17 +419,20 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
 }
 
 int BallPivot::hash_position(const Point &p) {
-  // divide the bounding box in to cubic cells with side length 2 * radius
-  // truncate the position of p to a specific 3D box
   CellIndex cell = get_cell(p);
   return hash_cell(cell);
 }
 
 int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
-  return (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
+  cout << "\nHash Cell: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
+  int hash = (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
+  cout << " (int) hash: " << hash << flush;
+  return hash;
 }
 
 BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
+  // divide the bounding box in to cubic cells with side length 2 * radius
+  // truncate the position of p to a specific 3D box
   unsigned long long int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
   unsigned long long int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
   unsigned long long int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
