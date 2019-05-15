@@ -36,10 +36,6 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->bound_max = bound_max;
   this->seed_cell = CellIndex(0, 0, 0);
   this->max_cell = get_cell(Point(bound_max));
-  // add 1 to each index for comparisons
-  this->max_cell.x_ind += 1;
-  this->max_cell.y_ind += 1;
-  this->max_cell.z_ind += 1;
   this->cell_width = 2 * radius;
   cout << " Done\n";
 
@@ -79,7 +75,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
   cout << "\nMax Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
-  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
+  while (!found_valid_triangle && seed_cell.z_ind <= max_cell.z_ind) {
     cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
@@ -465,14 +461,14 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.x_ind < max_cell.x_ind) {
+  if (seed_cell.x_ind <= max_cell.x_ind) {
     seed_cell.x_ind += 1;
   } else {
-    if (seed_cell.y_ind < max_cell.y_ind) {
+    if (seed_cell.y_ind <= max_cell.y_ind) {
       seed_cell.x_ind = 0;
       seed_cell.y_ind += 1;
     } else {
-      if (seed_cell.z_ind < max_cell.z_ind) {
+      if (seed_cell.z_ind <= max_cell.z_ind) {
         seed_cell.x_ind = 0;
         seed_cell.y_ind = 0;
         seed_cell.z_ind += 1;
