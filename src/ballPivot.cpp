@@ -30,7 +30,7 @@ bool compare(Point *a, Point *b) {
 }
 
 void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
-  bool verbose = false;
+  bool verbose = true;
   if (verbose) cout << "\n(init) Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
   this->cell_width = 2 * radius;
@@ -41,6 +41,8 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->max_cell = get_cell(Point(bound_max));
   // add 1 to max_cell_z because we'll traverse the cells such that z values
   // or contiguous
+  this->max_cell.x_ind += 1;
+  this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
   if (verbose) cout << " Done";
 
@@ -79,9 +81,9 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
-  if (verbose) cout << "\n(find_seed_triangle) Max Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
-  while (!found_valid_triangle && seed_cell != max_cell) {
+  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
+    if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
+    if (verbose) cout << "\n(find_seed_triangle) Max Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
@@ -512,21 +514,19 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.z_ind >= max_cell.z_ind) {
-    seed_cell.z_ind = 0;
-    seed_cell.y_ind += 1;
-    if (seed_cell.y_ind >= max_cell.y_ind) {
-      seed_cell.y_ind = 0;
-      seed_cell.x_ind += 1;
-      if (seed_cell.x_ind >= max_cell.x_ind) {
-        // at this point all cells should
-        // have been traversed
-      }
-    } else {
-      seed_cell.y_ind += 1;
-    }
+  if (seed_cell.x_ind < max_cell.x_ind) {
+    seed_cell.x_ind += 1;
   } else {
-    seed_cell.z_ind += 1;
+    if (seed_cell.y_ind < max_cell.y_ind) {
+      seed_cell.x_ind = 0;
+      seed_cell.y_ind += 1;
+    } else {
+      if (seed_cell.z_ind < max_cell.z_ind) {
+        seed_cell.x_ind = 0;
+        seed_cell.y_ind = 0;
+        seed_cell.z_ind += 1;
+      }
+    }
   }
 }
 
@@ -719,18 +719,7 @@ bool BallPivot::on_front(Point *k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
         for (int j = 0; j < front.at(i).size(); ++j) {
-          cout << "\n On Front" << i << " " << j << flush;
-          cout << "\n Sigma i" << front.at(i).at(j).sigma_i->pos.x << flush;
-          cout << "\n" << front.at(i).at(j).sigma_i->pos.y << flush;
-          cout << "\n" << front.at(i).at(j).sigma_i->pos.z << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.x << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.y << flush;
-          cout << "\n" << front.at(i).at(j).sigma_j->pos.z << flush;
-          cout << "\n" << k->pos.x << flush;
-          cout << "\n" << k->pos.y << flush;
-          cout << "\n" << k->pos.z << flush;
             if ((front.at(i).at(j).sigma_i->pos == k->pos) || (front.at(i).at(j).sigma_j->pos == k->pos)) {
-              cout << "\n in if statement" << flush;
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
