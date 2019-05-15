@@ -166,7 +166,9 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
+  bool verbose = true;
   if (pt.empty) {
+    if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
     return pt;
   }
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
@@ -178,8 +180,8 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
-  Point *first_hit;
-  Point *first_center;
+  Point *first_hit = NULL;
+  Point *first_center = NULL;
   double min_theta = INF_D;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
@@ -193,8 +195,10 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
     }
   }
   if (first_hit != NULL) {
+    if (verbose) cout << "\n(pivot) Pivoting ball hit a valid point" << flush;
     return PivotTriangle(pt.sigma_i, pt.sigma_j, first_hit, first_center);
   } else {
+    if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
     return PivotTriangle();
   }
 }
@@ -289,7 +293,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   bool verbose = true;
 
-  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z << flush;
+  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z  << ")" << flush;
   vector<Point *> r_neighborhood = vector<Point *>();
   unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
