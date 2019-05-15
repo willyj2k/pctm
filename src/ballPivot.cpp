@@ -168,7 +168,9 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
+  bool verbose = true;
   if (pt.empty) {
+    if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
     return pt;
   }
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
@@ -180,8 +182,8 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
-  Point *first_hit;
-  Point *first_center;
+  Point *first_hit = NULL;
+  Point *first_center = NULL;
   double min_theta = INF_D;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
@@ -195,8 +197,10 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
     }
   }
   if (first_hit != NULL) {
+    if (verbose) cout << "\n(pivot) Pivoting ball hit a valid point" << flush;
     return PivotTriangle(pt.sigma_i, pt.sigma_j, first_hit, first_center);
   } else {
+    if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
     return PivotTriangle();
   }
 }
@@ -289,8 +293,9 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
-  bool verbose = false;
+  bool verbose = true;
 
+  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z  << ")" << flush;
   vector<Point *> r_neighborhood = vector<Point *>();
   unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
@@ -303,9 +308,6 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   unsigned long long int min_y = (c.y_ind > reach) ? c.y_ind - reach : 0;
   unsigned long long int min_z = (c.z_ind > reach) ? c.z_ind - reach : 0;
 
-  if (verbose) cout << "\n(neighborhood) c.z_ind, reach: " << c.z_ind << ", " << reach << flush;
-  if (verbose) cout << "\n(neighborhood) c.z_ind + reach: " << c.z_ind + reach << flush;
-
   unsigned long long int c_reach_x = c.x_ind + reach;
   unsigned long long int c_reach_y = c.y_ind + reach;
   unsigned long long int c_reach_z = c.z_ind + reach;
@@ -316,9 +318,9 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
 
   if (verbose) cout << "\n(neighborhood) Min indexes: " << min_x << " " << min_y << " " << min_z << flush;
   if (verbose) cout << "\n(neighborhood) Max indexes: " << max_x << " " << max_y << " " << max_z << flush;
-  for (unsigned long long int x = min_x; x < max_x; ++x) {
-    for (unsigned long long int y = min_y; y < max_y; ++y) {
-      for (unsigned long long int z = min_z; z < max_z; ++z) {
+  for (unsigned long long int z = min_z; z <= max_z; ++z) {
+    for (unsigned long long int y = min_y; y <= max_y; ++y) {
+      for (unsigned long long int x = min_x; x <= max_x; ++x) {
         if (verbose) cout << "\n(neighborhood) Current cell: " << x << " " << y << " " << z << flush;
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
@@ -329,8 +331,8 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
             // we actually include the boundary of the neighborhood because
             // we're interested in consider spheres that could intersect
             // such points
-            if (verbose) cout << "\n(neighborhood) Iterating through cell and checking containment" << flush;
             if ((q.pos - p.pos).norm() <= r + EPS_D) {
+              if (verbose) cout << "\n(neighborhood) Found a point in the ball" << flush;
               r_neighborhood.push_back(&q);
             }
           }
@@ -732,16 +734,16 @@ void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
 }
 
 int BallPivot::get_active_edge() {
-    for (int i = 0; i < front.size(); i++) {
-        if (front[i].size() == 0) {
-            continue;
-        } else if (front[i][0].sigma_i->pos == front[i][front[i].size() - 1].sigma_j->pos) {
-            continue;
-        } else {
-            return i;
-        }
+  bool verbose = true;
+  for (int i = 0; i < front.size(); ++i) {
+    if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
+      if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
+        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge" << flush;
+        return i;
+      }
     }
-    return -1;
+  }
+  return -1;
 }
 
 void BallPivot::insert_edge(vector<PivotTriangle> edge) {
