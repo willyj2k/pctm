@@ -36,12 +36,12 @@ static int vertex_cb(p_ply_argument argument) {
 }
 
 int loadFile(MeshEdit *collada_viewer, const char *path) {
-
+  bool verbose = true;
   Scene *scene = new Scene();
 
   std::string path_str = path;
   if (path_str.substr(path_str.length() - 4, 4) == ".ply") {
-    cout << "Parsing ply file for points..." << flush;
+    if (verbose) cout << "(main) Parsing ply file for points..." << flush;
     p_ply ply = ply_open(path, NULL, 0, NULL);
     p_ply_element element = NULL;
     int success = ply_read_header(ply);
@@ -83,17 +83,15 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
       Point p = Point(v);
       points.push_back(p);
     }
-    cout << " Done\n";
+    if (verbose) cout << " Done\n";
 
     double radius = 0.001;
 
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
 
-    cout << bound_max;
-
-    cout << "\n min x: " << bound_min.x << flush;
-    cout << "\n max x: " << bound_max.x << flush;
+    if (verbose) cout << "\n(main) min x: " << bound_min.x << flush;
+    if (verbose) cout << "\n(main) max x: " << bound_max.x << flush;
 
     vector <BallPivot::PivotTriangle> triangles;
 
@@ -102,18 +100,18 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     pivot.init(points, radius, bound_min, bound_max);
     int index;
     while (true) {
-      cout << "\n-----------------------------" << flush;
+      if (verbose) cout << "\n-----------------------------" << flush;
       index = pivot.get_active_edge();
       while (index != -1) {
         BallPivot::PivotTriangle t = pivot.retrieve_active_edge(index);
-        cout << "\nFound active edge" << flush;
+        if (verbose) cout << "\n(main) Found active edge" << flush;
 
         BallPivot::PivotTriangle t_k = pivot.pivot(t);
-        cout << "\nPivoted ball successfully" << flush;
+        if (verbose) cout << "\n(main) Pivoted ball successfully" << flush;
         Point *k = t_k.sigma_o;
 
         if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
-          cout << "\nValid triangle found by pivoting" << flush;
+          if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
           cout << "\nJoined" << flush;
@@ -121,23 +119,23 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {
             pivot.glue(ki);
-            cout << "\nGlued" << flush;
+            if (verbose) cout << "\n(main) Glued" << flush;
           }
           if (pivot.front_contains_edge(jk)) {
             pivot.glue(jk);
-            cout << "\nGlued" << flush;
+            if (verbose) cout << "\n(main) Glued" << flush;
           }
         } else {
           pivot.mark_as_boundary(t_k);
-          cout << "\nFound Boundary Edge" << flush;
+          if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
         }
         index = pivot.get_active_edge();
-        cout << "\nNew active edge found" << flush;
+        if (verbose) cout << "\n(main) New active edge found" << flush;
       }
 
-      cout << "\nCalling Seed Triangle... " << flush;
+      if (verbose) cout << "\n(main) Calling seed triangle... " << flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
-      cout << "\nDone Calling Seed Triangle\n" << flush;
+      if (verbose) cout << "\n(main) Done calling seed triangle\n" << flush;
 
       if (!seed_triangle.empty) {
         // output triangle
@@ -155,9 +153,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         pivot.insert_edge(edge_ij);
         pivot.insert_edge(edge_jk);
         pivot.insert_edge(edge_ki);
-        cout << "Found seed triangle\n" << flush;
+        if (verbose) cout << "\n(main) Found seed triangle\n" << flush;
       } else {
-        cout << "Did not find seed triangle\n" << flush;
+        if (verbose) cout << "\n(main) Did not find seed triangle\n" << flush;
         break;
       }
     }
