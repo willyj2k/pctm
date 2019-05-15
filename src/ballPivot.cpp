@@ -30,7 +30,7 @@ bool compare(Point *a, Point *b) {
 }
 
 void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
-  bool verbose = true;
+  bool verbose = false;
   if (verbose) cout << "\n(init) Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
   this->bound_min = bound_min;
