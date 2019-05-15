@@ -85,12 +85,12 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
 
     if (processed_cells.find(h) == processed_cells.end()) {
       cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
-      sigma = get_seed_candidate(seed_cell);
 
       // consider all pairs of points in its neighborhood
       // first get the neighborhood, aka use spatial map
       if (spatial_map.find(h) != spatial_map.end()) {
         cout << "\nIndexing into spatial map for candidate seeding cell" << flush;
+        sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
         // (currently this just gets points in the same spatial partition)
@@ -101,6 +101,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
         // such that closer points are at the back
         sort(lst.begin(), lst.end(), compare);
 
+        cout << "Searching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
         // Stop when a valid seed triangle is found
         for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
           // check that the triangle normal is consistent with the vertex normals
@@ -277,16 +278,24 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   vector<Point *> r_neighborhood = vector<Point *>();
-  int reach = ceil(r / cell_width);
+  unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
   CellIndex cur_cell;
   int cur_hash;
   vector<Point> *cur_points;
 
   // literally check all the cells that are possibly within reach...
-  for (int x = (c.x_ind - reach); x <= (c.x_ind + reach); ++x) {
-    for (int y = (c.y_ind - reach); y <= (c.y_ind + reach); ++y) {
-      for (int z = (c.z_ind - reach); z <= (c.z_ind + reach); ++z) {
+  unsigned long long int min_x = (c.x_ind > reach) ? c.x_ind - reach : 0;
+  unsigned long long int min_y = (c.y_ind > reach) ? c.y_ind - reach : 0;
+  unsigned long long int min_z = (c.z_ind > reach) ? c.z_ind - reach : 0;
+
+  unsigned long long int max_x = (c.x_ind + reach < max_cell.x_ind) ? c.x_ind + reach : max_cell.x_ind;
+  unsigned long long int max_y = (c.y_ind + reach < max_cell.y_ind) ? c.y_ind + reach : max_cell.y_ind;
+  unsigned long long int max_z = (c.z_ind + reach < max_cell.z_ind) ? c.z_ind + reach : max_cell.z_ind;
+
+  for (unsigned long long int x = min_x; x < max_x; ++x) {
+    for (unsigned long long int y = min_y; y < max_y; ++y) {
+      for (unsigned long long int z = min_z; z < max_z; ++z) {
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
         if (spatial_map.find(cur_hash) != spatial_map.end()) {
