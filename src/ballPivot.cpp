@@ -30,7 +30,8 @@ bool compare(Point *a, Point *b) {
 }
 
 void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
-  cout << "Initializing Ball Pivot member variables..." << flush;
+  bool verbose = true;
+  if (verbose) cout << "Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
   this->bound_min = bound_min;
   this->bound_max = bound_max;
@@ -41,14 +42,14 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
   this->cell_width = 2 * radius;
-  cout << " Done\n";
+  if (verbose) cout << " Done\n";
 
-  cout << "Creating Spatial Grid..." << flush;
+  if (verbose) cout << "Creating Spatial Grid..." << flush;
   BallPivot::create_spatial_grid(points);
-  cout << " Done\n";
-  cout << "Calculating normals..." << flush;
+  if (verbose) cout << " Done\n";
+  if (verbose) cout << "Calculating normals..." << flush;
   BallPivot::calculate_normals();
-  cout << " Done\n";
+  if (verbose) cout << " Done\n";
 }
 
 void BallPivot::create_spatial_grid(const vector<Point> &points) {
@@ -74,21 +75,22 @@ void BallPivot::create_spatial_grid(const vector<Point> &points) {
 }
 
 BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
+  bool verbose = true;
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
-  cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
-  cout << "\nMax Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
+  if (verbose) cout << "\nSeed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
+  if (verbose) cout << "\nMax Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
   while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
-      cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
+      if (verbose) cout << "\nCandidate cell is indeed untouched; searching for seed triangle within" << flush;
 
       // consider all pairs of points in its neighborhood
       // first get the neighborhood, aka use spatial map
       if (spatial_map.find(h) != spatial_map.end()) {
-        cout << "\nIndexing into spatial map for candidate seeding cell" << flush;
+        if (verbose) cout << "\nIndexing into spatial map for candidate seeding cell" << flush;
         sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
@@ -100,7 +102,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
         // such that closer points are at the back
         sort(lst.begin(), lst.end(), compare);
 
-        cout << "\nSearching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
+        if (verbose) cout << "\nSearching neighborhood for valid pairs of points (neighborhood population: " << lst.size() << ")" << flush;
         // Stop when a valid seed triangle is found
         for (int i = 1; !found_valid_triangle && i < lst.size(); ++i) {
           // check that the triangle normal is consistent with the vertex normals
@@ -108,7 +110,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
           Point *sigma_b = lst.at(i);
 
           if (valid_vertices(*sigma, *sigma_a, *sigma_b)) {
-            cout << "\nValid vertices found for seed" << flush;
+            if (verbose) cout << "\nValid vertices found for seed" << flush;
             // triangle_normal will be the zero vector if the points don't form a
             // valid triangle
             Vector3D triangle_normal = correct_plane_normal(*sigma, *sigma_a, *sigma_b);
@@ -117,12 +119,12 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
             // space that touches all three vertices and contains no other data
             // point
             if (triangle_normal.norm2() > 0) {
-              cout << "\nVertex normals are aligned" << flush;
+              if (verbose) cout << "\nVertex normals are aligned" << flush;
               Point center = *ball_center(*sigma, *sigma_a, *sigma_b, triangle_normal);
-              cout << "\nTriangle: " << sigma->pos << " " << sigma_a->pos << " " << sigma_b->pos << flush;
-              cout << "\nBall Center: " << center.pos << flush;
+              if (verbose) cout << "\nTriangle: " << sigma->pos << " " << sigma_a->pos << " " << sigma_b->pos << flush;
+              if (verbose) cout << "\nBall Center: " << center.pos << flush;
               vector<Point *> r_neighborhood = neighborhood(radius, center);
-              cout << "\nBall contains " << r_neighborhood.size() << " points" << flush;
+              if (verbose) cout << "\nBall contains " << r_neighborhood.size() << " points" << flush;
               if (r_neighborhood.size() == 3) {
                 // we don't neet to check membership in r_neighborhood because
                 // sigma, sigma_a and sigma_b are already guaranteed to be distance
@@ -133,18 +135,18 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
                 used.insert(sigma);
                 used.insert(sigma_a);
                 used.insert(sigma_b);
-                cout << "\nFound valid triangle!" << flush;
+                if (verbose) cout << "\nFound valid triangle!" << flush;
               }
             }
           }
         }
-        cout << "\nNo valid vertices found for seed" << flush;
+        if (verbose) cout << "\nNo valid vertices found for seed" << flush;
       }
       // put this here because apparently we only want to consider one
       // candidate *vertex* per cell, rather than one seed triangle per cell
       processed_cells.insert(h);
     }
-    cout << "\nCandidate cell has already been processed" << flush;
+    if (verbose) cout << "\nCandidate cell has already been processed" << flush;
     increment_seed_cell();
   }
 
@@ -281,6 +283,8 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
 
 vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
+  bool verbose = false;
+
   vector<Point *> r_neighborhood = vector<Point *>();
   unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
@@ -292,8 +296,9 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   unsigned long long int min_x = (c.x_ind > reach) ? c.x_ind - reach : 0;
   unsigned long long int min_y = (c.y_ind > reach) ? c.y_ind - reach : 0;
   unsigned long long int min_z = (c.z_ind > reach) ? c.z_ind - reach : 0;
-  cout << "\n(Neighborhood) c.z_ind, reach: " << c.z_ind << ", " << reach << flush;
-  cout << "\n(Neighborhood) c.z_ind + reach: " << c.z_ind + reach << flush;
+
+  if (verbose) cout << "\n(Neighborhood) c.z_ind, reach: " << c.z_ind << ", " << reach << flush;
+  if (verbose) cout << "\n(Neighborhood) c.z_ind + reach: " << c.z_ind + reach << flush;
 
   unsigned long long int c_reach_x = c.x_ind + reach;
   unsigned long long int c_reach_y = c.y_ind + reach;
@@ -303,23 +308,23 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   unsigned long long int max_y = (c_reach_y < max_cell.y_ind && c_reach_y > 0) ? c.y_ind + reach : max_cell.y_ind;
   unsigned long long int max_z = (c_reach_z < max_cell.z_ind && c_reach_z > 0) ? c.z_ind + reach : max_cell.z_ind;
 
-  cout << "\n(Neighborhood) Min indexes: " << min_x << " " << min_y << " " << min_z << flush;
-  cout << "\n(Neighborhood) Max indexes: " << max_x << " " << max_y << " " << max_z << flush;
+  if (verbose) cout << "\n(Neighborhood) Min indexes: " << min_x << " " << min_y << " " << min_z << flush;
+  if (verbose) cout << "\n(Neighborhood) Max indexes: " << max_x << " " << max_y << " " << max_z << flush;
   for (unsigned long long int x = min_x; x < max_x; ++x) {
     for (unsigned long long int y = min_y; y < max_y; ++y) {
       for (unsigned long long int z = min_z; z < max_z; ++z) {
-        cout << "\n(Neighborhood) Current cell: " << x << " " << y << " " << z << flush;
+        if (verbose) cout << "\n(Neighborhood) Current cell: " << x << " " << y << " " << z << flush;
         cur_cell = CellIndex(x, y, z);
         cur_hash = hash_cell(cur_cell);
         if (spatial_map.find(cur_hash) != spatial_map.end()) {
-          cout << "\n(Neighborhood) Found a cell in the spatial map (i.e., a cell that contains points)" << flush;
+          if (verbose) cout << "\n(Neighborhood) Found a cell in the spatial map (i.e., a cell that contains points)" << flush;
           cur_points = spatial_map.at(cur_hash);
           for (auto &q : *cur_points) {
             // we actually include the boundary of the neighborhood because
             // we're interested in consider spheres that could intersect
             // such points
-            cout << "\n(Neighborhood) Iterating through cell and checking containment" << flush;
-            if ((q.pos - p.pos).norm() <= r) {
+            if (verbose) cout << "\n(Neighborhood) Iterating through cell and checking containment" << flush;
+            if ((q.pos - p.pos).norm() <= r + EPS_D) {
               r_neighborhood.push_back(&q);
             }
           }
@@ -447,9 +452,10 @@ int BallPivot::hash_position(const Point &p) {
 }
 
 int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
-  cout << "\nHash Cell: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
+  bool verbose = true;
+  if (verbose) cout << "\nHash Cell: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
   int hash = (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
-  cout << " (int) hash: " << hash << flush;
+  if (verbose) cout << " (int) hash: " << hash << flush;
   return hash;
 }
 
