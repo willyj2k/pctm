@@ -37,10 +37,10 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->bound_min = bound_min;
   this->bound_max = bound_max;
   this->seed_cell = CellIndex(0, 0, 0);
+  this->cell_width = 2 * radius;
   this->max_cell = get_cell(Point(bound_max));
-  // add 1 to each index for comparisons
-  this->max_cell.x_ind += 1;
-  this->max_cell.y_ind += 1;
+  // add 1 to max_cell_z because we'll traverse the cells such that z values
+  // or contiguous
   this->max_cell.z_ind += 1;
   if (verbose) cout << " Done";
 
@@ -81,7 +81,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
   if (verbose) cout << "\n(find_seed_triangle) Max Cell: " << max_cell.x_ind << " " << max_cell.y_ind << " " << max_cell.z_ind << flush;
-  while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
+  while (!found_valid_triangle && seed_cell != max_cell) {
     int h = hash_cell(seed_cell);
 
     if (processed_cells.find(h) == processed_cells.end()) {
@@ -89,6 +89,9 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
 
       // consider all pairs of points in its neighborhood
       // first get the neighborhood, aka use spatial map
+      // for (auto const& pair: spatial_map) {
+      //     std::cout << "\n{" << pair.first << ": " << pair.second->size() << "}\n";
+      // }
       if (spatial_map.find(h) != spatial_map.end()) {
         if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
         sigma = get_seed_candidate(seed_cell);
@@ -497,19 +500,21 @@ Point* BallPivot::get_seed_candidate(const CellIndex &c) {
 }
 
 void BallPivot::increment_seed_cell() {
-  if (seed_cell.x_ind < max_cell.x_ind) {
-    seed_cell.x_ind += 1;
-  } else {
-    if (seed_cell.y_ind < max_cell.y_ind) {
-      seed_cell.x_ind = 0;
-      seed_cell.y_ind += 1;
-    } else {
-      if (seed_cell.z_ind < max_cell.z_ind) {
-        seed_cell.x_ind = 0;
-        seed_cell.y_ind = 0;
-        seed_cell.z_ind += 1;
+  if (seed_cell.z_ind >= max_cell.z_ind) {
+    seed_cell.z_ind = 0;
+    seed_cell.y_ind += 1;
+    if (seed_cell.y_ind >= max_cell.y_ind) {
+      seed_cell.y_ind = 0;
+      seed_cell.x_ind += 1;
+      if (seed_cell.x_ind >= max_cell.x_ind) {
+        // at this point all cells should
+        // have been traversed
       }
+    } else {
+      seed_cell.y_ind += 1;
     }
+  } else {
+    seed_cell.z_ind += 1;
   }
 }
 
@@ -553,7 +558,7 @@ void BallPivot::calculate_normals() {
         double num_other = (points->size() > 1) ? points->size() - 1 : 1;
         for (auto &point : *points) {
           avg_other_pos = (centroid - point.pos) / num_other;
-          point.normal = (point.pos - avg_other_pos);
+          point.normal = (point.pos - avg_other_pos).unit();
           this->all_points.push_back(&point);
         }
     }
@@ -715,7 +720,7 @@ void BallPivot::insert_edge(BallPivot::PivotTriangle e, BallPivot::VertexSpecifi
 }
 
 bool BallPivot::not_used(Point k) {
-    return !(used.find(&k) == used.end());
+    return (used.find(&k) == used.end());
 }
 
 void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
@@ -725,7 +730,7 @@ void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
 int BallPivot::get_active_edge() {
   bool verbose = true;
   for (int i = 0; i < front.size(); ++i) {
-    if (front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
+    if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
       if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
         if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge" << flush;
         return i;
