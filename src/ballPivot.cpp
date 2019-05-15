@@ -170,12 +170,19 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   bool verbose = false;
   if (pt.empty) {
     if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
-    return pt;
+    return PivotTriangle();
   }
+  if (pt.isBoundary) {
+    if (verbose) cout << "\n(pivot) Passed in boundary edge. Returning." << flush;
+    return PivotTriangle();
+  }
+
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
   Vector3D tri_normal = correct_plane_normal(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
+
+  if (verbose) cout << "\n(pivot) Pivoting around edge midpoint " << mid_ij.x << " " << mid_ij.y << " " << mid_ij.z << flush;
 
   Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
@@ -708,11 +715,22 @@ void BallPivot::glue(PivotTriangle ij) {
     }
 }
 
-bool BallPivot::on_front(Point k) {
+bool BallPivot::on_front(Point *k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
         for (int j = 0; j < front.at(i).size(); ++j) {
-            if ((front.at(i).at(j).sigma_i->pos == k.pos) || (front.at(i).at(j).sigma_j->pos == k.pos)) {
+          cout << "\n On Front" << i << " " << j << flush;
+          cout << "\n Sigma i" << front.at(i).at(j).sigma_i->pos.x << flush;
+          cout << "\n" << front.at(i).at(j).sigma_i->pos.y << flush;
+          cout << "\n" << front.at(i).at(j).sigma_i->pos.z << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.x << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.y << flush;
+          cout << "\n" << front.at(i).at(j).sigma_j->pos.z << flush;
+          cout << "\n" << k->pos.x << flush;
+          cout << "\n" << k->pos.y << flush;
+          cout << "\n" << k->pos.z << flush;
+            if ((front.at(i).at(j).sigma_i->pos == k->pos) || (front.at(i).at(j).sigma_j->pos == k->pos)) {
+              cout << "\n in if statement" << flush;
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
@@ -724,12 +742,13 @@ bool BallPivot::on_front(Point k) {
 void BallPivot::insert_edge(BallPivot::PivotTriangle e, BallPivot::VertexSpecifier v1, BallPivot::VertexSpecifier v2) {
 }
 
-bool BallPivot::not_used(Point k) {
-    return (used.find(&k) == used.end());
+bool BallPivot::not_used(Point *k) {
+  cout << "\n Not used" << flush;
+    return (used.find(k) == used.end());
 }
 
-void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
-    e.isBoundary = true;
+void BallPivot::mark_as_boundary(BallPivot::PivotTriangle *e) {
+    e->isBoundary = true;
 }
 
 int BallPivot::get_active_edge() {
@@ -737,7 +756,7 @@ int BallPivot::get_active_edge() {
   for (int i = 0; i < front.size(); ++i) {
     if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
       if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
-        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge" << flush;
+        if (verbose) cout << "\n(get_active_edge) Found non-boundary active edge index " << i << flush;
         return i;
       }
     }
@@ -749,6 +768,6 @@ void BallPivot::insert_edge(vector<PivotTriangle> edge) {
     front.push_back(edge);
 }
 
-BallPivot::PivotTriangle BallPivot::retrieve_active_edge(int index) {
-    return front[index][front[index].size() - 1];
+BallPivot::PivotTriangle *BallPivot::retrieve_active_edge(int index) {
+    return &front.at(index).at(front.at(index).size() - 1);
 }
