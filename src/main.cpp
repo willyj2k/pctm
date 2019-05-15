@@ -36,7 +36,7 @@ static int vertex_cb(p_ply_argument argument) {
 }
 
 int loadFile(MeshEdit *collada_viewer, const char *path) {
-  bool verbose = false;
+  bool verbose = true;
   Scene *scene = new Scene();
 
   std::string path_str = path;

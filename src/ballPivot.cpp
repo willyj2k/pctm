@@ -33,6 +33,7 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   bool verbose = false;
   if (verbose) cout << "\n(init) Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
+  this->cell_width = 2 * radius;
   this->bound_min = bound_min;
   this->bound_max = bound_max;
   this->seed_cell = CellIndex(0, 0, 0);
@@ -41,7 +42,6 @@ void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_
   this->max_cell.x_ind += 1;
   this->max_cell.y_ind += 1;
   this->max_cell.z_ind += 1;
-  this->cell_width = 2 * radius;
   if (verbose) cout << " Done";
 
   if (verbose) cout << "\n(init) Creating Spatial Grid..." << flush;
