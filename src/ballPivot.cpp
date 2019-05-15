@@ -452,7 +452,7 @@ int BallPivot::hash_position(const Point &p) {
 }
 
 int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
-  bool verbose = true;
+  bool verbose = false;
   if (verbose) cout << "\n(hash_cell) hashing: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
   int hash = (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
   if (verbose) cout << " (int) hash: " << hash << flush;
