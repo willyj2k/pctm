@@ -167,8 +167,8 @@ namespace CGL {
 
 
     // Create the good old camera aligned coordinate system.
-    gluLookAt(   0.0, 0.5, 0.0,// camera location.
-        0.0, 0.0, 0.0,// point looking at.
+    gluLookAt(   0.0, 0.37, 0.0,// camera location.
+        0.1, -1.7, 0.1,// point looking at.
         0.0, 0.0, 1.0);// up direction.
 
     Vector3D c = Vector3D(0.0, 5.28586, 0.0);
