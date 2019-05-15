@@ -429,9 +429,9 @@ int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
 }
 
 BallPivot::CellIndex BallPivot::get_cell(const Point &p) {
-  int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
-  int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
-  int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
+  unsigned long long int x_ind = floor((p.pos.x - bound_min.x) / cell_width);
+  unsigned long long int y_ind = floor((p.pos.y - bound_min.y) / cell_width);
+  unsigned long long int z_ind = floor((p.pos.z - bound_min.z) / cell_width);
   return CellIndex(x_ind, y_ind, z_ind);
 }
 

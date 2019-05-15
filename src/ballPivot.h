@@ -80,12 +80,12 @@ class BallPivot {
     double cell_width;
 
     struct CellIndex {
-      int x_ind;
-      int y_ind;
-      int z_ind;
+      unsigned long long int x_ind;
+      unsigned long long int y_ind;
+      unsigned long long int z_ind;
 
       // constructors
-      CellIndex(int x, int y, int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
+      CellIndex(unsigned long long int x, unsigned long long int y, unsigned long long int z) : x_ind( x ), y_ind( y ), z_ind( z ) { }
 
       // default constructor; be careful with this
       CellIndex() : x_ind( 0 ), y_ind( 0 ), z_ind( 0 ) { }
