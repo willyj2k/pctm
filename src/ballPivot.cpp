@@ -75,7 +75,7 @@ void BallPivot::create_spatial_grid(const vector<Point> &points) {
 }
 
 BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
-  bool verbose = true;
+  bool verbose = false;
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
@@ -94,6 +94,7 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
       // }
       if (spatial_map.find(h) != spatial_map.end()) {
         if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
+
         sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
@@ -166,11 +167,16 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
-  bool verbose = true;
+  bool verbose = false;
   if (pt.empty) {
     if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
-    return pt;
+    return PivotTriangle();
   }
+  if (pt.isBoundary) {
+    if (verbose) cout << "\n(pivot) Passed in boundary edge. Returning." << flush;
+    return PivotTriangle();
+  }
+
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
   Vector3D tri_normal = correct_plane_normal(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
@@ -332,7 +338,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
             // we're interested in consider spheres that could intersect
             // such points
             if ((q.pos - p.pos).norm() <= r + EPS_D) {
-              if (verbose) cout << "\n(neighborhood) Found a point in the ball" << flush;
+              //if (verbose) cout << "\n(neighborhood) Found a point in the ball" << flush;
               r_neighborhood.push_back(&q);
             }
           }
@@ -741,12 +747,12 @@ bool BallPivot::not_used(Point *k) {
     return (used.find(k) == used.end());
 }
 
-void BallPivot::mark_as_boundary(BallPivot::PivotTriangle e) {
-    e.isBoundary = true;
+void BallPivot::mark_as_boundary(BallPivot::PivotTriangle *e) {
+    e->isBoundary = true;
 }
 
 int BallPivot::get_active_edge() {
-  bool verbose = true;
+  bool verbose = false;
   for (int i = 0; i < front.size(); ++i) {
     if (front.at(i).size() > 0 && front.at(i).at(0).sigma_i->pos != front.at(i).at(front.at(i).size() - 1).sigma_j->pos) {
       if (!front.at(i).at(front.at(i).size() - 1).isBoundary) {
@@ -762,6 +768,6 @@ void BallPivot::insert_edge(vector<PivotTriangle> edge) {
     front.push_back(edge);
 }
 
-BallPivot::PivotTriangle BallPivot::retrieve_active_edge(int index) {
-    return front[index][front[index].size() - 1];
+BallPivot::PivotTriangle *BallPivot::retrieve_active_edge(int index) {
+    return &front.at(index).at(front.at(index).size() - 1);
 }
