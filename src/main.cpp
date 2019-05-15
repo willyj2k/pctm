@@ -92,6 +92,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
     if (verbose) cout << "\n(main) min x: " << bound_min.x << flush;
     if (verbose) cout << "\n(main) max x: " << bound_max.x << flush;
+    if (verbose) cout << "\n(main) radius: " << radius << flush;
 
     vector <BallPivot::PivotTriangle> triangles;
 
@@ -109,7 +110,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         BallPivot::PivotTriangle t_k = pivot.pivot(*t);
         Point *k = t_k.sigma_o;
 
-        if (!t_k.empty && (pivot.not_used(*k) || pivot.on_front(*k))) {
+        if (!t_k.empty && (pivot.not_used(k) || pivot.on_front(k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(*t, k, t_k.center, index);
