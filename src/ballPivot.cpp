@@ -169,7 +169,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
    * Takes in the vertices and center of the corresponding ball for the
    * previous triangle.
    */
-  bool verbose = false;
+  bool verbose = true;
   if (pt.empty) {
     if (verbose) cout << "\n(pivot) Passed in empty triangle. Returning." << flush;
     return PivotTriangle();
@@ -190,17 +190,24 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   double trajectory_radius = (pt.center->pos - m.pos).norm();
 
   vector<Point *> candidates = neighborhood(2 * radius, m);
+  if (verbose) cout << "\n(pivot) Number of candidate points to check for hits: " << candidates.size() << flush;
   Point *first_hit = NULL;
   Point *first_center = NULL;
   double min_theta = INF_D;
+  if (verbose) cout << "\n(pivot) angles of hits:" << flush;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
+      cout << " (valid vertex) " << flush;
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *sigma_x);
-      double theta = ball_intersection(m, trajectory_radius, *(pt.center), *c_x);
-      if (theta > 0 && theta < 2 * PI && theta < min_theta) {
-        min_theta = theta;
-        first_hit = sigma_x;
-        first_center = c_x;
+      if (on_trajectory(m, trajectory_radius, *c_x)) {
+        cout << " (vertex on trajectory) " << flush;
+        double theta = ball_intersection(m, trajectory_radius, *(pt.center), *sigma_x);
+        if (verbose) cout << " " << theta << flush;
+        if (theta > 0 && theta < 2 * PI && theta < min_theta) {
+          min_theta = theta;
+          first_hit = sigma_x;
+          first_center = c_x;
+        }
       }
     }
   }
@@ -210,6 +217,29 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   } else {
     if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
     return PivotTriangle();
+  }
+}
+
+bool BallPivot::on_trajectory(const Point &tc, double tr, const Point &x) {
+  /* Returns true if x lies on the circular trajectory defined by center tc and
+   * radius tr
+   */
+  bool verbose = true;
+  Vector3D diff = x.pos - tc.pos;
+  double dist = diff.norm();
+  double cos = dot(tc.normal, diff.unit());
+  // set tolerance for imprecision
+  double tol = 5;
+
+  // check whether x lies on the sphere radius tr around tc
+  if (dist > tr + tol || dist < tr - tol) {
+    if (verbose) cout << "\n(on trajectory) Point is too not on the trajectory sphere";
+    return false;
+  }
+  // check whether x lies in the trajectory plane
+  if (cos > tol || cos < -tol) {
+    if (verbose) cout << "\n(on trajectory) Point is not on the trajectory plane";
+    return false;
   }
 }
 
@@ -379,17 +409,25 @@ bool BallPivot::valid_vertices(const Point &a, const Point &b, const Point &c) {
   /* Returns true if the input vertices can be touched by a ball of radius
    * this->radius.
    */
+  bool verbose = false;
   Vector3D proj_center = circumcenter(a, b, c);
   double a_dist = (a.pos - proj_center).norm();
-  if (a_dist > radius) return false;
+  if (a_dist > radius) {
+    if (verbose) cout << "\n(valid_vertices) Rejecting triangle for distant vertices" << flush;
+    return false;
+  }
 
-  double b_dist = (b.pos - proj_center).norm();
-  if (b_dist > radius) return false;
+  // circumcenter is guaranteed to be equidistant from all vertices
+  // double b_dist = (b.pos - proj_center).norm();
+  // if (b_dist > radius) return false;
 
-  double c_dist = (c.pos - proj_center).norm();
-  if (c_dist > radius) return false;
+  // double c_dist = (c.pos - proj_center).norm();
+  // if (c_dist > radius) return false;
 
-  if (correct_plane_normal(a, b, c).norm2() == 0) return false;
+  if (correct_plane_normal(a, b, c).norm2() == 0) {
+    if (verbose) cout << "\n(valid_vertices) Rejecting triangle for misaligned normals" << flush;
+    return false;
+  }
 
   return true;
 }

@@ -140,6 +140,7 @@ class BallPivot {
     Point* ball_center(const Point &a, const Point &b, const Point &c, const Vector3D &normal);
     Vector3D naive_plane_normal(const Point &a, const Point &b, const Point &c);
     Vector3D correct_plane_normal(const Point &a, const Point &b, const Point &c);
+    bool on_trajectory(const Point &tc, double tr, const Point &x);
     double ball_intersection(const Point &tc, double tr, const Point &ts, const Point &x);
     double angle_between(const Point &tc, const Point &ts, const Vector3D &i);
     int hash_position(const Point &p);
