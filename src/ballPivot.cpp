@@ -140,14 +140,15 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
             }
           }
         }
-        if (verbose) cout << "\n(find_seed_triangle) No valid vertices found for seed" << flush;
+        if (verbose && !found_valid_triangle) cout << "\n(find_seed_triangle) No valid vertices found for seed" << flush;
       }
       // put this here because apparently we only want to consider one
       // candidate *vertex* per cell, rather than one seed triangle per cell
       processed_cells.insert(h);
+    } else {
+      if (verbose) cout << "\n(find_seed_triangle) Candidate cell has already been processed" << flush;
+      increment_seed_cell();
     }
-    if (verbose) cout << "\n(find_seed_triangle) Candidate cell has already been processed" << flush;
-    increment_seed_cell();
   }
 
   return triangle;
