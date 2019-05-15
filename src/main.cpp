@@ -85,8 +85,12 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     }
     cout << " Done\n";
 
+    double radius = 0.001;
+
     Vector3D bound_min = Vector3D(min_x, min_y, min_z);
     Vector3D bound_max = Vector3D(max_x, max_y, max_z);
+
+    cout << bound_max;
 
     cout << "\n min x: " << bound_min.x << flush;
     cout << "\n max x: " << bound_max.x << flush;
@@ -95,7 +99,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
-    pivot.init(points, 50, bound_min, bound_max);
+    pivot.init(points, radius, bound_min, bound_max);
     int index;
     while (true) {
       cout << "\n-----------------------------" << flush;
@@ -112,6 +116,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
           cout << "\nValid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
           pivot.join(t, k, t_k.center, index);
+          cout << "\nJoined" << flush;
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t.sigma_j, k, t.sigma_i, t_k.center);
           if (pivot.front_contains_edge(ki)) {
