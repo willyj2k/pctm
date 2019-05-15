@@ -77,7 +77,7 @@ void BallPivot::create_spatial_grid(const vector<Point> &points) {
 }
 
 BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
-  bool verbose = false;
+  bool verbose = true;
   bool found_valid_triangle = false;
   PivotTriangle triangle;
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
@@ -95,8 +95,10 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
       //     std::cout << "\n{" << pair.first << ": " << pair.second->size() << "}\n";
       // }
       if (spatial_map.find(h) != spatial_map.end()) {
-        if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
 
+        if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
+        
+        cout << "asdas";
         sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
