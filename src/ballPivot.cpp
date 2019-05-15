@@ -682,8 +682,8 @@ void BallPivot::glue(PivotTriangle ij) {
 bool BallPivot::on_front(Point k) {
     bool internal_mesh_vertex = false;
     for (int i = 0; i < front.size(); ++i) {
-        for (int j = 0; j < front.size(); ++j) {
-            if ((front[i][j].sigma_i->pos == k.pos) || (front[i][j].sigma_j->pos == k.pos)) {
+        for (int j = 0; j < front.at(i).size(); ++j) {
+            if ((front.at(i).at(j).sigma_i->pos == k.pos) || (front.at(i).at(j).sigma_j->pos == k.pos)) {
                 internal_mesh_vertex = true;
                 return internal_mesh_vertex;
             }
