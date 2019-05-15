@@ -113,6 +113,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         if (k != NULL && (pivot.not_used(*k) || pivot.on_front(*k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
+          //pivot.used.insert(k);
           pivot.join(t, k, t_k.center, index);
           cout << "\n(main) Joined" << flush;
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t.sigma_i, t.sigma_j, t_k.center);
@@ -159,6 +160,8 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         break;
       }
     }
+
+    cout << triangles.size();
 
 //    cout << "Hello" << flush;
 

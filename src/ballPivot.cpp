@@ -94,6 +94,8 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
       // }
       if (spatial_map.find(h) != spatial_map.end()) {
         if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
+
+        cout << "ASda";
         sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood

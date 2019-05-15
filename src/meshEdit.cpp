@@ -111,7 +111,6 @@ namespace CGL {
 
   void MeshEdit::render() {
     update_camera();
-    draw_normals();
     drawPivotTriangles();
 
     // // Draw the helpful picking messages.
