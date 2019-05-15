@@ -30,7 +30,7 @@ bool compare(Point *a, Point *b) {
 }
 
 void BallPivot::init(const vector<Point> &points, double radius, Vector3D bound_min, Vector3D bound_max) {
-  bool verbose = true;
+  bool verbose = false;
   if (verbose) cout << "\n(init) Initializing Ball Pivot member variables..." << flush;
   this->radius = radius;
   this->bound_min = bound_min;
@@ -452,7 +452,7 @@ int BallPivot::hash_position(const Point &p) {
 }
 
 int BallPivot::hash_cell(const BallPivot::CellIndex &c) {
-  bool verbose = true;
+  bool verbose = false;
   if (verbose) cout << "\n(hash_cell) hashing: " << c.x_ind << " " << c.y_ind << " " << c.z_ind << flush;
   int hash = (c.x_ind + small_prime * (c.y_ind + small_prime * c.z_ind)) % large_prime;
   if (verbose) cout << " (int) hash: " << hash << flush;
