@@ -95,7 +95,6 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
     // TODO write main loops for ball pivoting and output
     BallPivot pivot = BallPivot();
-//    pivot.init(points, 0.001, bound_min, bound_max);
     pivot.init(points, 0.001, bound_min, bound_max);
     int index;
     while (true) {
@@ -133,7 +132,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
 
       std::cout << "Finding Seed Triangle... " << std::flush;
       BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
-      std::cout << "Done\n" << std::flush;
+      std::cout << "\nDone\n" << std::flush;
 
       if (!seed_triangle.empty) {
         // output triangle
