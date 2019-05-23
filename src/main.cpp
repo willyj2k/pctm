@@ -97,41 +97,41 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     vector <BallPivot::PivotTriangle> triangles;
 
     // TODO write main loops for ball pivoting and output
-    BallPivot pivot = BallPivot();
-    pivot.init(points, radius, bound_min, bound_max);
+    BallPivot bp = BallPivot();
+    bp.init(points, radius, bound_min, bound_max);
     int index;
     while (true) {
       if (verbose) cout << "\n-----------------------------" << flush;
-      index = pivot.get_active_edge();
+      index = bp.get_active_edge();
       int prev = index;
       while (index != -1) {
-        BallPivot::PivotTriangle *t = pivot.retrieve_active_edge(index);
+        BallPivot::PivotTriangle *t = bp.retrieve_active_edge(index);
         if (verbose) cout << "\n(main) Found active edge" << flush;
 
-        BallPivot::PivotTriangle t_k = pivot.pivot(*t);
+        BallPivot::PivotTriangle t_k = bp.pivot(*t);
         Point *k = t_k.sigma_o;
 
-        if (!t_k.empty && (pivot.not_used(k) || pivot.on_front(k))) {
+        if (!t_k.empty && (bp.not_used(k) || bp.on_front(k))) {
           if (verbose) cout << "\n(main) Valid triangle found by pivoting" << flush;
           triangles.push_back(t_k);
-          pivot.used.insert(k);
-          pivot.join(*t, k, t_k.center, index);
+          bp.used.insert(k);
+          bp.join(*t, k, t_k.center, index);
           cout << "\n(main) Joined" << flush;
           BallPivot::PivotTriangle ki = BallPivot::PivotTriangle(k, t->sigma_i, t->sigma_j, t_k.center);
           BallPivot::PivotTriangle jk = BallPivot::PivotTriangle(t->sigma_j, k, t->sigma_i, t_k.center);
-          if (pivot.front_contains_edge(ki)) {
-            pivot.glue(ki);
+          if (bp.front_contains_edge(ki)) {
+            bp.glue(ki);
             if (verbose) cout << "\n(main) Glued" << flush;
           }
-          if (pivot.front_contains_edge(jk)) {
-            pivot.glue(jk);
+          if (bp.front_contains_edge(jk)) {
+            bp.glue(jk);
             if (verbose) cout << "\n(main) Glued" << flush;
           }
         } else {
-            pivot.mark_as_boundary(t);
+            bp.mark_as_boundary(t);
             if (verbose) cout << "\n(main) Found Boundary Edge" << flush;
         }
-        index = pivot.get_active_edge();
+        index = bp.get_active_edge();
         if (prev == index) {
             break;
         }
@@ -139,7 +139,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
       }
 
       if (verbose) cout << "\n(main) Calling seed triangle... " << flush;
-      BallPivot::PivotTriangle seed_triangle = pivot.find_seed_triangle();
+      BallPivot::PivotTriangle seed_triangle = bp.find_seed_triangle();
       if (verbose) cout << "\n(main) Done calling seed triangle\n" << flush;
 
       if (!seed_triangle.empty) {
@@ -155,9 +155,9 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
         edge_ij.push_back(seed_triangle);
         edge_jk.push_back(jk);
         edge_ki.push_back(ki);
-        pivot.insert_edge(edge_ij);
-        pivot.insert_edge(edge_jk);
-        pivot.insert_edge(edge_ki);
+        bp.insert_edge(edge_ij);
+        bp.insert_edge(edge_jk);
+        bp.insert_edge(edge_ki);
         if (verbose) cout << "\n(main) Found seed triangle\n" << flush;
       } else {
         if (verbose) cout << "\n(main) Did not find seed triangle\n" << flush;
@@ -178,7 +178,7 @@ int loadFile(MeshEdit *collada_viewer, const char *path) {
     Polymesh *mesh = new Polymesh();
     mesh->type = POLYMESH;
     ply_node.instance = mesh;
-    scene->points = pivot.all_points;
+    scene->points = bp.all_points;
     scene->nodes.push_back(ply_node);
     scene->triangles = triangles;
   } else if (path_str.substr(path_str.length() - 4, 4) == ".dae") {

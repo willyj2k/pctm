@@ -77,9 +77,9 @@ void BallPivot::create_spatial_grid(const vector<Point> &points) {
 }
 
 BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
-  bool verbose = true;
+  bool verbose = false;
   bool found_valid_triangle = false;
-  PivotTriangle triangle;
+  PivotTriangle triangle = PivotTriangle();
   // pick a point SIGMA that has not been used by the reconstructed triangulation;
   while (!found_valid_triangle && seed_cell.z_ind < max_cell.z_ind) {
     if (verbose) cout << "\n(find_seed_triangle) Seed Cell: " << seed_cell.x_ind << " " << seed_cell.y_ind << " " << seed_cell.z_ind << flush;
@@ -98,7 +98,6 @@ BallPivot::PivotTriangle BallPivot::find_seed_triangle() {
 
         if (verbose) cout << "\n(find_seed_triangle) Indexing into spatial map for candidate seeding cell" << flush;
         
-        cout << "asdas";
         sigma = get_seed_candidate(seed_cell);
         // obtain a list of points in a (2 * rho)-neighborhood of *point,
         // or on the boundary of said neighborhood
@@ -182,11 +181,16 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   }
 
   Vector3D mid_ij = (pt.sigma_i->pos + pt.sigma_j->pos) / 2.0;
+  // TODO tri_normal is zero vector... ==> pt is not a valid triangle ???
   Vector3D tri_normal = correct_plane_normal(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D proj_center = circumcenter(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
   Vector3D rotation_axis = cross(tri_normal, mid_ij - proj_center).unit();
 
-  if (verbose) cout << "\n(pivot) Pivoting around edge midpoint " << mid_ij.x << " " << mid_ij.y << " " << mid_ij.z << flush;
+  if (verbose) cout << "\n(pivot) tri_normal: " << tri_normal << flush;
+  if (verbose) cout << "\n(pivot) proj_center: " << proj_center << flush;
+  if (verbose) cout << "\n(pivot) rotation_axis: " << rotation_axis << flush;
+
+  if (verbose) cout << "\n(pivot) Pivoting around edge midpoint mid_ij: " << mid_ij << flush;
 
   Point m = Point(mid_ij, rotation_axis);
   double trajectory_radius = (pt.center->pos - m.pos).norm();
@@ -196,16 +200,16 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
   Point *first_hit = NULL;
   Point *first_center = NULL;
   double min_theta = INF_D;
-  if (verbose) cout << "\n(pivot) angles of hits:" << flush;
+  if (verbose) cout << "\n(pivot) Checking hit candidates:" << flush;
   for (Point *sigma_x : candidates) {
     if (valid_vertices(*(pt.sigma_i), *(pt.sigma_j), *sigma_x)) {
       Point *c_x = ball_center(*(pt.sigma_i), *(pt.sigma_j), *sigma_x);
       if (on_trajectory(m, trajectory_radius, *c_x)) {
         // TODO figure out why the passed-in old ball center isn't correct
         Point *obc = ball_center(*(pt.sigma_i), *(pt.sigma_j), *(pt.sigma_o));
-        if (verbose) cout << "\n(pivot) m.pos == obc->pos: " << (m.pos == obc->pos) << flush;
+        // if (verbose) cout << "\n(pivot)    m.pos == obc->pos: " << (m.pos == obc->pos) << flush;
         double theta = ball_intersection(m, trajectory_radius, *obc, *sigma_x);
-        if (verbose) cout << " " << theta << flush;
+        // if (verbose) cout << "\n(pivot)    theta candidate: " << theta << flush;
         if (theta > 0 && theta < 2 * PI && theta < min_theta) {
           min_theta = theta;
           first_hit = sigma_x;
@@ -215,7 +219,7 @@ BallPivot::PivotTriangle BallPivot::pivot(BallPivot::PivotTriangle pt) {
     }
   }
   if (first_hit != NULL) {
-    if (verbose) cout << "\n(pivot) Pivoting ball hit a valid point" << flush;
+    if (verbose) cout << "\n(pivot) PIVOTING BALL HIT A VALID POINT!!!" << flush;
     return PivotTriangle(pt.sigma_i, pt.sigma_j, first_hit, first_center);
   } else {
     if (verbose) cout << "\n(pivot) No points hit while pivoting" << flush;
@@ -232,7 +236,7 @@ bool BallPivot::on_trajectory(const Point &tc, double tr, const Point &x) {
   double dist = diff.norm();
   double cos = dot(tc.normal, diff.unit());
   // set tolerance for imprecision
-  double tol = 0.2;
+  double tol = radius / 10.0;
 
   // check whether x lies in the trajectory plane
   if (abs(cos) > tol) {
@@ -242,8 +246,8 @@ bool BallPivot::on_trajectory(const Point &tc, double tr, const Point &x) {
   }
   // check whether x lies on the sphere radius tr around tc
   if (abs(dist - tr) > tol) {
-    if (verbose) cout << "\n(on trajectory) Point is too not on the trajectory sphere" << flush;
-    if (verbose) cout << " (distance to the radius: " << abs(dist - tr) << ")" << flush;
+    if (verbose) cout << "\n(on trajectory) Point is not on the trajectory sphere" << flush;
+    if (verbose) cout << " (difference with radius: " << abs(dist - tr) << ")" << flush;
     return false;
   }
   if (verbose) cout << "\n(on trajectory) Point is on the trajectory!" << flush;
@@ -263,10 +267,10 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
    * Implementation adapted from https://gamedev.stackexchange.com/questions/
    * 75756/sphere-sphere-intersection-and-circle-sphere-intersection
    */
-  bool verbose = true;
-  double tol = 0.2;
-  double d = abs(dot(tc.normal, (x.pos - tc.pos)));
-  if (d > radius) {
+  bool verbose = false;
+  double tol = radius / 10;
+  double x_to_tplane = dot(tc.normal, (tc.pos - x.pos));
+  if (abs(x_to_tplane) > radius) {
     // trajectory plane doesn't intersect the ball
     return 0;
     if (verbose) cout << "\n(ball_intersection) Trajectory plane doesn't intersect the ball" << flush;
@@ -275,9 +279,9 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
   Vector3D intersection;
 
   // center of the ball centered at x, projected onto the trajectory plane
-  Vector3D x_pc = x.pos + d * tc.normal;
+  Vector3D x_pc = x.pos + x_to_tplane * tc.normal;
 
-  if (d == radius) {
+  if (abs(x_to_tplane) == radius) {
     // the trajectory plane is tangent to the ball, so x_pc is the only
     // intersection point
     if ((x_pc - tc.pos).norm() == tr) {
@@ -289,11 +293,11 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
   }
 
   // radius of the circular slice of the ball in the trajectory plane
-  double x_pr = sqrt(radius * radius  - d * d);
+  double x_pr = sqrt(radius * radius - x_to_tplane * x_to_tplane);
 
   // now we do circle-circle intersection
   double d_p = (tc.pos - x_pc).norm();
-  if (tr + x_pr > d_p + tol) {
+  if (tr + x_pr > d_p) {
     // circles too far away
     if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles too far away" << flush;
     return 0;
@@ -307,44 +311,48 @@ double BallPivot::ball_intersection(const Point &tc, double tr, const Point &ts,
     // circles are tangent (exterior)
     intersection = tc.pos + tr * (tc.pos - x_pc).unit();
     if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, trajectory outside";
-    if (verbose) cout << " (intersection: ";
-    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
+    if (verbose) cout << " (intersection: " << intersection << ")" << flush;
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + tr == x_pr) {
     // circles are tangent, trajectory inside ball
     intersection = x_pc + x_pr * (tc.pos - x_pc).unit();
     if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, trajectory inside";
-    if (verbose) cout << " (intersection: ";
-    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
+    if (verbose) cout << " (intersection: " << intersection << ")" << flush;
     return angle_between(tc, ts, intersection);
 
   } else if (d_p + x_pr == tr) {
     // circles are tangent, ball inside trajectory
     intersection = tc.pos + tr * (x_pc - tc.pos).unit();
     if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles are tangent, ball inside";
-    if (verbose) cout << " (intersection: ";
-    if (verbose) cout << "{" << intersection.x << " " << intersection.y << " " << intersection.z << "}" << flush;
+    if (verbose) cout << " (intersection: " << intersection << ")" << flush;
     return angle_between(tc, ts, intersection);
 
   } else {
     // circles intersect at two points
     if (verbose) cout << "\n(ball_intersection) Circle-circle intersection: circles intersect at two points";
-    double h = 0.5 + (tr * tr - x_pr * x_pr) / (2 * d_p * d_p);
+    double h = 0.5 + (tr * tr - x_pr * x_pr) / (2.0 * d_p * d_p);
     Vector3D c_i = tc.pos + h * (x_pc - tc.pos);
     double r_i = sqrt(tr * tr - h * h * d_p * d_p);
     Vector3D r_i_dir = cross(tc.normal, c_i).unit();
     Vector3D intersection1 = c_i + r_i * r_i_dir;
     Vector3D intersection2 = c_i - r_i * r_i_dir;
 
-    // TODO problem: r_i is nan
-    if (verbose) cout << " (c_i: " << c_i << ", r_i^2: " << (tr * tr - h * h * d_p * d_p) << ", ";
-    if (verbose) cout << " r_i_dir: {" << r_i_dir.x << ", " << r_i_dir.y << ", " << r_i_dir.z << "})" << flush;
-
-    if (verbose) cout << " (intersection1: ";
-    if (verbose) cout << "{" << intersection1.x << ", " << intersection1.y << ", " << intersection1.z << "}" << flush;
-    if (verbose) cout << " (intersection2: ";
-    if (verbose) cout << "{" << intersection2.x << ", " << intersection2.y << ", " << intersection2.z << "}" << flush;
+    // TODO problem: r_i is nan (argument to sqrt is negative)
+    if (verbose) cout << "\n(ball_intersection)    tc.pos: " << tc.pos << flush;
+    if (verbose) cout << "\n(ball_intersection)    tc.normal: " << tc.normal << flush;
+    if (verbose) cout << "\n(ball_intersection)    x.pos: " << x.pos << flush;
+    if (verbose) cout << "\n(ball_intersection)    x_to_tplane: " << x_to_tplane << flush;
+    if (verbose) cout << "\n(ball_intersection)    x_pc: " << x_pc << flush;
+    if (verbose) cout << "\n(ball_intersection)    x_pr: " << x_pr << flush;
+    if (verbose) cout << "\n(ball_intersection)    tr: " << tr << flush;
+    if (verbose) cout << "\n(ball_intersection)    d_p: " << d_p << flush;
+    if (verbose) cout << "\n(ball_intersection)    h: " << h << flush;
+    if (verbose) cout << "\n(ball_intersection)    c_i: " << c_i << flush;
+    if (verbose) cout << "\n(ball_intersection)    r_i^2: " << (tr * tr - h * h * d_p * d_p) << flush;
+    if (verbose) cout << "\n(ball_intersection)    r_i_dir: " << r_i_dir << flush;
+    if (verbose) cout << "\n(ball_intersection)    intersection1: " << intersection1 << flush;
+    if (verbose) cout << "\n(ball_intersection)    intersection2: " << intersection2 << flush;
 
     double theta1 = angle_between(tc, ts, intersection1);
     double theta2 = angle_between(tc, ts, intersection2);
@@ -357,15 +365,13 @@ double BallPivot::angle_between(const Point &tc, const Point &ts, const Vector3D
    * measured counterclockwise from ts about tc (where the normal of tc is
    * facing out of the clock face)
    */
-  bool verbose = true;
-  if (verbose) cout << "\n(angle_between) tc.pos: { " << tc.pos.x << " " << tc.pos.y << " " << tc.pos.z << " }" << flush;
-  if (verbose) cout << "\n(angle_between) ts.pos: { " << ts.pos.x << " " << ts.pos.y << " " << ts.pos.z << " }" << flush;
-  if (verbose) cout << "\n(angle_between) i: { " << i.x << " " << i.y << " " << i.z << " }" << flush;
+  bool verbose = false;
+  if (verbose) cout << "\n(angle_between) tc.pos: " << tc.pos << flush;
+  if (verbose) cout << "\n(angle_between) ts.pos: " << ts.pos << flush;
+  if (verbose) cout << "\n(angle_between) i:  " << i << flush;
   Vector3D start = (ts.pos - tc.pos);
   Vector3D end = (i - tc.pos);
-  if (verbose) cout << "\n(angle_between) Calling angle_between" << flush;
-  if (verbose) cout << " { " << start.x << " " << start.y << " " << start.z << " }" << flush;
-  if (verbose) cout << " { " << end.x << " " << end.y << " " << end.z << " }" << flush;
+  if (verbose) cout << "\n(angle_between) Calling angle_between " << start << " " << end << flush;
   if (verbose) cout << "\n(angle_between) atan2 " << flush;
   if (verbose) cout << " " << dot(cross(start, end), tc.normal) << ", " << dot(start, end) << flush;
   double theta = atan2(dot(cross(start, end), tc.normal), dot(start, end));
@@ -379,7 +385,7 @@ vector<Point *> BallPivot::neighborhood(double r, const Point &p) {
   /* Return a vector of pointers to points within an r-neighborhood of p */
   bool verbose = false;
 
-  if (verbose) cout << "\n(neighborhood) Calling neighborhood on (" << p.pos.x << ", " << p.pos.y << ", " << p.pos.z  << ")" << flush;
+  if (verbose) cout << "\n(neighborhood) Calling neighborhood on " << p.pos << flush;
   vector<Point *> r_neighborhood = vector<Point *>();
   unsigned long long int reach = ceil(r / cell_width);
   CellIndex c = get_cell(p);
@@ -503,7 +509,7 @@ Point* BallPivot::ball_center(const Point &a, const Point &b, const Point &c, co
 }
 
 Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Point &c) {
-  /* Returns the normal (unit) vector of the plane defined by a, b, and c
+  /* Returns the normal (NON-unit) vector of the plane defined by a, b, and c
    *
    * NOTE 1: (IMPORTANT) This could fail if a, b and c are colinear, in which
    * case the cross product will be 0 (and they don't define a triangle anyway)
@@ -514,8 +520,7 @@ Vector3D BallPivot::naive_plane_normal(const Point &a, const Point &b, const Poi
    * NOTE 2: The vector will not be oriented "correctly" in general; i.e., its
    * sign could be incorrect
    */
-  Vector3D normal = cross((b.pos - a.pos), (c.pos - a.pos));
-  return normal.unit();
+  return cross((b.pos - a.pos), (c.pos - a.pos));
 }
 
 Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const Point &c) {
@@ -528,8 +533,10 @@ Vector3D BallPivot::correct_plane_normal(const Point &a, const Point &b, const P
   Vector3D naive_normal = naive_plane_normal(a, b, c);
 
   if (naive_normal.norm2() == 0) {
-    return naive_normal;
+    return Vector3D(0, 0, 0);
   }
+
+  naive_normal = naive_normal.unit();
 
   double a_dot = dot(a.normal, naive_normal);
   double b_dot = dot(b.normal, naive_normal);
